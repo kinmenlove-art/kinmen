@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="金門 - 探索金門的文化與藝術">
+    <title>金門 | 文化藝術站</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            background-color: #f8f9fa;
+            padding: 1rem 0;
+            border-bottom: 2px solid #667eea;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #764ba2;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        section {
+            margin: 3rem 0;
+        }
+
+        section h2 {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid #764ba2;
+            padding-bottom: 0.5rem;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-body p {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+        }
+
+        .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+            }
+
+            section h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏝️ 金門</h1>
+        <p>探索金門的文化與藝術</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#about">關於</a></li>
+            <li><a href="#features">特色</a></li>
+            <li><a href="#culture">文化</a></li>
+            <li><a href="#contact">聯絡</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <section id="about">
+            <h2>📍 關於金門</h2>
+            <p>
+                金門位於台灣海峽，是一個充滿歷史韻味和文化底蘊的島嶼。
+                這個專案致力於展示金門的自然風景、傳統文化和當代藝術。
+            </p>
+        </section>
+
+        <section id="features">
+            <h2>✨ 特色亮點</h2>
+            <div class="cards">
+                <div class="card">
+                    <div class="card-header">🏛️ 歷史遺產</div>
+                    <div class="card-body">
+                        <p>金門擁有豐富的歷史遺跡，從古代建築到現代紀念館，每一處都述說著動人的故事。</p>
+                        <a href="#" class="btn">深入了解</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">🎨 當代藝術</div>
+                    <div class="card-body">
+                        <p>當地藝術家們創作出充滿創意和活力的作品，展現金門的文化活力。</p>
+                        <a href="#" class="btn">瀏覽作品</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">🌊 自然風景</div>
+                    <div class="card-body">
+                        <p>壯麗的海岸線、獨特的地質景觀，以及豐富的生態環境，金門的自然之美令人嘆為觀止。</p>
+                        <a href="#" class="btn">探索自然</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="culture">
+            <h2>🎭 文化風情</h2>
+            <div class="cards">
+                <div class="card">
+                    <div class="card-header">🍜 傳統美食</div>
+                    <div class="card-body">
+                        <p>金門美食融合閩南風味與當地特色，每一道菜都是文化的傳承。高粱酒、貢糖等特產聞名遐邇。</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">🏮 民俗活動</div>
+                    <div class="card-body">
+                        <p>一年四季豐富的民俗活動，從傳統廟會到現代節慶，展現金門人的熱情與信仰。</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">🎪 藝文活動</div>
+                    <div class="card-body">
+                        <p>各類藝文展演與工作坊定期舉辦，提供居民與遊客深入體驗金門文化的機會。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>📬 聯絡我們</h2>
+            <p>
+                歡迎聯絡我們了解更多關於金門的資訊！
+                <br>
+                Email: <span class="highlight">info@kinmen-art.com</span>
+                <br>
+                追蹤我們：<span class="highlight">@kinmenlove_art</span>
+            </p>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 金門文化藝術站。版權所有。</p>
+        <p>由 kinmenlove-art 用心打造</p>
+    </footer>
+</body>
+</html>
