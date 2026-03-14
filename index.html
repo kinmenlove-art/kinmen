@@ -1578,26 +1578,25 @@
       let title = '';
       let content = '';
       
-      // 處理使用 admin-overlay 的資訊彈窗
+      if (type === 'rules') {
+        title = '租屋需知';
+        content = `<div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">${s.tenantRules || '目前無租屋需知'}</div>`;
+      } else if (type === 'announcement') {
+        title = '公告事項';
+        content = `<div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">${s.announcement || '目前無公告事項'}</div>`;
+      } else if (type === 'wifi') {
+        title = 'WIFI 密碼';
+        content = `<div class="text-center py-4"><div class="text-gray-500 text-sm mb-2">無線網路密碼</div><div class="text-2xl font-mono font-bold text-blue-600 bg-blue-50 py-3 px-4 rounded-xl inline-block tracking-wider">${s.wifiPassword || '未設定'}</div></div>`;
+      }
+      
       if (type === 'rules' || type === 'announcement' || type === 'wifi') {
-        if (type === 'rules') {
-          title = '租屋需知';
-          content = `<div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">${s.tenantRules || '目前無租屋需知'}</div>`;
-        } else if (type === 'announcement') {
-          title = '公告事項';
-          content = `<div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">${s.announcement || '目前無公告事項'}</div>`;
-        } else if (type === 'wifi') {
-          title = 'WIFI 密碼';
-          content = `<div class="text-center py-4"><div class="text-gray-500 text-sm mb-2">無線網路密碼</div><div class="text-2xl font-mono font-bold text-blue-600 bg-blue-50 py-3 px-4 rounded-xl inline-block tracking-wider">${s.wifiPassword || '未設定'}</div></div>`;
-        }
         document.getElementById('admin-overlay-title').innerText = title;
         document.getElementById('admin-overlay-content').innerHTML = content;
         document.getElementById('admin-overlay').classList.remove('hidden');
         document.getElementById('admin-overlay').classList.add('flex');
-        return; // 執行完就退出
+        return;
       }
 
-      // 處理使用 tenant-overlay 的功能彈窗
       const overlay = document.getElementById('tenant-overlay');
       const titleEl = document.getElementById('tenant-overlay-title');
       const contentEl = document.getElementById('tenant-overlay-content');
@@ -1711,7 +1710,15 @@
             <h4 class="font-bold text-orange-800 mb-2 flex items-center gap-2">
               <i class="fa-solid fa-house-circle-check"></i> 生活公約
             </h4>
-            <div class="text-sm leading-relaxed whitespace-pre-wrap">${s.livingConvention || '1. 保持公共區域整潔\n2. 晚上10點後降低音量\n3. 垃圾請確實分類\n4. 嚴禁室內吸菸\n5. 節約能源，隨手關燈'}</div>
+            <div class="text-sm leading-relaxed whitespace-pre-wrap">\${s.livingConvention || '1. 保持公共區域整潔\\n2. 晚上10點後降低音量\\n3. 垃圾請確實分類\\n4. 嚴禁室內吸菸\\n5. 節約能源，隨手關燈'}</div>
+          </div>
+          <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
+            <h4 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-leaf"></i> 環境維護
+            </h4>
+            <p class="text-sm leading-relaxed">
+              為了維護優質的居住環境，請各位房客共同遵守生活公約。若有違反情節嚴重者，將依租賃契約處理。
+            </p>
           </div>
         </div>
       `;
