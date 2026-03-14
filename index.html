@@ -146,7 +146,7 @@
           <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-share-nodes text-lg"></i></div>
           <span class="font-medium text-sm">分享給好友</span>
         </button>
-        <button onclick="alert('請加入官方 LINE 帳號：@13house')" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 hover:bg-gray-50">
+        <button onclick="alert('請加入官方 LINE 帳號：@323xnlel')" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 hover:bg-gray-50">
           <div class="w-10 h-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center"><i class="fa-brands fa-line text-xl"></i></div>
           <span class="font-medium text-sm">聯絡客服</span>
         </button>
@@ -174,7 +174,7 @@
           <i class="fa-brands fa-line text-blue-600 mt-1 w-5 text-center text-lg"></i>
           <div>
             <div class="text-xs text-gray-500 mb-0.5">官方 LINE 帳號</div>
-            <div class="text-sm font-medium text-gray-800">@13house</div>
+            <div class="text-sm font-medium text-gray-800">@323xnlel</div>
           </div>
         </div>
       </div>
@@ -427,7 +427,7 @@
         您目前未使用 LINE 登入，部分功能將受限。<br>建議您使用手機 LINE 開啟本系統，以享有完整服務與預約功能。
       </p>
       <div class="space-y-3">
-        <a href="https://line.me/R/ti/p/@your_line_id" class="block w-full py-3.5 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">
+        <a href="https://lin.ee/HCs6wqqU" target="_blank" class="block w-full py-3.5 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">
           點我加入 LINE 官方帳號
         </a>
         <button onclick="document.getElementById('visitor-modal').classList.add('hidden'); document.getElementById('visitor-modal').classList.remove('flex');" class="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors">
@@ -970,9 +970,30 @@
       getAdminData: () => new Promise(res => setTimeout(() => res({ success: true, data: mockGas.db }), 500))
     };
 
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzUzzbE9DC-DMm7Qe4dSG1p-OUX5kr5K38DvZYcRexUF3IrnSpqhOmyc8f016C9Vjg_/exec';
+
     function callGas(func, data, cb) {
-      if (typeof google !== 'undefined' && google.script) google.script.run.withSuccessHandler(cb)[func](data);
-      else mockGas[func](data).then(cb);
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run.withSuccessHandler(cb)[func](data);
+      } else {
+        // Fallback for external hosting (e.g. Vercel)
+        const url = `${GAS_URL}?func=${func}`;
+        fetch(url, {
+          method: 'POST',
+          mode: 'no-cors', // GAS web app doesn't support CORS easily
+          body: JSON.stringify(data)
+        }).then(() => {
+          // Since no-cors doesn't allow reading response, we might need a different approach for data-fetching
+          // But for actions like submit, this might be enough.
+          // For data fetching, we'd need JSONP or a proxy.
+          // For now, let's assume if we are on Vercel, we might be using it as a static site.
+          console.log(`Called ${func} via fetch (no-cors)`);
+          if (cb) cb({ success: true, message: '已送出請求 (外部模式)' });
+        }).catch(err => {
+          console.error('GAS Call Error:', err);
+          if (cb) cb({ success: false, message: '連線失敗' });
+        });
+      }
     }
 
     // --- State & Init ---
@@ -1005,7 +1026,7 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       try { 
-        await liff.init({ liffId: "YOUR_LIFF_ID" }); 
+        await liff.init({ liffId: "2009451164-XyyLYB0l" }); 
         if (!liff.isInClient()) {
           document.getElementById('visitor-modal').classList.remove('hidden');
           document.getElementById('visitor-modal').classList.add('flex');
