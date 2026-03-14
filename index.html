@@ -1578,21 +1578,144 @@
       let title = '';
       let content = '';
       
-      if (type === 'rules') {
-        title = '租屋需知';
-        content = `<div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">${s.tenantRules || '目前無租屋需知'}</div>`;
-      } else if (type === 'announcement') {
-        title = '公告事項';
-        content = `<div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">${s.announcement || '目前無公告事項'}</div>`;
-      } else if (type === 'wifi') {
-        title = 'WIFI 密碼';
-        content = `<div class="text-center py-4"><div class="text-gray-500 text-sm mb-2">無線網路密碼</div><div class="text-2xl font-mono font-bold text-blue-600 bg-blue-50 py-3 px-4 rounded-xl inline-block tracking-wider">${s.wifiPassword || '未設定'}</div></div>`;
+      // 處理使用 admin-overlay 的資訊彈窗
+      if (type === 'rules' || type === 'announcement' || type === 'wifi') {
+        if (type === 'rules') {
+          title = '租屋需知';
+          content = `<div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">${s.tenantRules || '目前無租屋需知'}</div>`;
+        } else if (type === 'announcement') {
+          title = '公告事項';
+          content = `<div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">${s.announcement || '目前無公告事項'}</div>`;
+        } else if (type === 'wifi') {
+          title = 'WIFI 密碼';
+          content = `<div class="text-center py-4"><div class="text-gray-500 text-sm mb-2">無線網路密碼</div><div class="text-2xl font-mono font-bold text-blue-600 bg-blue-50 py-3 px-4 rounded-xl inline-block tracking-wider">${s.wifiPassword || '未設定'}</div></div>`;
+        }
+        document.getElementById('admin-overlay-title').innerText = title;
+        document.getElementById('admin-overlay-content').innerHTML = content;
+        document.getElementById('admin-overlay').classList.remove('hidden');
+        document.getElementById('admin-overlay').classList.add('flex');
+        return; // 執行完就退出
       }
-      
-      document.getElementById('admin-overlay-title').innerText = title;
-      document.getElementById('admin-overlay-content').innerHTML = content;
-      document.getElementById('admin-overlay').classList.remove('hidden');
-      document.getElementById('admin-overlay').classList.add('flex');
+
+      // 處理使用 tenant-overlay 的功能彈窗
+      const overlay = document.getElementById('tenant-overlay');
+      const titleEl = document.getElementById('tenant-overlay-title');
+      const contentEl = document.getElementById('tenant-overlay-content');
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+
+      if (type === 'repair') {
+        titleEl.innerText = '設備報修申請';
+        contentEl.innerHTML = `
+          <form onsubmit="handleRepairSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">報修項目 *</label>
+              <input type="text" name="item" required placeholder="例如：冷氣、燈泡、水龍頭" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">問題描述 *</label>
+              <textarea name="description" required rows="4" placeholder="請詳細描述故障情形..." class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 resize-none"></textarea>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-xl text-xs text-blue-700">
+              <i class="fa-solid fa-info-circle mr-1"></i> 提交後管理員將會收到通知並安排維修時間。
+            </div>
+            <button type="submit" id="repair-submit-btn" class="w-full py-4 bg-orange-500 text-white rounded-xl font-bold shadow-md hover:bg-orange-600 transition-colors">送出報修申請</button>
+          </form>
+        `;
+      } else if (type === 'referral') {
+        titleEl.innerText = '推薦好友入住';
+        contentEl.innerHTML = `
+          <form onsubmit="handleReferralSubmit(event)" class="space-y-4">
+            <div class="bg-emerald-50 p-4 rounded-xl mb-4">
+              <div class="font-bold text-emerald-800 text-sm mb-1">推薦回饋說明</div>
+              <p class="text-xs text-emerald-700 leading-relaxed">成功推薦好友簽約入住，推薦人可獲得 500 元租金抵用券或現金回饋！</p>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">被推薦人姓名 *</label>
+              <input type="text" name="referee" required placeholder="請輸入好友姓名" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">被推薦人電話 *</label>
+              <input type="tel" name="phone" required placeholder="請輸入好友電話" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">備註 (選填)</label>
+              <textarea name="note" rows="2" placeholder="其他想告訴我們的話..." class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 resize-none"></textarea>
+            </div>
+            <button type="submit" id="referral-submit-btn" class="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold shadow-md hover:bg-emerald-600 transition-colors">送出推薦資料</button>
+          </form>
+        `;
+      } else if (type === 'publicArea') {
+        titleEl.innerText = '公共區域預約';
+        contentEl.innerHTML = `
+          <form onsubmit="handlePublicAreaSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">選擇區域 *</label>
+              <select name="area" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white">
+                <option value="健身房">健身房</option>
+                <option value="視聽室">視聽室</option>
+                <option value="頂樓露台">頂樓露台</option>
+                <option value="交誼廳">交誼廳</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">預約日期 *</label>
+              <input type="date" name="date" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">預約時段 *</label>
+              <select name="timeSlot" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white">
+                <option value="09:00 - 11:00">09:00 - 11:00</option>
+                <option value="11:00 - 13:00">11:00 - 13:00</option>
+                <option value="13:00 - 15:00">13:00 - 15:00</option>
+                <option value="15:00 - 17:00">15:00 - 17:00</option>
+                <option value="17:00 - 19:00">17:00 - 19:00</option>
+                <option value="19:00 - 21:00">19:00 - 21:00</option>
+              </select>
+            </div>
+            <button type="submit" class="w-full py-4 bg-cyan-600 text-white rounded-xl font-bold shadow-md hover:bg-cyan-700 transition-colors">確認預約</button>
+          </form>
+        `;
+      } else if (type === 'contract') {
+        titleEl.innerText = '電子租約簽署';
+        contentEl.innerHTML = `
+          <div class="space-y-4">
+            <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div class="flex items-center gap-2 font-bold text-gray-800 mb-2">
+                <i class="fa-solid fa-file-contract text-blue-500"></i> 當前合約狀態
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500">合約編號</span>
+                <span class="font-mono">CONT-2024-001</span>
+              </div>
+              <div class="flex justify-between text-sm mt-1">
+                <span class="text-gray-500">簽署狀態</span>
+                <span class="text-orange-500 font-bold">待簽署</span>
+              </div>
+            </div>
+            <div class="text-xs text-gray-500 leading-relaxed p-2">
+              請點擊下方按鈕預覽合約內容，確認無誤後進行數位簽章。本合約具有法律效力。
+            </div>
+            <button onclick="alert('合約預覽載入中...')" class="w-full py-3 border border-blue-600 text-blue-600 rounded-xl font-bold text-sm">預覽合約內容</button>
+            <button onclick="signContract()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-colors">立即數位簽署</button>
+          </div>
+        `;
+      }
+    }
+
+    function showLivingConvention() {
+      const s = appState.adminData?.settings || {};
+      const html = `
+        <div class="space-y-4 text-gray-700">
+          <div class="p-4 bg-orange-50 rounded-xl border border-orange-100">
+            <h4 class="font-bold text-orange-800 mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-house-circle-check"></i> 生活公約
+            </h4>
+            <div class="text-sm leading-relaxed whitespace-pre-wrap">${s.livingConvention || '1. 保持公共區域整潔\n2. 晚上10點後降低音量\n3. 垃圾請確實分類\n4. 嚴禁室內吸菸\n5. 節約能源，隨手關燈'}</div>
+          </div>
+        </div>
+      `;
+      openGeneralModal('生活公約', html);
     }
 
     function handleReserveSubmit(e) {
