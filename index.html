@@ -18,7 +18,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800 h-screen flex flex-col overflow-hidden">
-  <!-- Header -->
   <header class="bg-blue-500 text-white shadow-md py-4 px-6 z-10 shrink-0 flex justify-between items-center border-b-4 border-red-500">
     <div class="flex items-center gap-2">
       <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm border-2 border-blue-600">
@@ -29,17 +28,14 @@
     <span class="text-xs bg-blue-600 px-2 py-1 rounded-full font-medium border border-blue-400">Ver1.0.3</span>
   </header>
 
-  <!-- Main Content -->
   <main class="flex-1 overflow-y-auto pb-24 no-scrollbar relative" id="main-content">
-    
-    <!-- Tab: Rooms -->
+   
     <div id="tab-rooms" class="tab-content p-4 space-y-6">
       <div class="mb-2">
         <h2 class="text-2xl font-bold">房型介紹</h2>
         <p class="text-gray-500 text-sm mt-1">選擇最適合您的居住空間</p>
       </div>
       
-      <!-- Filter UI -->
       <div id="rooms-filter" class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex gap-2 overflow-x-auto no-scrollbar hidden">
         <select id="filter-city" onchange="applyRoomFilter()" class="px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white text-sm min-w-[100px]">
           <option value="">所有縣市</option>
@@ -53,12 +49,10 @@
       </div>
 
       <div id="rooms-container" class="space-y-4">
-        <!-- Rooms will be loaded here dynamically -->
         <div class="text-center py-10 text-gray-400"><span class="loader border-gray-200 border-t-blue-600"></span><p class="mt-2">載入中...</p></div>
       </div>
     </div>
 
-    <!-- Tab: Reserve -->
     <div id="tab-reserve" class="tab-content p-4 space-y-6 hidden">
       <div id="reserve-form-container">
         <div class="mb-4">
@@ -118,11 +112,9 @@
       </div>
     </div>
 
-    <!-- Tab: Service -->
     <div id="tab-service" class="tab-content p-4 space-y-6 hidden">
       <div class="mb-2"><h2 class="text-2xl font-bold">服務與優惠</h2><p class="text-gray-500 text-sm mt-1">專屬活動與實用功能</p></div>
       
-      <!-- 優惠活動 -->
       <div id="promo-section">
         <h3 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-gift text-red-500"></i> 優惠活動</h3>
         <div class="space-y-3 mb-6">
@@ -141,7 +133,6 @@
         </div>
       </div>
 
-      <!-- 實用功能 -->
       <h3 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-toolbox text-blue-500"></i> 實用功能</h3>
       <div class="grid grid-cols-2 gap-3 mb-6">
         <button onclick="shareToFriend()" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 hover:bg-gray-50">
@@ -162,7 +153,6 @@
         </button>
       </div>
 
-      <!-- 聯絡資訊 -->
       <h3 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-address-card text-gray-500"></i> 聯絡資訊</h3>
       <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 space-y-3">
         <div class="flex items-start gap-3">
@@ -188,10 +178,8 @@
       </div>
     </div>
 
-    <!-- Tab: Account -->
     <div id="tab-account" class="tab-content p-4 space-y-6 hidden">
       
-      <!-- Login View -->
       <div id="view-login" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <h2 class="text-2xl font-bold mb-2">登入系統</h2>
         <p class="text-gray-500 text-sm mb-6">請輸入您的手機號碼與密碼進行登入</p>
@@ -212,7 +200,6 @@
         </div>
       </div>
 
-      <!-- Register View -->
       <div id="view-register" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hidden">
         <h2 class="text-2xl font-bold mb-2">註冊會員</h2>
         <form onsubmit="handleRegister(event)" class="space-y-4">
@@ -247,7 +234,6 @@
         </form>
       </div>
 
-      <!-- Member View -->
       <div id="view-member" class="hidden space-y-4">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
           <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-user text-2xl"></i></div>
@@ -257,7 +243,6 @@
         </div>
       </div>
 
-      <!-- Tenant View -->
       <div id="view-tenant" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
           <div class="flex justify-between items-center mb-4">
@@ -307,13 +292,14 @@
           </div>
 
           <div class="grid grid-cols-4 gap-2 mb-6">
-            <button onclick="showTenantInfo('rules')" class="flex flex-col items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+            <button onclick="openTenantModal('rules')" class="flex flex-col items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
               <i class="fa-solid fa-book text-blue-500 text-lg mb-1"></i>
               <span class="text-[10px] font-medium text-gray-700">租屋需知</span>
             </button>
             <button onclick="showTenantInfo('bulletin')" class="flex flex-col items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors relative">
               <i class="fa-solid fa-bullhorn text-blue-500 text-lg mb-1"></i>
               <span class="text-[10px] font-medium text-gray-700">社區佈告</span>
+              <span id="tenant-announcement-badge" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></span>
             </button>
             <button onclick="showTenantHistory()" class="flex flex-col items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
               <i class="fa-solid fa-clock-rotate-left text-blue-500 text-lg mb-1"></i>
@@ -342,7 +328,6 @@
         </div>
       </div>
 
-      <!-- Admin View -->
       <div id="view-admin" class="hidden space-y-4">
         <div class="bg-gray-900 text-white p-5 rounded-2xl shadow-sm">
           <div class="flex justify-between items-center mb-1">
@@ -352,13 +337,11 @@
           <p class="text-gray-400 text-xs" id="admin-welcome-msg">歡迎回來，系統管理員</p>
         </div>
         <div class="grid grid-cols-2 gap-3" id="admin-buttons-container">
-          <!-- Buttons will be rendered here based on permissions -->
-        </div>
+          </div>
       </div>
     </div>
   </main>
 
-  <!-- Admin Overlay -->
   <div id="admin-overlay" class="fixed inset-0 bg-gray-50 z-50 hidden flex-col">
     <header class="bg-white shadow-sm py-4 px-4 flex items-center justify-between shrink-0">
       <button onclick="closeAdminSection()" class="text-gray-500"><i class="fa-solid fa-arrow-left text-xl"></i></button>
@@ -367,7 +350,6 @@
     <div class="flex-1 overflow-y-auto p-4" id="admin-overlay-content"></div>
   </div>
 
-  <!-- Bottom Nav -->
   <nav class="bg-white border-t border-gray-200 fixed bottom-0 w-full z-20 pb-safe shrink-0">
     <div class="flex justify-between items-center h-16 px-1">
       <button id="nav-rooms" onclick="switchTab('rooms')" class="nav-btn flex-1 flex flex-col items-center justify-center space-y-1 text-blue-600"><i class="fa-solid fa-house text-xl mb-0.5"></i><span class="text-[10px] font-medium">找房</span></button>
@@ -377,28 +359,23 @@
     </div>
   </nav>
 
-  <!-- Room Detail Modal -->
   <div id="room-detail-modal" class="fixed inset-0 bg-black/80 z-[110] hidden flex-col items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col relative no-scrollbar">
       <button onclick="closeRoomDetail()" class="absolute top-3 right-3 z-10 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/70"><i class="fa-solid fa-xmark"></i></button>
       
-      <!-- Carousel -->
       <div class="relative h-64 bg-gray-200 shrink-0" id="room-detail-carousel">
-        <!-- Images injected here -->
-      </div>
+        </div>
       
       <div class="p-5 space-y-4">
         <div id="room-detail-header"></div>
         <div id="room-detail-features" class="flex flex-wrap gap-2"></div>
         <div id="room-detail-desc" class="text-gray-600 text-sm whitespace-pre-wrap"></div>
         
-        <!-- Layout -->
         <div id="room-detail-layout-container" class="hidden">
           <h4 class="font-bold text-gray-800 mb-2"><i class="fa-solid fa-map"></i> 房間示意圖</h4>
           <img id="room-detail-layout" src="" class="w-full rounded-lg border border-gray-200">
         </div>
 
-        <!-- YouTube -->
         <div id="room-detail-youtube-container" class="hidden">
           <h4 class="font-bold text-gray-800 mb-2"><i class="fa-brands fa-youtube text-red-500"></i> 線上賞房</h4>
           <div class="aspect-video w-full rounded-lg overflow-hidden">
@@ -411,7 +388,6 @@
     </div>
   </div>
 
-  <!-- General Info Modal -->
   <div id="general-modal" class="fixed inset-0 bg-black/60 z-[120] hidden flex-col items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col">
       <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
@@ -419,18 +395,15 @@
         <button onclick="closeGeneralModal()" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
       </div>
       <div class="p-6 overflow-y-auto max-h-[70vh]" id="general-modal-content">
-        <!-- Content injected here -->
-      </div>
+        </div>
       <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
         <button onclick="closeGeneralModal()" class="px-6 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-md">確定</button>
       </div>
     </div>
   </div>
 
-  <!-- Visitor Modal -->
   <div id="visitor-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex-col items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl border-4 border-blue-500 relative overflow-hidden">
-      <!-- Doraemon red collar and bell decoration -->
       <div class="absolute top-0 left-0 w-full h-3 bg-red-500"></div>
       <div class="absolute top-1.5 left-1/2 -translate-x-1/2 w-6 h-6 bg-yellow-400 rounded-full border-2 border-yellow-600 flex items-center justify-center shadow-sm">
         <div class="w-4 h-0.5 bg-yellow-600 absolute rounded-full"></div>
@@ -455,7 +428,6 @@
     </div>
   </div>
 
-  <!-- Contract Modal -->
   <div id="contract-modal" class="fixed inset-0 bg-gray-50 z-[60] hidden flex-col">
     <header class="bg-blue-600 text-white shadow-md py-4 px-4 flex items-center justify-between shrink-0">
       <button onclick="closeContractModal()" class="text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -627,7 +599,6 @@
           <h3 class="font-bold text-lg text-center mb-6">立契約書人</h3>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- 甲方 -->
             <div class="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
               <h4 class="font-bold text-blue-800 border-b border-gray-300 pb-2">甲方 (出租人)</h4>
               <p>姓名：<input type="text" class="border-b border-gray-400 outline-none w-full bg-transparent" value="壹參宿舍"></p>
@@ -645,7 +616,6 @@
               </div>
             </div>
 
-            <!-- 乙方 -->
             <div class="space-y-3 bg-blue-50 p-4 rounded-xl border border-blue-200">
               <h4 class="font-bold text-blue-800 border-b border-blue-300 pb-2">乙方 (承租人)</h4>
               <p>姓名：<input type="text" id="contract-tenant-name-2" class="border-b border-gray-400 outline-none w-full bg-transparent"></p>
@@ -684,7 +654,6 @@
     </div>
   </div>
 
-  <!-- 租客功能彈窗 -->
   <div id="tenant-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden items-center justify-center p-4">
     <div class="bg-gray-50 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-fade-in">
       <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
@@ -694,20 +663,12 @@
         </button>
       </div>
       <div id="tenant-overlay-content" class="p-6 max-h-[80vh] overflow-y-auto">
-        <!-- 動態載入內容 -->
-      </div>
+        </div>
     </div>
   </div>
 
-  <!-- Scripts -->
   <script>
     // --- Mock GAS for Preview ---
-    // 實際的 Google Apps Script (GAS) 後端實作方式：
-    // 1. 接收到前端傳來的 base64 字串後，使用 Utilities.base64Decode() 解碼
-    // 2. 建立 Blob 物件：Utilities.newBlob(decodedData, mimeType, fileName)
-    // 3. 儲存至 Google Drive：DriveApp.getFolderById('YOUR_FOLDER_ID').createFile(blob)
-    // 4. 取得檔案連結：file.getUrl() 或 file.getDownloadUrl()
-    // 5. 將連結存入 Google Sheets 資料庫中
     const mockGas = {
       db: {
         settings: { 
@@ -1326,7 +1287,7 @@
           document.getElementById('tenant-announcement-badge').classList.remove('hidden');
           // Show announcement modal on login
           if (!appState.announcementShown) {
-            showTenantInfo('announcement');
+            openTenantModal('announcement');
             appState.announcementShown = true;
           }
         } else {
@@ -1512,35 +1473,14 @@
       if (!s) return;
       
       let title = '';
-      let content = '';
       
-      if (type === 'rules') {
-        title = '租屋需知';
-        content = `
-          <div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed mb-6">${s.tenantRules || '目前無租屋需知'}</div>
-          <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-            <div class="flex items-center gap-2 text-blue-800 font-bold mb-1">
-              <i class="fa-solid fa-wifi"></i> WIFI 密碼
-            </div>
-            <div class="text-lg font-mono font-bold text-blue-600 tracking-wider">${s.wifiPassword || '未設定'}</div>
-          </div>
-        `;
-      } else if (type === 'announcement') {
-        title = '公告事項';
-        content = `<div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">${s.announcement || '目前無公告事項'}</div>`;
-        document.getElementById('tenant-announcement-badge').classList.add('hidden');
-      } else if (type === 'wifi') {
-        title = 'WIFI 密碼';
-        content = `
-          <div class="text-center py-4">
-            <div class="text-gray-500 text-sm mb-2">無線網路密碼</div>
-            <div class="text-2xl font-mono font-bold text-blue-600 bg-blue-50 py-3 px-4 rounded-xl inline-block tracking-wider">${s.wifiPassword || '未設定'}</div>
-          </div>
-        `;
-      } else if (type === 'bulletin') {
+      if (type === 'bulletin') {
         title = '社區數位佈告欄';
         const loadingHtml = '<div class="flex justify-center py-10"><span class="loader border-blue-500 border-t-transparent w-8 h-8"></span></div>';
+        document.getElementById('admin-overlay-title').innerText = title;
         document.getElementById('admin-overlay-content').innerHTML = loadingHtml;
+        document.getElementById('admin-overlay').classList.remove('hidden');
+        document.getElementById('admin-overlay').classList.add('flex');
         
         callGas('getAdminData', null, (res) => {
           let bulletinHtml = '<div class="space-y-3">';
@@ -1564,13 +1504,8 @@
           }
           document.getElementById('admin-overlay-content').innerHTML = bulletinHtml;
         });
-        return; // Exit early as we handle the UI update in the callback
+        return; 
       }
-      
-      document.getElementById('admin-overlay-title').innerText = title;
-      document.getElementById('admin-overlay-content').innerHTML = content;
-      document.getElementById('admin-overlay').classList.remove('hidden');
-      document.getElementById('admin-overlay').classList.add('flex');
     }
 
     function openTenantModal(type) {
@@ -1710,161 +1645,6 @@
             <h4 class="font-bold text-orange-800 mb-2 flex items-center gap-2">
               <i class="fa-solid fa-house-circle-check"></i> 生活公約
             </h4>
-            <div class="text-sm leading-relaxed whitespace-pre-wrap">\${s.livingConvention || '1. 保持公共區域整潔\\n2. 晚上10點後降低音量\\n3. 垃圾請確實分類\\n4. 嚴禁室內吸菸\\n5. 節約能源，隨手關燈'}</div>
-          </div>
-          <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <h4 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
-              <i class="fa-solid fa-leaf"></i> 環境維護
-            </h4>
-            <p class="text-sm leading-relaxed">
-              為了維護優質的居住環境，請各位房客共同遵守生活公約。若有違反情節嚴重者，將依租賃契約處理。
-            </p>
-          </div>
-        </div>
-      `;
-      openGeneralModal('生活公約', html);
-    }
-
-    function handleReserveSubmit(e) {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target).entries());
-      const btn = document.getElementById('reserve-btn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loader border-white border-t-transparent w-4 h-4"></span> 送出中...';
-
-      callGas('submitReservation', data, (res) => {
-        if (res.success) {
-          document.getElementById('reserve-form-container').classList.add('hidden');
-          document.getElementById('reserve-success').classList.remove('hidden');
-          document.getElementById('reserve-success').classList.add('flex');
-          
-          let msg = `我要預約看房\n`;
-          msg += `姓名：${data.name}\n`;
-          msg += `房型：${data.roomType} (${data.roomCount}間, ${data.peopleCount}人)\n`;
-          msg += `日期：${data.date} ${data.time}\n`;
-          if (data.dormName) msg += `宿舍：${data.dormName}\n`;
-          if (data.dormAddress) msg += `地址：${data.dormAddress}\n`;
-          if (data.notes) msg += `備註：${data.notes}`;
-          
-          sendLiffMessage(msg);
-        } else {
-          alert('預約失敗：' + res.message);
-        }
-        btn.disabled = false;
-        btn.innerText = '送出預約';
-      });
-    }
-
-    function handleIssueSubmit(e) {
-      e.preventDefault();
-      const category = document.getElementById('issue-category').value;
-      const content = document.getElementById('issue-text').value;
-      const data = { room: appState.user.tenantInfo.room, name: appState.user.tenantInfo.name, phone: appState.user.phone, category, content };
-      
-      const btn = document.getElementById('issue-btn');
-      btn.innerHTML = '<span class="loader border-white border-t-transparent w-4 h-4"></span> 送出中...';
-      btn.disabled = true;
-
-      callGas('submitIssue', data, (res) => {
-        if (res.success) {
-          alert('問題已送出！我們會盡快為您處理。');
-          document.getElementById('issue-category').value = '';
-          document.getElementById('issue-text').value = '';
-          sendLiffMessage(`問題反應\n房號：${data.room}\n分類：${category}\n內容：${content}`);
-        } else {
-          alert('送出失敗：' + res.message);
-        }
-        const s = appState.adminData?.settings || {};
-        btn.innerHTML = s.lineIntegration !== 'false' ? '送出問題 (透過 LINE 通知)' : '送出問題';
-        btn.disabled = false;
-      });
-    }
-
-    function openGeneralModal(title, content) {
-      document.getElementById('general-modal-title').innerText = title;
-      document.getElementById('general-modal-content').innerHTML = content;
-      document.getElementById('general-modal').classList.remove('hidden');
-      document.getElementById('general-modal').classList.add('flex');
-    }
-
-    function closeGeneralModal() {
-      document.getElementById('general-modal').classList.add('hidden');
-      document.getElementById('general-modal').classList.remove('flex');
-    }
-
-    function showContactSupport() {
-      const html = `
-        <div class="text-center space-y-4">
-          <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-            <i class="fa-brands fa-line text-4xl"></i>
-          </div>
-          <div>
-            <p class="font-bold text-lg text-gray-800">官方 LINE 客服</p>
-            <p class="text-sm text-gray-500">ID: @323xnlel</p>
-          </div>
-          <p class="text-xs text-gray-400 leading-relaxed">
-            如果您有任何租屋需求、報修問題或緊急狀況，請點擊下方按鈕加入我們的官方 LINE 帳號，我們將有專人為您服務。
-          </p>
-          <a href="https://lin.ee/HCs6wqqU" target="_blank" class="block w-full py-3 bg-[#06C755] text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-opacity">
-            立即加入 LINE 客服
-          </a>
-        </div>
-      `;
-      openGeneralModal('聯絡客服', html);
-    }
-
-    function showSurroundingMap() {
-      const address = appState.adminData?.settings?.dormAddress || '台中市西屯區文華路100號';
-      const encodedAddress = encodeURIComponent(address);
-      const html = `
-        <div class="space-y-4">
-          <div class="aspect-video w-full rounded-xl overflow-hidden border border-gray-200">
-            <iframe 
-              width="100%" 
-              height="100%" 
-              frameborder="0" 
-              style="border:0" 
-              src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${encodedAddress}" 
-              allowfullscreen>
-            </iframe>
-          </div>
-          <div class="p-3 bg-blue-50 rounded-xl border border-blue-100">
-            <p class="text-xs font-bold text-blue-800 mb-1"><i class="fa-solid fa-location-dot mr-1"></i> 宿舍地址</p>
-            <p class="text-sm text-blue-900">${address}</p>
-          </div>
-          <a href="https://www.google.com/maps/search/?api=1&query=${encodedAddress}" target="_blank" class="block w-full py-3 bg-blue-600 text-white text-center rounded-xl font-bold shadow-lg">
-            在 Google 地圖中開啟
-          </a>
-        </div>
-      `;
-      // Note: Since I don't have the API key, I'll use a simpler static map or just the link
-      const simpleHtml = `
-        <div class="space-y-4">
-          <div class="w-full h-40 bg-gray-100 rounded-xl flex flex-col items-center justify-center border border-gray-200 text-gray-400">
-            <i class="fa-solid fa-map-marked-alt text-4xl mb-2"></i>
-            <p class="text-xs">地圖預覽載入中...</p>
-          </div>
-          <div class="p-3 bg-blue-50 rounded-xl border border-blue-100">
-            <p class="text-xs font-bold text-blue-800 mb-1"><i class="fa-solid fa-location-dot mr-1"></i> 宿舍地址</p>
-            <p class="text-sm text-blue-900">${address}</p>
-          </div>
-          <p class="text-[10px] text-gray-400 italic">點擊下方按鈕將開啟 Google 地圖為您導航至宿舍位置。</p>
-          <a href="https://www.google.com/maps/search/?api=1&query=${encodedAddress}" target="_blank" class="block w-full py-3 bg-blue-600 text-white text-center rounded-xl font-bold shadow-lg">
-            開啟導航地圖
-          </a>
-        </div>
-      `;
-      openGeneralModal('周邊地圖', simpleHtml);
-    }
-
-    function showLivingConvention() {
-      const s = appState.adminData?.settings || {};
-      const html = `
-        <div class="space-y-4 text-gray-700">
-          <div class="p-4 bg-orange-50 rounded-xl border border-orange-100">
-            <h4 class="font-bold text-orange-800 mb-2 flex items-center gap-2">
-              <i class="fa-solid fa-house-circle-check"></i> 生活公約
-            </h4>
             <div class="text-sm leading-relaxed whitespace-pre-wrap">${s.livingConvention || '1. 保持公共區域整潔\n2. 晚上10點後降低音量\n3. 垃圾請確實分類\n4. 嚴禁室內吸菸\n5. 節約能源，隨手關燈'}</div>
           </div>
           <div class="p-4 bg-blue-50 rounded-xl border border-blue-100">
@@ -1878,110 +1658,6 @@
         </div>
       `;
       openGeneralModal('生活公約', html);
-    }
-      const overlay = document.getElementById('tenant-overlay');
-      const title = document.getElementById('tenant-overlay-title');
-      const content = document.getElementById('tenant-overlay-content');
-      overlay.classList.remove('hidden');
-      overlay.classList.add('flex');
-
-      if (type === 'repair') {
-        title.innerText = '設備報修申請';
-        content.innerHTML = `
-          <form onsubmit="handleRepairSubmit(event)" class="space-y-4">
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1">報修項目 *</label>
-              <input type="text" name="item" required placeholder="例如：冷氣、燈泡、水龍頭" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1">問題描述 *</label>
-              <textarea name="description" required rows="4" placeholder="請詳細描述故障情形..." class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 resize-none"></textarea>
-            </div>
-            <div class="bg-blue-50 p-4 rounded-xl text-xs text-blue-700">
-              <i class="fa-solid fa-info-circle mr-1"></i> 提交後管理員將會收到通知並安排維修時間。
-            </div>
-            <button type="submit" id="repair-submit-btn" class="w-full py-4 bg-orange-500 text-white rounded-xl font-bold shadow-md hover:bg-orange-600 transition-colors">送出報修申請</button>
-          </form>
-        `;
-      } else if (type === 'referral') {
-        title.innerText = '推薦好友入住';
-        content.innerHTML = `
-          <form onsubmit="handleReferralSubmit(event)" class="space-y-4">
-            <div class="bg-emerald-50 p-4 rounded-xl mb-4">
-              <div class="font-bold text-emerald-800 text-sm mb-1">推薦回饋說明</div>
-              <p class="text-xs text-emerald-700 leading-relaxed">成功推薦好友簽約入住，推薦人可獲得 500 元租金抵用券或現金回饋！</p>
-            </div>
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1">被推薦人姓名 *</label>
-              <input type="text" name="referee" required placeholder="請輸入好友姓名" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1">被推薦人電話 *</label>
-              <input type="tel" name="phone" required placeholder="請輸入好友電話" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1">備註 (選填)</label>
-              <textarea name="note" rows="2" placeholder="其他想告訴我們的話..." class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 resize-none"></textarea>
-            </div>
-            <button type="submit" id="referral-submit-btn" class="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold shadow-md hover:bg-emerald-600 transition-colors">送出推薦資料</button>
-          </form>
-        `;
-      } else if (type === 'publicArea') {
-        title.innerText = '公共區域預約';
-        content.innerHTML = `
-          <form onsubmit="handlePublicAreaSubmit(event)" class="space-y-4">
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1">選擇區域 *</label>
-              <select name="area" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white">
-                <option value="健身房">健身房</option>
-                <option value="視聽室">視聽室</option>
-                <option value="頂樓露台">頂樓露台</option>
-                <option value="交誼廳">交誼廳</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1">預約日期 *</label>
-              <input type="date" name="date" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1">預約時段 *</label>
-              <select name="timeSlot" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white">
-                <option value="09:00 - 11:00">09:00 - 11:00</option>
-                <option value="11:00 - 13:00">11:00 - 13:00</option>
-                <option value="13:00 - 15:00">13:00 - 15:00</option>
-                <option value="15:00 - 17:00">15:00 - 17:00</option>
-                <option value="17:00 - 19:00">17:00 - 19:00</option>
-                <option value="19:00 - 21:00">19:00 - 21:00</option>
-              </select>
-            </div>
-            <button type="submit" class="w-full py-4 bg-cyan-600 text-white rounded-xl font-bold shadow-md hover:bg-cyan-700 transition-colors">確認預約</button>
-          </form>
-        `;
-      } else if (type === 'contract') {
-        title.innerText = '電子租約簽署';
-        content.innerHTML = `
-          <div class="space-y-4">
-            <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <div class="flex items-center gap-2 font-bold text-gray-800 mb-2">
-                <i class="fa-solid fa-file-contract text-blue-500"></i> 當前合約狀態
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-500">合約編號</span>
-                <span class="font-mono">CONT-2024-001</span>
-              </div>
-              <div class="flex justify-between text-sm mt-1">
-                <span class="text-gray-500">簽署狀態</span>
-                <span class="text-orange-500 font-bold">待簽署</span>
-              </div>
-            </div>
-            <div class="text-xs text-gray-500 leading-relaxed p-2">
-              請點擊下方按鈕預覽合約內容，確認無誤後進行數位簽章。本合約具有法律效力。
-            </div>
-            <button onclick="alert('合約預覽載入中...')" class="w-full py-3 border border-blue-600 text-blue-600 rounded-xl font-bold text-sm">預覽合約內容</button>
-            <button onclick="signContract()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-colors">立即數位簽署</button>
-          </div>
-        `;
-      }
     }
 
     function handlePublicAreaSubmit(e) {
@@ -2029,6 +1705,7 @@
 
     function showAddVendorForm() {
       const overlay = document.getElementById('tenant-overlay');
+      const title = document.getElementById('tenant-overlay-title');
       const title = document.getElementById('tenant-overlay-title');
       const content = document.getElementById('tenant-overlay-content');
       overlay.classList.remove('hidden');
@@ -2397,7 +2074,7 @@
             const permNames = {
               rooms: '房間', tenants: '租客', reservations: '預約', issues: '留言', calendar: '行事曆', 
               payments: '收款', contracts: '租約', linebot: 'LINE', occupancy: '統計', stats: '分析', 
-              admins: '管理員', settings: '設置', repairs: '報修', referrals: '推薦'
+              admins: '管理員', settings: '設置', repairs: '報修', referrals: '推薦', vendors: '廠商', checkouts: '退租', publicAreas: '區域', bulletin: '公告', expenses: '支出'
             };
             res.data.admins.forEach(a => {
               const permsHtml = (a.permissions || []).map(p => `<span class="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded border border-blue-100">${permNames[p] || p}</span>`).join('');
@@ -2968,7 +2645,6 @@
 
           c.innerHTML = `
             <div class="space-y-6">
-              <!-- Key Metrics -->
               <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
                   <div class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">出租率</div>
@@ -2988,7 +2664,6 @@
                 </div>
               </div>
 
-              <!-- Revenue Trend -->
               <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                 <h3 class="font-bold text-gray-800 mb-6 flex items-center justify-between">
                   <span>${currentYear} 年度收租趨勢</span>
@@ -3000,14 +2675,12 @@
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Occupancy Pie -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                   <h3 class="font-bold text-gray-800 mb-4 text-center">房間出租佔比</h3>
                   <div class="h-40 w-full">
                     <canvas id="occupancyPieChart"></canvas>
                   </div>
                 </div>
-                <!-- Issue Summary -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                   <h3 class="font-bold text-gray-800 mb-4 text-center">問題處理狀態</h3>
                   <div class="h-40 w-full">
@@ -3178,7 +2851,7 @@
                 <label class="flex items-center justify-between p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50">
                   <div>
                     <div class="font-medium text-sm text-gray-800">年繳優惠</div>
-                    <div class="text-xs text-gray-500">啟用後，前台將顯示年繳減免一個月租金的活動</div>
+                    <div class="text-xs text-gray-500">啟用後，前台將顯示年繳減免一個月房租的活動</div>
                   </div>
                   <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
                     <input type="checkbox" name="annualDiscount" id="toggle-annual" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer" ${s.annualDiscount !== 'false' ? 'checked' : ''}/>
