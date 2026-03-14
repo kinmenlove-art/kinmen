@@ -669,359 +669,278 @@
 
   <script>
     // --- Mock GAS for Preview ---
-    const mockGas = {
-      db: {
-        settings: { 
-          name: '壹參學生宿舍系統', 
-          roomCount: 10,
-          tenantRules: '1. 晚上10點後請降低音量\n2. 垃圾請確實分類\n3. 走廊請勿堆放雜物\n4. 禁養寵物',
-          announcement: '本週五將進行水塔清洗，早上9點至下午5點將停水，請提早儲水。',
-          showAnnouncement: '是',
-          wifiPassword: 'password1234',
-          lineIntegration: 'true',
-          autoReply: 'true',
-          keywordResponses: [
-            { keywords: '租金, 多少錢, 價格', response: '您好！我們的單人套房為8500元起，雙人套房為12000元起，年繳可享優惠喔！' },
-            { keywords: '看房, 預約, 時間', response: '歡迎預約看房！請點擊選單中的「預約看房」按鈕，選擇您方便的時間，我們會盡快為您安排。' }
-          ]
-        },
-        rooms: [
-          { id: 'R01', name: '精緻單人套房', price: 8500, specialPrice: 7999, size: '6 坪', features: '獨立衛浴,雙層冰箱', image: 'https://picsum.photos/seed/room1/600/400,https://picsum.photos/seed/room1a/600/400,https://picsum.photos/seed/room1b/600/400', layoutImage: 'https://picsum.photos/seed/layout1/600/600', youtube: 'https://www.youtube.com/embed/dQw4w9WgXcQ', status: '空房', hasToilet: '獨立廁所', network: '300M', balcony: '有', parking: '無', washingMachine: '獨立洗衣機', waterDispenser: '公共飲水機', city: '台北市', district: '信義區', branch: '信義一館', address: '信義路一段' },
-          { id: 'R02', name: '舒適雙人套房', price: 12000, specialPrice: 10999, size: '10 坪', features: '獨立衛浴,雙人床', image: 'https://picsum.photos/seed/room2/600/400,https://picsum.photos/seed/room2a/600/400', layoutImage: 'https://picsum.photos/seed/layout2/600/600', youtube: 'https://www.youtube.com/embed/jNQXAC9IVRw', status: '出租中', hasToilet: '獨立廁所', network: '1G', balcony: '有', parking: '有', washingMachine: '獨立洗衣機', waterDispenser: '獨立飲水機', city: '台中市', district: '西屯區', branch: '逢甲館', address: '文華路100號' }
-        ],
-        tenants: [
-          { room: 'R02', name: '測試租客', phone: '0912345678', contractStart: '2023-09-01', contractEnd: '2024-08-31', paymentMethod: '匯款', paymentStatus: '已繳清', electricity: '120度 / 600元' }
-        ],
-        repairs: [
-          { id: 'REP01', room: 'R02', tenant: '測試租客', item: '冷氣不冷', description: '冷氣運轉有異音，且不冷', status: '處理中', createdAt: '2024-03-10', reply: '已安排師傅於週三下午前往查看', repliedBy: '管理員A' }
-        ],
-        referrals: [
-          { id: 'REF01', referrer: '測試租客', referee: '王小明', phone: '0987654321', status: '審核中', createdAt: '2024-03-11' }
-        ],
-        admins: [
-          { phone: '0937942582', name: '管理員A', permissions: ['rooms', 'tenants', 'reservations', 'issues', 'repairs', 'referrals', 'payments', 'stats', 'linebot', 'settings', 'admins', 'vendors', 'checkouts', 'publicAreas', 'bulletin', 'expenses', 'occupancy'] },
-          { phone: '0982387092', name: '管理員B', permissions: ['issues', 'repairs'] }
-        ],
-        bankTransactions: [
-          { id: 'TX001', date: '2024-03-05', amount: 10999, name: '測試租客', matched: false },
-          { id: 'TX002', date: '2024-03-10', amount: 8500, name: '王小明', matched: false }
-        ],
-        members: [{ phone: '0900000000', name: '測試會員', password: '1234' }],
-        reservations: [], 
-        rentPayments: [
-          { id: 'PAY01', tenantPhone: '0912345678', year: 2024, month: 1, amount: 10999, status: '已繳清', date: '2024-01-05' },
-          { id: 'PAY02', tenantPhone: '0912345678', year: 2024, month: 2, amount: 10999, status: '已繳清', date: '2024-02-03' },
-          { id: 'PAY03', tenantPhone: '0912345678', year: 2024, month: 3, amount: 10999, status: '未繳', date: '' }
-        ],
-        issues: [
-          { id: 'IS001', room: 'R01', name: '王小明', category: '設備報修', content: '冷氣不會冷', status: '待處理', date: '2023/10/25', reply: '收到，會請水電工過去', repliedBy: '管理員B' },
-          { id: 'IS002', room: 'R02', name: '李大華', category: '環境清潔', content: '走廊有垃圾', status: '處理中', date: '2023/10/24' }
-        ],
-        vendors: [
-          { id: 'V01', name: '阿輝水電', category: '水電維修', phone: '0911-222-333', note: '配合多年，收費公道' },
-          { id: 'V02', name: '冷氣專家張師傅', category: '冷氣維修', phone: '0922-333-444', note: '洗冷氣專業' }
-        ],
-        checkouts: [],
-        publicAreaReservations: [],
-        bulletinBoard: [
-          { id: 'B01', title: '本月大掃除公告', content: '本週六將進行公共區域大掃除，請大家配合。', date: '2024-03-12', author: '管理員A' }
-        ],
-        expenses: [
-          { id: 'E01', category: '維修費', amount: 1500, date: '2024-03-01', description: '更換公共區域燈管' },
-          { id: 'E02', category: '清潔費', amount: 3000, date: '2024-03-05', description: '樓梯間定期清潔' }
-        ],
-        contracts: [
-          { id: 'C01', tenantPhone: '0912345678', status: '已簽署', signedAt: '2023-08-25' }
-        ],
-        marketing: [
-          { id: 'MC01', name: '春季優惠', code: 'SPRING2024', discount: 500, startDate: '2024-03-01', endDate: '2024-05-31', status: '進行中' }
-        ]
-      },
-      loginUser: (data) => new Promise(res => setTimeout(() => {
-        const { phone, password } = data;
-        const admin = mockGas.db.admins.find(a => a.phone === phone);
-        if (admin) {
-          if (admin.password && admin.password !== password) return res({ success: false, message: '密碼錯誤' });
-          return res({ success: true, role: 'admin', phone, name: admin.name, permissions: admin.permissions });
-        }
-        const t = mockGas.db.tenants.find(x => x.phone === phone);
-        if (t) {
-          if (t.password && t.password !== password) return res({ success: false, message: '密碼錯誤' });
-          return res({ success: true, role: 'tenant', phone, tenantInfo: t, settings: mockGas.db.settings });
-        }
-        const m = mockGas.db.members.find(x => x.phone === phone);
-        if (m) {
-          if (m.password && m.password !== password) return res({ success: false, message: '密碼錯誤' });
-          return res({ success: true, role: 'member', phone, name: m.name });
-        }
-        res({ success: false, message: '找不到此號碼，請先註冊會員' });
-      }, 500)),
-      registerMember: (data) => new Promise(res => setTimeout(() => { mockGas.db.members.push(data); res({ success: true }); }, 500)),
-      addRoom: (data) => new Promise(res => setTimeout(() => { 
-        mockGas.db.rooms.push({ id: data.id, name: data.name, price: data.price, specialPrice: data.specialPrice, size: data.size, features: data.equipment, image: data.photoFiles ? data.photoFiles.join(',') : 'https://picsum.photos/seed/newroom/600/400', status: '空房', address: data.address, floor: data.floor, hasToilet: data.hasToilet, description: data.description, location: data.location, annualDiscount: data.annualDiscount, network: data.network, balcony: data.balcony, parking: data.parking, washingMachine: data.washingMachine, waterDispenser: data.waterDispenser, city: data.city, district: data.district, branch: data.branch, maxOccupancy: data.maxOccupancy, extraPersonCharge: data.extraPersonCharge }); 
-        res({ success: true }); 
-      }, 500)),
-      addTenant: (data) => new Promise(res => setTimeout(() => { 
-        mockGas.db.tenants.push({ room: data.room, name: data.name, phone: data.phone, contractStart: data.contractStart, contractEnd: data.contractEnd, paymentMethod: data.paymentMethod, paymentStatus: data.paymentStatus, electricity: data.electricity }); 
-        const room = mockGas.db.rooms.find(r => r.id === data.room);
-        if (room) room.status = '出租中';
-        res({ success: true }); 
-      }, 500)),
-      updateTenant: (data) => new Promise(res => setTimeout(() => { 
-        const index = mockGas.db.tenants.findIndex(t => t.phone === data.originalPhone);
-        if (index !== -1) {
-          mockGas.db.tenants[index] = { ...mockGas.db.tenants[index], ...data };
-        }
-        res({ success: true }); 
-      }, 500)),
-      deleteTenant: (phone) => new Promise(res => setTimeout(() => {
-        mockGas.db.tenants = mockGas.db.tenants.filter(t => t.phone !== phone);
-        res({ success: true });
-      }, 500)),
-      submitReservation: (data) => new Promise(res => setTimeout(() => { mockGas.db.reservations.push(data); res({ success: true }); }, 500)),
-      submitIssue: (data) => new Promise(res => setTimeout(() => { 
-        mockGas.db.issues.push({ id: 'IS' + new Date().getTime(), room: data.room, name: data.name, category: data.category, content: data.content, status: '待處理', date: new Date().toLocaleDateString() }); 
-        res({ success: true }); 
-      }, 500)),
-      submitRepair: (data) => new Promise(res => setTimeout(() => { 
-        mockGas.db.repairs.push({ id: 'REP' + new Date().getTime(), ...data, status: '待處理', createdAt: new Date().toISOString().split('T')[0] }); 
-        res({ success: true }); 
-      }, 500)),
-      updateRepairStatus: (data) => new Promise(res => setTimeout(() => { 
-        const repair = mockGas.db.repairs.find(r => r.id === data.id);
-        if (repair) repair.status = data.status;
-        res({ success: true }); 
-      }, 500)),
-      submitReferral: (data) => new Promise(res => setTimeout(() => { 
-        mockGas.db.referrals.push({ id: 'REF' + new Date().getTime(), ...data, status: '審核中', createdAt: new Date().toISOString().split('T')[0] }); 
-        res({ success: true }); 
-      }, 500)),
-      updateReferralStatus: (data) => new Promise(res => setTimeout(() => { 
-        const referral = mockGas.db.referrals.find(r => r.id === data.id);
-        if (referral) referral.status = data.status;
-        res({ success: true }); 
-      }, 500)),
-      addRentPayment: (data) => new Promise(res => setTimeout(() => {
-        const id = 'PAY' + new Date().getTime();
-        mockGas.db.rentPayments.push({ id, ...data });
-        res({ success: true });
-      }, 500)),
-      updateRentPayment: (data) => new Promise(res => setTimeout(() => {
-        const index = mockGas.db.rentPayments.findIndex(p => p.id === data.id);
-        if (index !== -1) mockGas.db.rentPayments[index] = { ...mockGas.db.rentPayments[index], ...data };
-        res({ success: true });
-      }, 500)),
-      deleteRentPayment: (id) => new Promise(res => setTimeout(() => {
-        mockGas.db.rentPayments = mockGas.db.rentPayments.filter(p => p.id !== id);
-        res({ success: true });
-      }, 500)),
-      replyIssue: (data) => new Promise(res => setTimeout(() => {
-        const issue = mockGas.db.issues.find(i => i.id === data.id);
-        if (issue) {
-          issue.reply = data.reply;
-          issue.repliedBy = data.repliedBy;
-        }
-        res({ success: true });
-      }, 500)),
-      replyRepair: (data) => new Promise(res => setTimeout(() => {
-        const repair = mockGas.db.repairs.find(r => r.id === data.id);
-        if (repair) {
-          repair.reply = data.reply;
-          repair.repliedBy = data.repliedBy;
-        }
-        res({ success: true });
-      }, 500)),
-      updateSettings: (data) => new Promise(res => setTimeout(() => { 
-        mockGas.db.settings = { ...mockGas.db.settings, ...data }; 
-        res({ success: true }); 
-      }, 500)),
-      updateIssueStatus: (data) => new Promise(res => setTimeout(() => { 
-        const issue = mockGas.db.issues.find(i => i.id === data.id);
-        if (issue) issue.status = data.status;
-        res({ success: true }); 
-      }, 500)),
-      addAdmin: (data) => new Promise(res => setTimeout(() => {
-        mockGas.db.admins.push(data);
-        res({ success: true });
-      }, 500)),
-      deleteAdmin: (phone) => new Promise(res => setTimeout(() => {
-        mockGas.db.admins = mockGas.db.admins.filter(a => a.phone !== phone);
-        res({ success: true });
-      }, 500)),
-      autoMatchPayments: () => new Promise(res => setTimeout(() => {
-        let matchedCount = 0;
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
+    // ============================================================
+// index.html 前端修復補丁
+// 將以下代碼加入 <script> 標籤中，替換/補充對應函數
+// ============================================================
 
-        mockGas.db.bankTransactions.forEach(tx => {
-          if (tx.matched) return;
-          
-          // Find tenant by name
-          const tenant = mockGas.db.tenants.find(t => t.name === tx.name);
-          if (!tenant) return;
+// ============================================================
+// [FIX #2] 修復 tenant-announcement-badge null 防護
+// 在 renderAccountView() 函數中，將以下兩行：
+//   document.getElementById('tenant-announcement-badge').classList.remove('hidden');
+//   document.getElementById('tenant-announcement-badge').classList.add('hidden');
+// 替換為：
+// ============================================================
+function _safeBadge(action) {
+  var el = document.getElementById('tenant-announcement-badge');
+  if (el) el.classList[action]('hidden');
+}
+// 使用: _safeBadge('remove') 顯示; _safeBadge('add') 隱藏
 
-          // Check if there is an unpaid record for this month/year
-          const payment = mockGas.db.rentPayments.find(p => 
-            p.tenantPhone === tenant.phone && 
-            p.year === year && 
-            p.month === month && 
-            p.status === '未繳'
-          );
+// ============================================================
+// [FIX #3] 補充 calculateContractDays、importRoomEquipment、addCustomFurniture
+// ============================================================
 
-          if (payment && payment.amount === tx.amount) {
-            // Check date range (contract due date is usually fixed, let's assume 5th of every month)
-            const dueDate = new Date(year, month - 1, 5);
-            const txDate = new Date(tx.date);
-            const diffDays = Math.abs((txDate - dueDate) / (1000 * 60 * 60 * 24));
-
-            if (diffDays <= 3) {
-              payment.status = '已繳清';
-              payment.date = tx.date;
-              tx.matched = true;
-              matchedCount++;
-            }
-          }
-        });
-        res({ success: true, matchedCount });
-      }, 1000)),
-      sendPaymentReminders: () => new Promise(res => setTimeout(() => {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-        const unpaid = mockGas.db.rentPayments.filter(p => p.year === year && p.month === month && p.status === '未繳');
-        
-        // In real app, this would trigger LINE push
-        res({ success: true, count: unpaid.length });
-      }, 1000)),
-      addVendor: (data) => new Promise(res => setTimeout(() => {
-        const id = 'V' + new Date().getTime();
-        mockGas.db.vendors.push({ id, ...data });
-        res({ success: true });
-      }, 500)),
-      deleteVendor: (id) => new Promise(res => setTimeout(() => {
-        mockGas.db.vendors = mockGas.db.vendors.filter(v => v.id !== id);
-        res({ success: true });
-      }, 500)),
-      submitCheckout: (data) => new Promise(res => setTimeout(() => {
-        const id = 'CK' + new Date().getTime();
-        mockGas.db.checkouts.push({ id, ...data, status: '已完成', date: new Date().toISOString().split('T')[0] });
-        res({ success: true });
-      }, 500)),
-      reservePublicArea: (data) => new Promise(res => setTimeout(() => {
-        const id = 'PAR' + new Date().getTime();
-        mockGas.db.publicAreaReservations.push({ id, ...data });
-        res({ success: true });
-      }, 500)),
-      addBulletinPost: (data) => new Promise(res => setTimeout(() => {
-        const id = 'B' + new Date().getTime();
-        mockGas.db.bulletinBoard.unshift({ id, ...data, date: new Date().toISOString().split('T')[0] });
-        res({ success: true });
-      }, 500)),
-      addExpense: (data) => new Promise(res => setTimeout(() => {
-        const id = 'E' + new Date().getTime();
-        mockGas.db.expenses.push({ id, ...data });
-        res({ success: true });
-      }, 500)),
-      addMarketingCampaign: (data) => new Promise(res => setTimeout(() => {
-        const id = 'MC' + new Date().getTime();
-        mockGas.db.marketing.push({ id, ...data, status: '進行中' });
-        res({ success: true });
-      }, 500)),
-      deleteMarketingCampaign: (id) => new Promise(res => setTimeout(() => {
-        mockGas.db.marketing = mockGas.db.marketing.filter(m => m.id !== id);
-        res({ success: true });
-      }, 500)),
-      signContract: (phone) => new Promise(res => setTimeout(() => {
-        const contract = mockGas.db.contracts.find(c => c.tenantPhone === phone);
-        if (contract) {
-          contract.status = '已簽署';
-          contract.signedAt = new Date().toISOString().split('T')[0];
-        } else {
-          mockGas.db.contracts.push({ id: 'C' + new Date().getTime(), tenantPhone: phone, status: '已簽署', signedAt: new Date().toISOString().split('T')[0] });
-        }
-        res({ success: true });
-      }, 500)),
-      triggerSOS: (data) => new Promise(res => setTimeout(() => {
-        console.log('SOS Triggered:', data);
-        res({ success: true });
-      }, 500)),
-      getAdminData: () => new Promise(res => setTimeout(() => res({ success: true, data: mockGas.db }), 500))
-    };
-
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzUzzbE9DC-DMm7Qe4dSG1p-OUX5kr5K38DvZYcRexUF3IrnSpqhOmyc8f016C9Vjg_/exec';
-
-    function callGas(func, data, cb) {
-      console.log(`Calling GAS function: ${func}`, data);
-      try {
-        if (typeof google !== 'undefined' && google.script) {
-          google.script.run
-            .withSuccessHandler((res) => {
-              console.log(`GAS Success [${func}]:`, res);
-              if (cb) cb(res);
-            })
-            .withFailureHandler((err) => {
-              console.error(`GAS Failure [${func}]:`, err);
-              if (cb) cb({ success: false, message: err.toString() });
-            })[func](data);
-        } else {
-          // Fallback for external hosting (e.g. Vercel)
-          if (func === 'getAdminData' || func === 'loginUser') {
-            const url = `${GAS_URL}?func=${func}${data ? '&data=' + encodeURIComponent(JSON.stringify(data)) : ''}`;
-            
-            // Add timeout to fetch
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 seconds timeout
-
-            fetch(url, { signal: controller.signal })
-              .then(r => {
-                clearTimeout(timeoutId);
-                if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
-                return r.json();
-              })
-              .then(res => {
-                console.log(`Fetched data from GAS [${func}]:`, res);
-                if (cb) cb(res);
-              })
-              .catch(err => {
-                clearTimeout(timeoutId);
-                console.error(`GAS Fetch Error [${func}]:`, err);
-                if (mockGas[func]) {
-                  console.warn(`Falling back to mock for ${func}`);
-                  mockGas[func](data).then(cb).catch(mockErr => {
-                    console.error(`Mock Error [${func}]:`, mockErr);
-                    if (cb) cb({ success: false, message: '模擬資料載入失敗' });
-                  });
-                } else if (cb) {
-                  cb({ success: false, message: '無法連線至伺服器' });
-                }
-              });
-          } else {
-            // For actions (submit), use POST
-            const url = `${GAS_URL}?func=${func}`;
-            fetch(url, {
-              method: 'POST',
-              mode: 'no-cors', 
-              body: JSON.stringify(data)
-            }).then(() => {
-              console.log(`Called ${func} via fetch (no-cors)`);
-              if (cb) cb({ success: true, message: '已送出請求' });
-            }).catch(err => {
-              console.error('GAS Call Error:', err);
-              if (mockGas[func]) {
-                console.warn(`Falling back to mock for ${func}`);
-                mockGas[func](data).then(cb);
-              } else if (cb) {
-                cb({ success: false, message: '連線失敗' });
-              }
-            });
-          }
-        }
-      } catch (err) {
-        console.error(`Critical error in callGas [${func}]:`, err);
-        if (cb) cb({ success: false, message: '系統發生錯誤' });
-      }
+function calculateContractDays() {
+  var startEl = document.getElementById('contractStart');
+  var endEl = document.getElementById('contractEnd');
+  var daysEl = document.getElementById('contract-days');
+  if (!startEl || !endEl || !daysEl) return;
+  var start = startEl.value;
+  var end = endEl.value;
+  if (start && end) {
+    var startDate = new Date(start);
+    var endDate = new Date(end);
+    var diffMs = endDate - startDate;
+    if (diffMs > 0) {
+      var diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+      var months = Math.round(diffDays / 30);
+      daysEl.innerText = '共 ' + diffDays + ' 天（約 ' + months + ' 個月）';
+    } else {
+      daysEl.innerText = '⚠ 結束日期須晚於開始日期';
     }
+  }
+}
+
+function importRoomEquipment() {
+  var roomSelect = document.getElementById('tenant-room-select');
+  if (!roomSelect || !appState.adminData) return;
+  var roomId = roomSelect.value;
+  if (!roomId) { alert('請先選擇房間'); return; }
+  var room = appState.adminData.rooms.find(function(r) { return r.id === roomId; });
+  if (!room || !room.features) { alert('找不到該房間的設備資料'); return; }
+  var features = room.features.split(',').map(function(f) { return f.trim(); }).filter(Boolean);
+  var container = document.getElementById('furniture-container');
+  if (!container) return;
+  // 取消所有勾選，再根據房間設備勾選
+  container.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
+    cb.checked = features.indexOf(cb.value) !== -1;
+  });
+  alert('已從房間資料導入設備：' + features.join('、'));
+}
+
+function addCustomFurniture() {
+  var input = document.getElementById('custom-furniture');
+  if (!input) return;
+  var val = input.value.trim();
+  if (!val) return;
+  var container = document.getElementById('furniture-container');
+  if (!container) return;
+  var label = document.createElement('label');
+  label.className = 'flex items-center gap-1';
+  label.innerHTML = '<input type="checkbox" name="furnitures" value="' + val + '" checked> ' + val;
+  container.appendChild(label);
+  input.value = '';
+}
+
+// ============================================================
+// [FIX #1] 修復 openTenantModal 函數 — 完整重寫
+// 將原本破損的 openTenantModal 函數替換為以下完整版本
+// ============================================================
+
+function openTenantModal(type) {
+  // 確保用戶已登入且是租客
+  if (!appState.user || !appState.user.tenantInfo) return;
+
+  var overlay = document.getElementById('tenant-overlay');
+  var title = document.getElementById('tenant-overlay-title');
+  var content = document.getElementById('tenant-overlay-content');
+
+  overlay.classList.remove('hidden');
+  overlay.classList.add('flex');
+
+  if (type === 'repair') {
+    title.innerText = '設備報修申請';
+    content.innerHTML = `
+      <form onsubmit="handleRepairSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">報修項目 *</label>
+          <input type="text" name="item" required placeholder="例如：冷氣、燈泡、水龍頭" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">問題描述 *</label>
+          <textarea name="description" required rows="4" placeholder="請詳細描述故障情形..." class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 resize-none"></textarea>
+        </div>
+        <div class="bg-blue-50 p-4 rounded-xl text-xs text-blue-700">
+          <i class="fa-solid fa-info-circle mr-1"></i> 提交後管理員將會收到通知並安排維修時間。
+        </div>
+        <button type="submit" id="repair-submit-btn" class="w-full py-4 bg-orange-500 text-white rounded-xl font-bold shadow-md hover:bg-orange-600 transition-colors">送出報修申請</button>
+      </form>
+    `;
+  } else if (type === 'referral') {
+    title.innerText = '推薦好友入住';
+    content.innerHTML = `
+      <form onsubmit="handleReferralSubmit(event)" class="space-y-4">
+        <div class="bg-emerald-50 p-4 rounded-xl mb-4">
+          <div class="font-bold text-emerald-800 text-sm mb-1">推薦回饋說明</div>
+          <p class="text-xs text-emerald-700 leading-relaxed">成功推薦好友簽約入住，推薦人可獲得 500 元租金抵用券或現金回饋！</p>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">被推薦人姓名 *</label>
+          <input type="text" name="referee" required placeholder="請輸入好友姓名" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">被推薦人電話 *</label>
+          <input type="tel" name="phone" required placeholder="請輸入好友電話" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">備註 (選填)</label>
+          <textarea name="note" rows="2" placeholder="其他想告訴我們的話..." class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 resize-none"></textarea>
+        </div>
+        <button type="submit" id="referral-submit-btn" class="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold shadow-md hover:bg-emerald-600 transition-colors">送出推薦資料</button>
+      </form>
+    `;
+  } else if (type === 'publicArea') {
+    title.innerText = '公共區域預約';
+    content.innerHTML = `
+      <form onsubmit="handlePublicAreaSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">選擇區域 *</label>
+          <select name="area" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white">
+            <option value="健身房">健身房</option>
+            <option value="視聽室">視聽室</option>
+            <option value="頂樓露台">頂樓露台</option>
+            <option value="交誼廳">交誼廳</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">預約日期 *</label>
+          <input type="date" name="date" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">預約時段 *</label>
+          <select name="timeSlot" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white">
+            <option value="09:00 - 11:00">09:00 - 11:00</option>
+            <option value="11:00 - 13:00">11:00 - 13:00</option>
+            <option value="13:00 - 15:00">13:00 - 15:00</option>
+            <option value="15:00 - 17:00">15:00 - 17:00</option>
+            <option value="17:00 - 19:00">17:00 - 19:00</option>
+            <option value="19:00 - 21:00">19:00 - 21:00</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full py-4 bg-cyan-600 text-white rounded-xl font-bold shadow-md hover:bg-cyan-700 transition-colors">確認預約</button>
+      </form>
+    `;
+  } else if (type === 'contract') {
+    title.innerText = '電子租約簽署';
+    content.innerHTML = `
+      <div class="space-y-4">
+        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+          <div class="flex items-center gap-2 font-bold text-gray-800 mb-2">
+            <i class="fa-solid fa-file-contract text-blue-500"></i> 當前合約狀態
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500">合約編號</span>
+            <span class="font-mono">CONT-2024-001</span>
+          </div>
+          <div class="flex justify-between text-sm mt-1">
+            <span class="text-gray-500">簽署狀態</span>
+            <span class="text-orange-500 font-bold">待簽署</span>
+          </div>
+        </div>
+        <div class="text-xs text-gray-500 leading-relaxed p-2">
+          請點擊下方按鈕預覽合約內容，確認無誤後進行數位簽章。本合約具有法律效力。
+        </div>
+        <button onclick="alert('合約預覽載入中...')" class="w-full py-3 border border-blue-600 text-blue-600 rounded-xl font-bold text-sm">預覽合約內容</button>
+        <button onclick="signContract()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-colors">立即數位簽署</button>
+      </div>
+    `;
+  } else if (type === 'rules') {
+    var s = (appState.user && appState.user.settings) ? appState.user.settings : {};
+    title.innerText = '租屋需知';
+    content.innerHTML = `
+      <div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed mb-6">${s.tenantRules || '目前無租屋需知'}</div>
+      <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+        <div class="flex items-center gap-2 text-blue-800 font-bold mb-1">
+          <i class="fa-solid fa-wifi"></i> WIFI 密碼
+        </div>
+        <div class="text-lg font-mono font-bold text-blue-600 tracking-wider">${s.wifiPassword || '未設定'}</div>
+      </div>
+    `;
+  } else if (type === 'announcement') {
+    var s = (appState.user && appState.user.settings) ? appState.user.settings : {};
+    title.innerText = '公告事項';
+    content.innerHTML = `<div class="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">${s.announcement || '目前無公告事項'}</div>`;
+    _safeBadge('add');
+  } else if (type === 'wifi') {
+    var s = (appState.user && appState.user.settings) ? appState.user.settings : {};
+    title.innerText = 'WIFI 密碼';
+    content.innerHTML = `
+      <div class="text-center py-4">
+        <div class="text-gray-500 text-sm mb-2">無線網路密碼</div>
+        <div class="text-2xl font-mono font-bold text-blue-600 bg-blue-50 py-3 px-4 rounded-xl inline-block tracking-wider">${s.wifiPassword || '未設定'}</div>
+      </div>
+    `;
+  } else if (type === 'bulletin') {
+    title.innerText = '社區數位佈告欄';
+    content.innerHTML = '<div class="flex justify-center py-10"><span class="loader border-blue-500 border-t-transparent w-8 h-8"></span></div>';
+    callGas('getAdminData', null, function(res) {
+      var bulletinHtml = '<div class="space-y-3">';
+      if (res.success && res.data.bulletinBoard && res.data.bulletinBoard.length > 0) {
+        res.data.bulletinBoard.forEach(function(b) {
+          bulletinHtml += '<div class="bg-gray-50 p-4 rounded-xl border border-gray-100"><div class="flex justify-between items-start mb-2"><h3 class="font-bold text-gray-800">' + b.title + '</h3><span class="text-[10px] text-gray-400">' + b.date + '</span></div><p class="text-xs text-gray-600">' + b.content + '</p></div>';
+        });
+        bulletinHtml += '</div>';
+      } else {
+        bulletinHtml = '<div class="text-center text-gray-400 py-10">目前沒有公告</div>';
+      }
+      content.innerHTML = bulletinHtml;
+    });
+  }
+}
+
+// ============================================================
+// [FIX #2] renderAccountView 中加入 null 防護
+// 在原本 renderAccountView 函數中，將：
+//   document.getElementById('tenant-announcement-badge').classList.remove('hidden');
+//   document.getElementById('tenant-announcement-badge').classList.add('hidden');
+// 替換為 _safeBadge('remove') / _safeBadge('add')
+// ============================================================
+// 修正後的 renderAccountView 函數（完整替換原版）：
+function renderAccountView() {
+  if (!appState.user) { switchAccountView('login'); return; }
+  if (appState.user.role === 'admin') {
+    document.getElementById('admin-welcome-msg').innerText = '歡迎回來，' + appState.user.name;
+    renderAdminButtons();
+    switchAccountView('admin');
+    return;
+  }
+  if (appState.user.role === 'tenant') {
+    var t = appState.user.tenantInfo;
+    var s = appState.user.settings || {};
+    document.getElementById('tenant-room').innerText = t.room || '';
+    document.getElementById('tenant-name').innerText = t.name || '';
+    document.getElementById('tenant-period').innerText = t.contractEnd || '';
+    document.getElementById('tenant-payment').innerText = t.paymentMethod || '';
+    document.getElementById('tenant-status').innerText = t.paymentStatus || '';
+    document.getElementById('tenant-electricity').innerText = t.electricity || '';
+
+    if (s.showAnnouncement === '是' && s.announcement) {
+      _safeBadge('remove'); // [FIX #2] null-safe
+      if (!appState.announcementShown) {
+        openTenantModal('announcement');
+        appState.announcementShown = true;
+      }
+    } else {
+      _safeBadge('add'); // [FIX #2] null-safe
+    }
+
+    switchAccountView('tenant');
+    return;
+  }
+  document.getElementById('member-name-display').innerText = appState.user.name || '';
+  switchAccountView('member');
+}
 
     // --- State & Init ---
     let appState = { user: null, adminData: null };
