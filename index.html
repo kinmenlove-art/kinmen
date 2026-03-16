@@ -38,6 +38,10 @@
     .toast-item{padding:.65rem 1.1rem;border-radius:.9rem;font-size:.82rem;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.18);animation:toastIn .3s ease;pointer-events:none;text-align:center}
     @keyframes toastIn{from{transform:translateY(-1rem);opacity:0}to{transform:translateY(0);opacity:1}}
     .toast-success{background:#10b981}.toast-error{background:#ef4444}.toast-info{background:#3b82f6}.toast-warn{background:#f59e0b}
+
+    .btn-line { background:#06C755; color:#fff; border:none; border-radius:.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.5rem; padding:.85rem 1rem; width:100%; font-size:.95rem; transition:filter .15s; }
+    .btn-line:hover { filter:brightness(1.1); }
+    .line-avatar { width:2.5rem; height:2.5rem; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -134,14 +138,14 @@
           <input type="hidden" name="dormName" id="reserve-dorm-name">
           <input type="hidden" name="dormAddress" id="reserve-dorm-address">
           <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">姓名 *</label><input type="text" name="name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">姓名 *</label><input type="text" name="name" id="reserve-name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"></div>
             <div><label class="block text-sm font-medium text-gray-700 mb-1">性別 *</label>
               <select name="gender" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                 <option value="男">男</option><option value="女">女</option>
               </select>
             </div>
           </div>
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">聯絡電話 *</label><input type="tel" name="phone" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"></div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">聯絡電話 *</label><input type="tel" name="phone" id="reserve-phone" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"></div>
           <div><label class="block text-sm font-medium text-gray-700 mb-1">想看的房型</label>
             <select name="roomType" id="reserve-room-select" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
               <option value="尚未決定，都想看看">尚未決定，都想看看</option>
@@ -236,20 +240,38 @@
     <!-- Tab: Account -->
     <div id="tab-account" class="tab-content p-4 space-y-6 hidden">
       <!-- Login View -->
-      <div id="view-login" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+           <div id="view-login" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <h2 class="text-2xl font-bold mb-2">登入系統</h2>
-        <p class="text-gray-500 text-sm mb-6">請輸入您的手機號碼與密碼進行登入</p>
+        <p class="text-gray-500 text-sm mb-4">請選擇登入方式</p>
+
+        <!-- LINE 登入 -->
+        <div class="mb-4">
+          <button onclick="handleLineLogin()" id="line-login-btn" class="btn-line">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M12 2C6.48 2 2 6.03 2 11c0 3.24 1.79 6.08 4.5 7.83V22l3.97-2.17A10.46 10.46 0 0012 20c5.52 0 10-4.03 10-9S17.52 2 12 2z"/></svg>
+            使用 LINE 帳號登入
+          </button>
+          <div id="line-login-status" class="hidden mt-3 p-3 bg-green-50 rounded-xl border border-green-100 items-center gap-3">
+            <img id="line-avatar" src="" class="line-avatar" alt="LINE頭像">
+            <div>
+              <div class="font-bold text-green-800 text-sm" id="line-display-name"></div>
+              <div class="text-xs text-green-600" id="line-login-hint">LINE 帳號已識別，請完成手機驗證</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 mb-4">
+          <div class="flex-1 h-px bg-gray-200"></div>
+          <span class="text-xs text-gray-400 font-medium">或用手機號碼</span>
+          <div class="flex-1 h-px bg-gray-200"></div>
+        </div>
+
         <form onsubmit="handleLogin(event)" class="space-y-4">
           <div><label class="block text-xs text-gray-500 mb-1">手機號碼</label><input type="tel" id="login-phone" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="09xx-xxx-xxx"></div>
           <div><label class="block text-xs text-gray-500 mb-1">4 位數密碼</label><input type="password" id="login-password" required maxlength="4" pattern="\d{4}" inputmode="numeric" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="****"></div>
           <button type="submit" id="login-btn" class="w-full py-3.5 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">登入</button>
         </form>
-        <div class="mt-6 text-center">
-          <p class="text-sm text-gray-500">還不是會員？</p>
-          <button onclick="switchAccountView('register')" class="mt-2 text-blue-600 font-medium hover:underline">立即註冊會員</button>
-        </div>
+        <div class="mt-4 text-center"><p class="text-sm text-gray-500">還不是會員？</p><button onclick="switchAccountView('register')" class="mt-2 text-blue-600 font-medium hover:underline">立即註冊會員</button></div>
       </div>
-      <!-- Register View -->
       <div id="view-register" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hidden">
         <h2 class="text-2xl font-bold mb-2">註冊會員</h2>
         <form onsubmit="handleRegister(event)" class="space-y-4">
@@ -282,10 +304,17 @@
       <!-- Member View -->
       <div id="view-member" class="hidden space-y-4">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
-          <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-user text-2xl"></i></div>
+          <div class="relative w-16 h-16 mx-auto mb-3">
+            <img id="member-avatar-img" src="" class="w-16 h-16 rounded-full object-cover border-2 border-blue-200 hidden">
+            <div id="member-avatar-fallback" class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-user text-2xl"></i></div>
+          </div>
           <h2 class="text-xl font-bold" id="member-name-display">會員姓名</h2>
-          <p class="text-gray-500 text-sm mt-1">一般會員</p>
-          <button onclick="logout()" class="mt-4 px-6 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">登出</button>
+          <p class="text-gray-500 text-sm mt-1" id="member-line-name"></p>
+          <p class="text-gray-400 text-xs mt-0.5" id="member-phone-display"></p>
+          <div class="mt-4 flex gap-2 justify-center">
+            <button onclick="logout()" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">登出</button>
+            <button onclick="_showMemberProfile()" class="px-6 py-2 bg-blue-50 text-blue-600 rounded-full text-sm font-medium">我的資料</button>
+          </div>
         </div>
       </div>
       <!-- Tenant View -->
@@ -599,6 +628,27 @@
       deleteMarketingCampaign: (data) => new Promise(res => setTimeout(() => { const id = data.id || data; mockGas.db.marketing = mockGas.db.marketing.filter(m => m.id !== id); res({ success: true }); }, 300)),
       signContract: (phone) => new Promise(res => setTimeout(() => { const p = typeof phone === 'object' ? phone.phone || phone : phone; const c = mockGas.db.contracts.find(c => c.tenantPhone === p); if (c) { c.status = '已簽署'; c.signedAt = new Date().toISOString().split('T')[0]; } else { mockGas.db.contracts.push({ id: 'C' + Date.now(), tenantPhone: p, status: '已簽署', signedAt: new Date().toISOString().split('T')[0] }); } res({ success: true }); }, 300)),
       triggerSOS: (data) => new Promise(res => setTimeout(() => { console.log('SOS Triggered:', data); res({ success: true }); }, 300)),
+      updateLineProfile: (data) => new Promise(res => setTimeout(() => {
+        var phone = data.phone; var lineId = data.lineId;
+        // Update in members
+        var m = mockGas.db.members.find(function(x){ return x.phone===phone; });
+        if (m) { m.lineId=lineId; m.lineName=data.lineName; m.lineAvatar=data.lineAvatar; }
+        // Update in admins
+        var a = mockGas.db.admins.find(function(x){ return x.phone===phone; });
+        if (a) { a.lineId=lineId; }
+        res({ success: true });
+      }, 100)),
+      loginWithLineId: (data) => new Promise(res => setTimeout(() => {
+        var lineId = data && data.lineId;
+        // Check admins, tenants, members for matching lineId
+        var admin   = mockGas.db.admins.find(function(a){ return a.lineId===lineId; });
+        if (admin) { res({ success:true, role:'admin', phone:admin.phone, name:admin.name, permissions:admin.permissions||[] }); return; }
+        var tenant  = mockGas.db.tenants.find(function(t){ return t.lineId===lineId; });
+        if (tenant) { res({ success:true, role:'tenant', phone:tenant.phone, tenantInfo:tenant, settings:mockGas.db.settings }); return; }
+        var member  = mockGas.db.members.find(function(m){ return m.lineId===lineId; });
+        if (member) { res({ success:true, role:'member', phone:member.phone, name:member.name }); return; }
+        res({ success:false, message:'此 LINE 帳號尚未綁定，請輸入手機號碼登入' });
+      }, 200)),
       getAdminData: () => new Promise(res => setTimeout(() => res({ success: true, data: mockGas.db }), 300))
     };
 
@@ -684,7 +734,172 @@
     }
 
     // --- State ---
-    let appState = { user: null, adminData: null, announcementShown: false };
+
+    // ================================================================
+    // LINE LOGIN
+    // ================================================================
+    var _lineProfile = null; // cached LINE profile
+
+    async function handleLineLogin() {
+      const btn = document.getElementById('line-login-btn');
+      btn.innerHTML = '<span class="loader border-white border-t-transparent w-5 h-5"></span> 連接 LINE 中...';
+      btn.disabled = true;
+      try {
+        // If LIFF is already logged in, get profile directly
+        if (typeof liff !== 'undefined') {
+          if (!liff.isLoggedIn()) {
+            // Redirect to LINE login
+            liff.login({ redirectUri: window.location.href });
+            return;
+          }
+          // Already logged in via LIFF
+          await _fetchLineProfile();
+        } else {
+          showToast('LINE SDK 尚未載入，請在 LINE 中開啟', 'warn');
+        }
+      } catch (e) {
+        console.error('LINE login error:', e);
+        showToast('LINE 登入失敗：' + e.message, 'error');
+      }
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M12 2C6.48 2 2 6.03 2 11c0 3.24 1.79 6.08 4.5 7.83V22l3.97-2.17A10.46 10.46 0 0012 20c5.52 0 10-4.03 10-9S17.52 2 12 2z"/></svg> 使用 LINE 帳號登入';
+      btn.disabled = false;
+    }
+
+    async function _fetchLineProfile() {
+      try {
+        const profile = await liff.getProfile();
+        _lineProfile = {
+          lineId:      profile.userId,
+          name:        profile.displayName,
+          avatar:      profile.pictureUrl || '',
+          statusMsg:   profile.statusMessage || '',
+        };
+        // Try to get email (requires email permission scope)
+        try {
+          const ctx = liff.getContext();
+          if (ctx && ctx.utouId) _lineProfile.utouId = ctx.utouId;
+        } catch(e) {}
+        // Show profile in UI
+        _showLineProfileInLogin(_lineProfile);
+        // Pre-fill login phone if remembered
+        const saved = _loadUserMemory();
+        if (saved && saved.phone) {
+          document.getElementById('login-phone').value = saved.phone;
+        }
+        showToast('LINE 帳號已識別：' + _lineProfile.name, 'success');
+        // Try auto-login with LINE ID
+        _tryAutoLoginWithLine(_lineProfile.lineId);
+      } catch (e) {
+        showToast('無法取得 LINE 資料：' + e.message, 'error');
+      }
+    }
+
+    function _showLineProfileInLogin(profile) {
+      const statusEl = document.getElementById('line-login-status');
+      const avatarEl = document.getElementById('line-avatar');
+      const nameEl   = document.getElementById('line-display-name');
+      if (!statusEl) return;
+      if (profile.avatar) avatarEl.src = profile.avatar;
+      else avatarEl.style.display = 'none';
+      nameEl.textContent = profile.name;
+      statusEl.classList.remove('hidden');
+      statusEl.classList.add('flex');
+    }
+
+    function _tryAutoLoginWithLine(lineId) {
+      // Check if this LINE ID is already linked to an account
+      callGas('loginWithLineId', { lineId: lineId }, function(res) {
+        if (res && res.success) {
+          // Found linked account — log in directly
+          appState.user = res;
+          // Save memory
+          if (res.phone) _saveUserMemory({ phone: res.phone, name: res.name, lineId: lineId });
+          renderAccountView();
+          _autoFillForms();
+          showToast('LINE 登入成功！歡迎回來，' + res.name, 'success');
+        } else {
+          // Not linked yet — show hint to complete phone verification
+          const hint = document.getElementById('line-login-hint');
+          if (hint) hint.textContent = '尚未綁定帳號，請輸入手機號碼完成綁定';
+          document.getElementById('login-phone').focus();
+        }
+      });
+    }
+
+    // ================================================================
+    // USER MEMORY — localStorage auto-fill
+    // ================================================================
+    const MEMORY_KEY = 'dorm_user_memory';
+
+    function _saveUserMemory(data) {
+      try {
+        var existing = _loadUserMemory() || {};
+        var merged   = Object.assign(existing, data);
+        localStorage.setItem(MEMORY_KEY, JSON.stringify(merged));
+      } catch(e) {}
+    }
+
+    function _loadUserMemory() {
+      try {
+        var raw = localStorage.getItem(MEMORY_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch(e) { return null; }
+    }
+
+    function _clearUserMemory() {
+      try { localStorage.removeItem(MEMORY_KEY); } catch(e) {}
+    }
+
+    // Auto-fill all forms from memory + current user
+    function _autoFillForms() {
+      var mem  = _loadUserMemory() || {};
+      var user = appState.user || {};
+      var name  = user.name  || mem.name  || '';
+      var phone = user.phone || mem.phone || '';
+      var gender = mem.gender || '';
+      var email  = mem.email  || '';
+
+      // Reserve form
+      _fillInput('reserve-name',  name);
+      _fillInput('reserve-phone', phone);
+      var genderSel = document.querySelector('#reserveForm [name="gender"]');
+      if (genderSel && gender) genderSel.value = gender;
+
+      // Issue form (tenant)
+      // (tenant-specific; phone already known from login)
+
+      // Save back to memory
+      if (name || phone) _saveUserMemory({ name: name, phone: phone, gender: gender });
+    }
+
+    function _fillInput(id, value) {
+      if (!value) return;
+      var el = document.getElementById(id);
+      if (el && !el.value) el.value = value;
+    }
+
+    // ================================================================
+    // PERSIST MEMORY on form submit (reserve form)
+    // ================================================================
+    // Hook into reserve form: save user input to memory
+    function _hookFormMemory() {
+      var reserveForm = document.getElementById('reserveForm');
+      if (!reserveForm) return;
+      reserveForm.addEventListener('submit', function() {
+        var fd = new FormData(reserveForm);
+        _saveUserMemory({
+          name:   fd.get('name')   || '',
+          phone:  fd.get('phone')  || '',
+          gender: fd.get('gender') || '',
+        });
+      });
+    }
+
+    // ================================================================
+    // LIFF: check if already logged in on init
+    // ================================================================
+
+        let appState = { user: null, adminData: null, announcementShown: false };
 
     const taiwanCities = {
       '台北市': ['中正區','大同區','中山區','松山區','大安區','萬華區','信義區','士林區','北投區','內湖區','南港區','文山區'],
@@ -954,6 +1169,7 @@
       document.getElementById('nav-' + tabId).classList.remove('text-gray-400');
       document.getElementById('nav-' + tabId).classList.add('text-blue-600');
       if (tabId === 'account') renderAccountView();
+      if (tabId === 'reserve') _autoFillForms(); // auto-fill when switching to reserve
     }
 
     // --- [FIX #2] renderAccountView with null-safe badge ---
@@ -984,7 +1200,23 @@
         switchAccountView('tenant');
         return;
       }
+      const mem = _loadUserMemory() || {};
       document.getElementById('member-name-display').innerText = appState.user.name || '';
+      // Show phone
+      const phoneEl = document.getElementById('member-phone-display');
+      if (phoneEl) phoneEl.textContent = appState.user.phone || '';
+      // Show LINE name hint
+      const lineNameEl = document.getElementById('member-line-name');
+      if (lineNameEl) lineNameEl.textContent = mem.lineId ? '已綁定 LINE' : '一般會員';
+      // Show avatar
+      const avatarImg = document.getElementById('member-avatar-img');
+      const avatarFall = document.getElementById('member-avatar-fallback');
+      const avatarSrc = (mem.avatar || (_lineProfile && _lineProfile.avatar) || '');
+      if (avatarImg && avatarSrc) {
+        avatarImg.src = avatarSrc;
+        avatarImg.classList.remove('hidden');
+        if (avatarFall) avatarFall.style.display = 'none';
+      }
       switchAccountView('member');
     }
 
@@ -1126,10 +1358,27 @@
       const password = _fixPwd(document.getElementById('login-password').value);
       const btn = document.getElementById('login-btn');
       btn.innerHTML = '<span class="loader border-white border-t-transparent w-5 h-5"></span>';
-      callGas('loginUser', { phone, password }, (res) => {
+      // Include LINE profile if available
+      const loginData = { phone, password };
+      if (_lineProfile) {
+        loginData.lineId  = _lineProfile.lineId;
+        loginData.lineName = _lineProfile.name;
+        loginData.lineAvatar = _lineProfile.avatar;
+      }
+      callGas('loginUser', loginData, (res) => {
         btn.innerHTML = '登入';
-        if (res.success) { appState.user = res; renderAccountView(); }
-        else showToast(res.message,'error');
+        if (res.success) {
+          appState.user = res;
+          // Save to memory
+          _saveUserMemory({
+            phone:  phone,
+            name:   res.name || '',
+            lineId: _lineProfile ? _lineProfile.lineId : '',
+            avatar: _lineProfile ? _lineProfile.avatar : '',
+          });
+          renderAccountView();
+          _autoFillForms();
+        } else showToast(res.message,'error');
       });
     }
 
@@ -1996,6 +2245,25 @@
     function toggleRoomStatus(roomId){if(!appState.adminData)return;var room=appState.adminData.rooms.find(function(r){return r.id===roomId;});if(!room)return;var ns=room.status==='空房'?'出租中':'空房';showConfirm({icon:'fa-toggle-on',iconBg:'#eff6ff',iconColor:'#3b82f6',title:'變更房間狀態',msg:'確定將 '+roomId+' 改為「'+ns+'」？',okText:'確定',okColor:'#3b82f6'}).then(function(ok){if(!ok)return;room.status=ns;callGas('updateRoomStatus',{roomId:roomId,status:ns},function(res){showToast('房間狀態已更新：'+ns,res.success?'success':'warn');if(res.success)showAdminSection('rooms');});});}
     function sharePageURL(){var url=window.location.href;if(typeof liff!=='undefined'&&liff.isInClient&&liff.isInClient()){liff.shareTargetPicker([{type:'text',text:'壹參學生宿舍系統\n'+url}]).catch(function(){});}else if(navigator.share){navigator.share({title:'壹參學生宿舍系統',url:url}).catch(function(){});}else{navigator.clipboard.writeText(url).then(function(){showToast('網址已複製','success');});}}
     function showCheckinChecklist(phone){var t=appState.adminData&&appState.adminData.tenants.find(function(x){return x.phone===phone;});if(!t){showToast('找不到租客','error');return;}openGeneralModal(t.room+' 入住確認清單','<div class="space-y-2 text-sm">'+['鑰匙/門卡已交付','電錶度數已記錄','房間設備已點交','押金已收取','合約已簽署','緊急聯絡人已填寫','宿舍規則已說明'].map(function(item){return '<label class="flex items-center gap-2 p-2 bg-gray-50 rounded-lg cursor-pointer"><input type="checkbox" class="w-4 h-4"> <span>'+item+'</span></label>';}).join('')+'</div>');}
+
+
+    function _showMemberProfile() {
+      var mem  = _loadUserMemory() || {};
+      var user = appState.user || {};
+      var avatar = mem.avatar || (_lineProfile && _lineProfile.avatar) || '';
+      var html =
+        '<div class="space-y-4">' +
+          (avatar ? '<div class="text-center"><img src="'+avatar+'" class="w-20 h-20 rounded-full mx-auto border-2 border-blue-200 object-cover"></div>' : '') +
+          '<div class="bg-gray-50 p-4 rounded-xl space-y-2 text-sm">' +
+            '<div class="flex justify-between"><span class="text-gray-500">姓名</span><span class="font-medium">'+(user.name||mem.name||'─')+'</span></div>' +
+            '<div class="flex justify-between"><span class="text-gray-500">手機</span><span class="font-medium">'+(user.phone||mem.phone||'─')+'</span></div>' +
+            '<div class="flex justify-between"><span class="text-gray-500">LINE ID</span><span class="font-medium text-green-600 text-xs">'+(mem.lineId ? mem.lineId.slice(0,12)+'...' : '未綁定')+'</span></div>' +
+            '<div class="flex justify-between"><span class="text-gray-500">LINE 暱稱</span><span class="font-medium">'+((_lineProfile&&_lineProfile.name)||'─')+'</span></div>' +
+          '</div>' +
+          '<button onclick="closeGeneralModal();switchAccountView(\'login\');" class="w-full py-2 bg-gray-100 text-gray-700 rounded-xl text-sm">重新登入</button>' +
+        '</div>';
+      openGeneralModal('我的會員資料', html);
+    }
 
   </script>
 </body>
