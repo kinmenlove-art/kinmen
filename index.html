@@ -42,10 +42,19 @@
     .btn-line { background:#06C755; color:#fff; border:none; border-radius:.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.5rem; padding:.85rem 1rem; width:100%; font-size:.95rem; transition:filter .15s; }
     .btn-line:hover { filter:brightness(1.1); }
     .line-avatar { width:2.5rem; height:2.5rem; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0; }
+
+    /* ===== Room Card Carousel ===== */
+    .room-carousel-wrap { position:relative; height:12rem; overflow:hidden; background:#e5e7eb; }
+    .room-carousel-inner { display:flex; height:100%; transition:transform .45s cubic-bezier(.4,0,.2,1); will-change:transform; }
+    .room-carousel-inner img { min-width:100%; height:100%; object-fit:cover; flex-shrink:0; }
+    .carousel-dot-wrap { position:absolute; bottom:.5rem; left:50%; transform:translateX(-50%); display:flex; gap:.3rem; }
+    .carousel-dot { width:.45rem; height:.45rem; border-radius:50%; background:rgba(255,255,255,.5); transition:background .2s; }
+    .carousel-dot.active { background:#fff; }
+    .visited-badge { position:absolute; top:.5rem; right:.5rem; background:rgba(16,185,129,.9); color:#fff; font-size:.65rem; font-weight:700; padding:.25rem .55rem; border-radius:.5rem; display:flex; align-items:center; gap:.25rem; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-50 font-sans text-gray-800 h-screen flex flex-col overflow-hidden">
+<body class="bg-gray-50 font-sans text-gray-800 flex flex-col" style="height:100dvh;overflow:hidden;">
 
   <!-- ===================== SPLASH SCREEN ===================== -->
   <div id="splash-screen" class="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-gradient-to-b from-blue-600 to-blue-800 transition-opacity duration-500">
@@ -103,13 +112,19 @@
   </header>
 
   <!-- Main Content -->
-  <main class="flex-1 overflow-y-auto pb-24 no-scrollbar relative" id="main-content">
+  <main class="flex-1 overflow-y-auto pb-24 no-scrollbar relative" id="main-content" style="min-height:0;">
 
     <!-- Tab: Rooms -->
     <div id="tab-rooms" class="tab-content p-4 space-y-6">
-      <div class="mb-2">
-        <h2 class="text-2xl font-bold">房型介紹</h2>
-        <p class="text-gray-500 text-sm mt-1">選擇最適合您的居住空間</p>
+      <div class="mb-2 flex justify-between items-start">
+        <div>
+          <h2 class="text-2xl font-bold">房型介紹</h2>
+          <p class="text-gray-500 text-sm mt-1">選擇最適合您的居住空間</p>
+        </div>
+        <button onclick="refreshRooms()" id="refresh-btn" class="flex items-center gap-1.5 px-3 py-2 bg-white rounded-xl border border-gray-200 text-gray-500 text-sm shadow-sm active:scale-95 transition-all hover:border-blue-300 hover:text-blue-500">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span class="text-xs font-medium">重新整理</span>
+        </button>
       </div>
       <div id="rooms-filter" class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex gap-2 overflow-x-auto no-scrollbar hidden">
         <select id="filter-city" onchange="applyRoomFilter()" class="px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white text-sm min-w-[100px]">
@@ -518,6 +533,7 @@
         settings: {
           name: '壹參學生宿舍系統',
           dormAddress: '台中市西屯區文華路100號',
+          carouselInterval: '3',
           tenantRules: '1. 晚上10點後請降低音量\n2. 垃圾請確實分類\n3. 走廊請勿堆放雜物\n4. 禁養寵物',
           announcement: '本週五將進行水塔清洗，早上9點至下午5點將停水，請提早儲水。',
           showAnnouncement: '是',
@@ -1441,6 +1457,8 @@
           document.getElementById('reserve-form-container').classList.add('hidden');
           document.getElementById('reserve-success').classList.remove('hidden');
           document.getElementById('reserve-success').classList.add('flex');
+          // Mark room as visited
+          if (data.roomType) _markReservedRoomVisited(data.roomType);
           sendLiffMessage(
           `[預約看房通知]\n`+
           `姓名：${data.name}${data.gender?'（'+data.gender+'）':''}\n`+
@@ -1626,10 +1644,13 @@
       const container = document.getElementById('rooms-container');
       if (!rooms || rooms.length === 0) { container.innerHTML = '<div class="text-center py-10 text-gray-500">目前沒有符合條件的房間</div>'; return; }
       container.innerHTML = rooms.map(r => {
-        const images = r.image ? r.image.split(',') : ['https://picsum.photos/seed/room/600/400'];
-        const firstImage = images[0] || 'https://picsum.photos/seed/room/600/400';
-        const imgBadge = images.length > 1 ? `<div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg"><i class="fa-regular fa-images"></i> ${images.length}</div>` : '';
+        const images = r.image ? r.image.split(',').map(s=>s.trim()).filter(Boolean) : ['https://picsum.photos/seed/room/600/400'];
+        const interval = (appState.adminData && appState.adminData.settings && appState.adminData.settings.carouselInterval) ? Number(appState.adminData.settings.carouselInterval)*1000 : 3000;
+        const visited = _isRoomVisited(r.id);
+        const visitedBadge = visited ? `<div class="visited-badge"><i class="fa-solid fa-circle-check"></i> 已看過</div>` : '';
         const annualBadge = r.annualDiscount === '是' ? `<div class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-sm">年繳享優惠</div>` : '';
+        const dotsHtml = images.length > 1 ? `<div class="carousel-dot-wrap" id="cd-${r.id}">${images.map((_,i)=>'<div class="carousel-dot'+(i===0?' active':'')+'"></div>').join('')}</div>` : '';
+        const imgSlides = images.map(img=>`<img src="${img}" alt="${r.name}" loading="lazy" onerror="this.src='https://picsum.photos/seed/fallback/600/400'">`).join('');
         const feats = (r.features || '').split(',').filter(f => f.trim()).map(f => `<span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">${f}</span>`).join('');
         const extras = [];
         if (r.city || r.district || r.branch) extras.push(`📍 ${[r.city, r.district, r.branch].filter(Boolean).join(' ')}`);
@@ -1643,8 +1664,8 @@
         const extrasHtml = extras.map(f => `<span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-md">${f}</span>`).join('');
         const priceHtml = r.specialPrice ? `<div class="flex flex-col items-end"><span class="text-xs text-gray-400 line-through">NT$ ${r.price}</span><span class="text-red-500 font-bold text-lg">NT$ ${r.specialPrice}</span></div>` : `<span class="text-blue-600 font-bold text-lg">NT$ ${r.price}</span>`;
         const descHtml = r.description ? `<p class="text-sm text-gray-600 mb-3">${r.description}</p>` : '';
-        return `<div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-          <div class="relative"><img src="${firstImage}" class="w-full h-48 object-cover" onerror="this.src='https://picsum.photos/seed/fallback/600/400'">${annualBadge}${imgBadge}</div>
+        return `<div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100" onmouseenter="_stopCarousel('${r.id}')" onmouseleave="_startCarousel('${r.id}',${images.length},${interval})">
+          <div class="room-carousel-wrap">${annualBadge}${visitedBadge}<div class="room-carousel-inner" id="ci-${r.id}">${imgSlides}</div>${dotsHtml}</div>
           <div class="p-5">
             <div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold">${r.name}</h3><div class="text-right">${priceHtml}</div></div>
             <p class="text-sm text-gray-500 mb-2">空間大小：${r.size}${r.hasToilet && r.hasToilet !== '無' ? ` · ${r.hasToilet}` : ''}</p>
@@ -1656,6 +1677,15 @@
           </div>
         </div>`;
       }).join('');
+      // Start auto-carousels for all multi-image rooms
+      var _ci = (appState.adminData && appState.adminData.settings && appState.adminData.settings.carouselInterval)
+        ? Number(appState.adminData.settings.carouselInterval)*1000 : 3000;
+      if (_ci > 0 && rooms && rooms.length) {
+        rooms.forEach(function(r) {
+          var _imgs = r.image ? r.image.split(',').filter(Boolean) : [];
+          if (_imgs.length > 1) setTimeout(function(){ _startCarousel(r.id, _imgs.length, _ci); }, 100);
+        });
+      }
     }
 
     // ============================================================
@@ -1810,6 +1840,15 @@
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div><label class="block text-sm font-bold text-gray-700 mb-1">系統名稱</label><input type="text" name="systemName" value="${s.name || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500"></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">宿舍地址</label><input type="text" name="dormAddress" value="${s.dormAddress || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500"></div>
+          <div><label class="block text-sm font-bold text-gray-700 mb-1">房型圖片輪播間隔（秒）</label>
+            <select name="carouselInterval" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 bg-white">
+              <option value="2" ${s.carouselInterval==='2'?'selected':''}>2 秒（快）</option>
+              <option value="3" ${(!s.carouselInterval||s.carouselInterval==='3')?'selected':''}>3 秒（預設）</option>
+              <option value="5" ${s.carouselInterval==='5'?'selected':''}>5 秒</option>
+              <option value="8" ${s.carouselInterval==='8'?'selected':''}>8 秒（慢）</option>
+              <option value="0" ${s.carouselInterval==='0'?'selected':''}>關閉自動輪播</option>
+            </select>
+          </div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">租屋需知</label><textarea name="tenantRules" rows="4" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm resize-none">${s.tenantRules || ''}</textarea></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">公告事項</label><textarea name="announcement" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm resize-none">${s.announcement || ''}</textarea></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">WIFI 密碼</label><input type="text" name="wifiPassword" value="${s.wifiPassword || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>
@@ -1877,7 +1916,7 @@
       const btn = document.getElementById('save-settings-btn');
       btn.innerHTML = '<span class="loader border-white border-t-transparent w-4 h-4"></span> 儲存中...'; btn.disabled = true;
       const fd = new FormData(e.target);
-      const data = { systemName: fd.get('systemName'), dormAddress: fd.get('dormAddress'), tenantRules: fd.get('tenantRules'), announcement: fd.get('announcement'), wifiPassword: fd.get('wifiPassword') };
+      const data = { systemName: fd.get('systemName'), dormAddress: fd.get('dormAddress'), tenantRules: fd.get('tenantRules'), announcement: fd.get('announcement'), wifiPassword: fd.get('wifiPassword'), carouselInterval: fd.get('carouselInterval') || '3' };
       callGas('updateSettings', data, (res) => {
         btn.innerHTML = '儲存設定'; btn.disabled = false;
         if (res.success) { showToast('設定已儲存！','success'); if (data.systemName) document.getElementById('header-title').innerText = data.systemName; showAdminSection('settings'); }
@@ -2263,6 +2302,141 @@
           '<button onclick="closeGeneralModal();switchAccountView(\'login\');" class="w-full py-2 bg-gray-100 text-gray-700 rounded-xl text-sm">重新登入</button>' +
         '</div>';
       openGeneralModal('我的會員資料', html);
+    }
+
+
+    // ================================================================
+    // MISSING FUNCTIONS (re-injected)
+    // ================================================================
+    function renderDashboardSummary() {
+      if (!appState.adminData) return;
+      var d=appState.adminData, rooms=d.rooms||[], tenants=d.tenants||[];
+      var repairs=d.repairs||[], pays=d.rentPayments||[];
+      var total=rooms.length, rented=rooms.filter(function(r){return r.status==='出租中';}).length;
+      var pFix=repairs.filter(function(r){return r.status==='待處理';}).length;
+      var now=new Date(), yr=now.getFullYear(), mo=now.getMonth()+1;
+      var unpaid=pays.filter(function(p){return p.year===yr&&p.month===mo&&p.status!=='已繳清';}).length;
+      var exp=tenants.filter(function(t){
+        if(!t.contractEnd) return false;
+        return Math.ceil((new Date(t.contractEnd)-now)/86400000)<=30&&Math.ceil((new Date(t.contractEnd)-now)/86400000)>=0;
+      }).length;
+      var rate=total?Math.round(rented/total*100):0;
+      var mk=function(label,val,col){return '<div class="bg-'+col+'-50 p-3 rounded-2xl text-center border border-'+col+'-100 col-span-1"><div class="text-2xl font-black text-'+col+'-600">'+val+'</div><div class="text-[10px] text-'+col+'-700 font-medium mt-0.5">'+label+'</div></div>';};
+      var html='<div class="grid grid-cols-2 gap-2 mb-4 col-span-2">'
+        +mk('出租率 ('+rented+'/'+total+')',rate+'%','blue')
+        +mk('本月未繳費',unpaid,unpaid>0?'red':'green')
+        +mk('待處理報修',pFix,pFix>0?'orange':'gray')
+        +mk('合約即將到期',exp,exp>0?'yellow':'gray')
+        +'</div>';
+      var el=document.getElementById('admin-dashboard-summary');
+      if(el) el.innerHTML=html;
+      if(exp>0) showToast('⚠ 有 '+exp+' 位租客合約將在 30 天內到期','warn',5000);
+    }
+
+    function exportTenantsCSV() {
+      if(!appState.adminData||!appState.adminData.tenants.length){showToast('沒有租客資料可匯出','warn');return;}
+      var rows=[['房號','姓名','電話','合約開始','合約結束','繳費方式','繳費情形']];
+      appState.adminData.tenants.forEach(function(t){
+        rows.push([t.room,t.name,t.phone,t.contractStart,t.contractEnd,t.paymentMethod,t.paymentStatus]);
+      });
+      var csv=rows.map(function(r){return r.map(function(v){return '"'+(v||'').toString().replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+      var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+      var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='租客名單_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+      showToast('租客名單已匯出','success');
+    }
+
+    function showElectricityCalc() {
+      showInput({icon:'fa-bolt',iconBg:'#fefce8',iconColor:'#ca8a04',
+        title:'電費計算',msg:'格式：本月度數,上月度數（每度5元）',
+        placeholder:'例如：1234,1100',okText:'計算'
+      }).then(function(v){
+        if(!v) return;
+        var parts=v.split(',');
+        var curr=Number(parts[0]||0), prev=Number(parts[1]||0);
+        var units=Math.max(0,curr-prev), fee=units*5;
+        showAlert({icon:'fa-bolt',iconBg:'#fefce8',iconColor:'#ca8a04',
+          title:'電費計算結果',
+          msg:units+'度 × 5元 = NT$ '+fee.toLocaleString(),
+          okText:'了解',cancelText:false
+        });
+      });
+    }
+
+
+    // ================================================================
+    // ROOM CARD CAROUSEL (auto-play)
+    // ================================================================
+    var _carouselTimers = {}; // roomId → setInterval id
+
+    function _startCarousel(roomId, imageCount, intervalMs) {
+      if (imageCount <= 1) return;
+      var idx = 0;
+      _carouselTimers[roomId] = setInterval(function() {
+        idx = (idx + 1) % imageCount;
+        _setCarouselSlide(roomId, idx);
+      }, intervalMs || 3000);
+    }
+
+    function _stopCarousel(roomId) {
+      if (_carouselTimers[roomId]) {
+        clearInterval(_carouselTimers[roomId]);
+        delete _carouselTimers[roomId];
+      }
+    }
+
+    function _setCarouselSlide(roomId, idx) {
+      var inner = document.getElementById('ci-'+roomId);
+      var dots  = document.querySelectorAll('#cd-'+roomId+' .carousel-dot');
+      if (inner) inner.style.transform = 'translateX(-'+idx+'00%)';
+      dots.forEach(function(d,i){ d.classList.toggle('active', i===idx); });
+    }
+
+    function _stopAllCarousels() {
+      Object.keys(_carouselTimers).forEach(function(id){ _stopCarousel(id); });
+    }
+
+    // ================================================================
+    // VISITED ROOMS (localStorage)
+    // ================================================================
+    var VISITED_KEY = 'dorm_visited_rooms';
+
+    function _getVisitedRooms() {
+      try { return JSON.parse(localStorage.getItem(VISITED_KEY)||'[]'); } catch(e){ return []; }
+    }
+    function _markRoomVisited(roomId) {
+      var v = _getVisitedRooms();
+      if (!v.includes(roomId)) { v.push(roomId); localStorage.setItem(VISITED_KEY, JSON.stringify(v)); }
+    }
+    function _isRoomVisited(roomId) { return _getVisitedRooms().includes(roomId); }
+
+    // Mark visited when user completes reservation
+    function _markReservedRoomVisited(roomName) {
+      if (!appState.adminData) return;
+      var room = appState.adminData.rooms.find(function(r){ return r.name === roomName || (r.branch+' - '+r.name)===roomName; });
+      if (room) _markRoomVisited(room.id);
+    }
+
+    // ================================================================
+    // REFRESH ROOMS
+    // ================================================================
+    function refreshRooms() {
+      _stopAllCarousels();
+      var btn = document.getElementById('refresh-btn');
+      if (btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span class="text-xs">載入中</span>'; btn.disabled = true; }
+      var container = document.getElementById('rooms-container');
+      if (container) container.innerHTML = '<div class="text-center py-10 text-gray-400"><span class="loader border-gray-200 border-t-blue-600"></span><p class="mt-2">載入中...</p></div>';
+      callGas('getAdminData', null, function(res) {
+        if (btn) { btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> <span class="text-xs font-medium">重新整理</span>'; btn.disabled = false; }
+        if (res && res.success && res.data) {
+          appState.adminData = res.data;
+          renderRoomsList(res.data.rooms || []);
+          showToast('房型資訊已更新','success',1500);
+        } else {
+          showToast('重新整理失敗','error');
+          renderRoomsList((appState.adminData && appState.adminData.rooms) || []);
+        }
+      });
     }
 
   </script>
