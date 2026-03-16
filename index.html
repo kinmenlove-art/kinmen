@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.0.3</title>
+  <title>壹參學生宿舍系統 VER1.0.4</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -953,24 +953,41 @@
         ? encodeURIComponent(JSON.stringify(data)) : '';
       var url = GAS_URL + '?func=' + encodeURIComponent(func) +
                 (dataStr ? '&data=' + dataStr : '');
-      fetch(url, { method:'GET', redirect:'follow' })
-        .then(function(res){ return res.text(); })
+
+      console.log('[GAS] 呼叫:', func, '| URL:', url.slice(0, 120) + '...');
+
+      var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var timer = controller ? setTimeout(function(){ controller.abort(); }, 28000) : null;
+
+      fetch(url, {
+        method: 'GET',
+        redirect: 'follow',
+        signal: controller ? controller.signal : undefined
+      })
+        .then(function(res){
+          if (timer) clearTimeout(timer);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.text();
+        })
         .then(function(text){
-          if (text.trim().startsWith('<')) {
-            console.warn('[GAS] 回傳 HTML，fallback to mock');
+          var trimmed = text.trim();
+          if (!trimmed || trimmed.startsWith('<') || trimmed.startsWith('<!')) {
+            console.warn('[GAS] 回傳 HTML (可能未部署或未授權)，fallback to mock. func='+func);
             _callMock(func, data, cb);
             return;
           }
           try {
-            var json = JSON.parse(text);
+            var json = JSON.parse(trimmed);
+            console.log('[GAS] 成功:', func, '| success=', json.success);
             if (cb) cb(json);
           } catch(e) {
-            console.error('[GAS] JSON 解析失敗:', text.slice(0,200));
+            console.error('[GAS] JSON 解析失敗 func='+func+':', trimmed.slice(0, 300));
             _callMock(func, data, cb);
           }
         })
         .catch(function(err){
-          console.warn('[GAS] fetch 失敗，切換 mock:', err.message);
+          if (timer) clearTimeout(timer);
+          console.warn('[GAS] fetch 失敗 func='+func+':', err.message, '→ mock');
           _callMock(func, data, cb);
         });
     }
@@ -1271,51 +1288,68 @@
     }
 
     // loadRooms 的 Promise 版本
-    function loadRoomsAsync() {
-      return new Promise((resolve, reject) => {
-        const container = document.getElementById('rooms-container');
-        if (container) container.innerHTML = '<div class="text-center py-10 text-gray-400"><span class="loader border-gray-200 border-t-blue-600"></span><p class="mt-2">載入中...</p></div>';
+    // 將 GAS 資料套用到 appState + UI
+    function _applyAdminData(data) {
+      appState.adminData = data;
+      var s = data.settings || {};
+      var hdr = document.getElementById('header-title');
+      if (hdr && s.name) hdr.innerText = s.name;
+      var promoRef = document.getElementById('promo-referral');
+      var promoAnn = document.getElementById('promo-annual');
+      if (promoRef) promoRef.style.display = s.referralBonus !== 'false' ? 'block' : 'none';
+      if (promoAnn) promoAnn.style.display = s.annualDiscount !== 'false' ? 'block' : 'none';
+      var dormEl = document.getElementById('display-dorm-address');
+      if (dormEl) dormEl.innerText = s.dormAddress || '';
+      var rooms = data.rooms || [];
+      var cities    = [...new Set(rooms.map(r => r.city).filter(Boolean))];
+      var districts = [...new Set(rooms.map(r => r.district).filter(Boolean))];
+      var branches  = [...new Set(rooms.map(r => r.branch).filter(Boolean))];
+      if (cities.length > 0 || branches.length > 0) {
+        var rf = document.getElementById('rooms-filter');
+        if (rf) rf.classList.remove('hidden');
+        var fc = document.getElementById('filter-city');
+        var fd = document.getElementById('filter-district');
+        var fb = document.getElementById('filter-branch');
+        if (fc) fc.innerHTML = '<option value="">所有縣市</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+        if (fd) fd.innerHTML = '<option value="">所有區域</option>' + districts.map(d => `<option value="${d}">${d}</option>`).join('');
+        if (fb) fb.innerHTML = '<option value="">所有分館</option>' + branches.map(b => `<option value="${b}">${b}</option>`).join('');
+      }
+      var sel = document.getElementById('reserve-room-select');
+      if (sel) sel.innerHTML = '<option value="尚未決定，都想看看">尚未決定，都想看看</option>' +
+        rooms.map(r => `<option value="${(r.branch ? r.branch + ' - ' : '') + r.name}">${(r.branch ? r.branch + ' - ' : '') + r.name}</option>`).join('');
+      renderRoomsList(rooms);
+    }
 
-        // 8 秒逾時保護
-        const tid = setTimeout(() => reject(new Error('連線逾時，請檢查網路狀態後重試')), 8000);
+    function loadRoomsAsync() {
+      return new Promise((resolve) => {   // ← 只 resolve，永不 reject
+        var container = document.getElementById('rooms-container');
+        if (container) container.innerHTML = '<div class="text-center py-10 text-gray-400"><span class="loader border-gray-200 border-t-blue-600"></span><p class="mt-2">連接伺服器中...</p></div>';
+
+        // 25 秒逾時 → fallback 到 mock，繼續正常執行（不顯示錯誤）
+        var tid = setTimeout(() => {
+          console.warn('[loadRoomsAsync] GAS 逾時，切換到示範資料');
+          _applyAdminData(mockGas.db);
+          showToast('GAS 連線逾時，顯示示範資料', 'warn', 4000);
+          resolve();
+        }, 25000);
 
         callGas('getAdminData', null, (res) => {
           clearTimeout(tid);
-          try {
-            if (res && res.success && res.data) {
-              appState.adminData = res.data;
-              const s = res.data.settings || {};
-              if (s.name) document.getElementById('header-title').innerText = s.name;
-
-              const promoRef = document.getElementById('promo-referral');
-              const promoAnn = document.getElementById('promo-annual');
-              if (promoRef) promoRef.style.display = s.referralBonus !== 'false' ? 'block' : 'none';
-              if (promoAnn) promoAnn.style.display = s.annualDiscount !== 'false' ? 'block' : 'none';
-
-              const dormEl = document.getElementById('display-dorm-address');
-              if (dormEl) dormEl.innerText = s.dormAddress || '';
-
-              const rooms = res.data.rooms || [];
-              const cities    = [...new Set(rooms.map(r => r.city).filter(Boolean))];
-              const districts = [...new Set(rooms.map(r => r.district).filter(Boolean))];
-              const branches  = [...new Set(rooms.map(r => r.branch).filter(Boolean))];
-              if (cities.length > 0 || branches.length > 0) {
-                document.getElementById('rooms-filter').classList.remove('hidden');
-                document.getElementById('filter-city').innerHTML     = '<option value="">所有縣市</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
-                document.getElementById('filter-district').innerHTML = '<option value="">所有區域</option>' + districts.map(d => `<option value="${d}">${d}</option>`).join('');
-                document.getElementById('filter-branch').innerHTML   = '<option value="">所有分館</option>' + branches.map(b => `<option value="${b}">${b}</option>`).join('');
-              }
-
-              const sel = document.getElementById('reserve-room-select');
-              if (sel) sel.innerHTML = '<option value="尚未決定，都想看看">尚未決定，都想看看</option>' + rooms.map(r => `<option value="${(r.branch ? r.branch + ' - ' : '') + r.name}">${(r.branch ? r.branch + ' - ' : '') + r.name}</option>`).join('');
-
-              renderRoomsList(rooms);
+          if (res && res.success && res.data) {
+            try {
+              _applyAdminData(res.data);
               resolve();
-            } else {
-              reject(new Error((res && res.message) ? res.message : '伺服器回應異常，請稍後再試'));
+            } catch(parseErr) {
+              console.error('[loadRoomsAsync] 資料解析失敗:', parseErr);
+              _applyAdminData(mockGas.db);
+              resolve();
             }
-          } catch (parseErr) {
-            reject(new Error('資料解析失敗：' + parseErr.message));
+          } else {
+            // GAS 回傳失敗 → fallback 到 mock，繼續正常執行
+            console.warn('[loadRoomsAsync] GAS 失敗:', res && res.message);
+            _applyAdminData(mockGas.db);
+            showToast('無法連接伺服器，顯示示範資料', 'warn', 3000);
+            resolve();
           }
         });
       });
