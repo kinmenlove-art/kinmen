@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.0.8</title>
+  <title>壹參學生宿舍系統 VER1.0.9</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -108,7 +108,7 @@
       </div>
       <h1 class="text-xl font-bold" id="header-title">壹參學生宿舍系統</h1>
     </div>
-    <span class="text-xs bg-blue-600 px-2 py-1 rounded-full font-medium border border-blue-400" id="header-version">VER1.0.8</span>
+    <span class="text-xs bg-blue-600 px-2 py-1 rounded-full font-medium border border-blue-400" id="header-version">載入中...</span>
   </header>
 
   <!-- Main Content -->
@@ -170,10 +170,10 @@
             <div><label class="block text-sm font-medium text-gray-700 mb-1">入住人數</label><input type="number" name="peopleCount" value="1" min="1" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"></div>
             <div><label class="block text-sm font-medium text-gray-700 mb-1">房間數量</label><input type="number" name="roomCount" value="1" min="1" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"></div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">預約日期 *</label><input type="date" name="date" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"></div>
+          <div class="space-y-4">
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">預約日期 *</label><input type="date" name="date" required class="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"></div>
             <div><label class="block text-sm font-medium text-gray-700 mb-1">方便時段</label>
-              <select name="time" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <select name="time" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm">
                 <option value="早上 08:00-10:00">早上 08:00-10:00</option>
                 <option value="早上 10:00-12:00">早上 10:00-12:00</option>
                 <option value="下午 12:00-14:00">下午 12:00-14:00</option>
@@ -717,6 +717,14 @@
   </div></div>
   <div id="toast-container"></div>
   <script>
+
+    // ── App version (single source of truth) ────────────────
+    const APP_VERSION = 'VER1.0.9';
+    document.addEventListener('DOMContentLoaded', function() {
+      var el = document.getElementById('header-version');
+      if (el) el.textContent = APP_VERSION;
+    });
+
     // ============================================================
     // [FIX] callGas — 直接使用 mock，不嘗試 fetch GAS URL
     // 這是造成「卡在載入中」的根本原因：
@@ -758,8 +766,8 @@
           { id: 'REF01', referrer: '測試租客', referee: '王小明', phone: '0987654321', status: '審核中', createdAt: '2024-03-11' }
         ],
         admins: [
-          { phone: '0937942582', name: '管理員A', permissions: ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts'] },
-          { phone: '0982387092', name: '管理員B', permissions: ['issues','repairs'] }
+          { phone: '0937942582', name: '管理員A', lineId: 'Uf75aa7a922f3598d4fd6ba6201d8cfd0', permissions: ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts','faq'] },
+          { phone: '0982387092', name: '管理員B', lineId: '', permissions: ['issues','repairs'] }
         ],
         bankTransactions: [
           { id: 'TX001', date: '2024-03-05', amount: 10999, name: '測試租客', matched: false },
@@ -1500,8 +1508,11 @@
       try {
         await liff.init({ liffId: '2009451164-XyyLYB0l' });
         if (!liff.isInClient()) {
-          document.getElementById('visitor-modal').classList.remove('hidden');
-          document.getElementById('visitor-modal').classList.add('flex');
+          // 只在未登入時才顯示訪客提醒
+          if (!appState.user) {
+            document.getElementById('visitor-modal').classList.remove('hidden');
+            document.getElementById('visitor-modal').classList.add('flex');
+          }
         }
         // Auto-fetch LINE profile if already logged in
         if (liff.isLoggedIn()) {
@@ -1520,9 +1531,12 @@
           if (loginView) loginView.appendChild(hint);
         }
       } catch (e) {
-        // LIFF 失敗不影響主流程
-        document.getElementById('visitor-modal').classList.remove('hidden');
-        document.getElementById('visitor-modal').classList.add('flex');
+        // LIFF 失敗 — 只在未登入時顯示訪客提醒
+        console.warn('[initLiff]', e && e.message);
+        if (!appState.user) {
+          var vm = document.getElementById('visitor-modal');
+          if (vm) { vm.classList.remove('hidden'); vm.classList.add('flex'); }
+        }
       }
       _hookFormMemory();
       _autoFillForms();
@@ -1611,6 +1625,9 @@
     // --- [FIX #2] renderAccountView with null-safe badge ---
     function renderAccountView() {
       if (!appState.user) { switchAccountView('login'); return; }
+      // Hide visitor modal when user is logged in
+      var vm = document.getElementById('visitor-modal');
+      if (vm) { vm.classList.add('hidden'); vm.classList.remove('flex'); }
       if (appState.user.role === 'admin') {
         document.getElementById('admin-welcome-msg').innerText = `歡迎回來，${appState.user.name}`;
         renderAdminButtons();
