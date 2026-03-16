@@ -801,24 +801,32 @@
         // Pre-fill login phone if remembered
         const saved = _loadUserMemory();
         if (saved && saved.phone) {
-          document.getElementById('login-phone').value = saved.phone;
+          const phoneEl = document.getElementById('login-phone');
+          if (phoneEl) phoneEl.value = saved.phone;
         }
         showToast('LINE 帳號已識別：' + _lineProfile.name, 'success');
         // Try auto-login with LINE ID
         _tryAutoLoginWithLine(_lineProfile.lineId);
       } catch (e) {
-        showToast('無法取得 LINE 資料：' + e.message, 'error');
+        // 靜默處理（可能在非 LIFF 環境、或用戶未授權）
+        console.warn('[_fetchLineProfile] 無法取得 LINE 資料:', e && e.message ? e.message : e);
+        // 只在 LIFF 環境且有真實錯誤才顯示提示
+        if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient() && e && e.message) {
+          showToast('LINE 資料取得失敗，請重試', 'warn', 3000);
+        }
       }
     }
 
     function _showLineProfileInLogin(profile) {
-      const statusEl = document.getElementById('line-login-status');
-      const avatarEl = document.getElementById('line-avatar');
-      const nameEl   = document.getElementById('line-display-name');
-      if (!statusEl) return;
-      if (profile.avatar) avatarEl.src = profile.avatar;
-      else avatarEl.style.display = 'none';
-      nameEl.textContent = profile.name;
+      var statusEl = document.getElementById('line-login-status');
+      var avatarEl = document.getElementById('line-avatar');
+      var nameEl   = document.getElementById('line-display-name');
+      if (!statusEl) return;  // 不在登入頁面，靜默略過
+      if (avatarEl) {
+        if (profile.avatar) avatarEl.src = profile.avatar;
+        else avatarEl.style.display = 'none';
+      }
+      if (nameEl) nameEl.textContent = profile.name || '';
       statusEl.classList.remove('hidden');
       statusEl.classList.add('flex');
     }
@@ -845,8 +853,7 @@
             // 無 LINE 資料 → 提示輸入手機
             var hint = document.getElementById('line-login-hint');
             if (hint) hint.textContent = '請輸入手機號碼完成首次綁定';
-            var ph = document.getElementById('login-phone');
-            if (ph) ph.focus();
+            var ph = document.getElementById('login-phone'); if (ph) { ph.focus(); }
           }
         }
       });
