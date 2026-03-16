@@ -1038,12 +1038,12 @@
       var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       var timer = controller ? setTimeout(function(){ controller.abort(); }, 28000) : null;
       // 判斷是否使用 POST（大資料或寫入操作改用 POST body 避免 URL 2048 限制）
-      var WRITE_FUNCS = ['addRoom','updateRoom','addTenant','updateTenant','registerMember',
+      var WRITE_FUNCS = ['addRoom','updateRoom','updateRoomStatus','addTenant','updateTenant','registerMember',
         'registerMemberByLine','updateMemberProfile','submitReservation','updateReservationStatus',
         'submitRepair','updateRepairStatus','submitIssue','updateIssueStatus','submitReferral',
         'addAdmin','updateAdmin','deleteAdmin','updateSettings','addFAQ','updateFAQ','deleteFAQ',
         'submitMeterRecord','signContract','addExpense','addPayment','markPaid','addBulletin',
-        'updateBulletin','deleteBulletin','bookPublicArea','addCheckout','addVendor','updateVendor'];
+        'updateBulletin','deleteBulletin','bookPublicArea','addCheckout','addVendor','updateVendor','updateRentPayment'];
       var usePost = WRITE_FUNCS.indexOf(func) !== -1;
       // 也依資料大小判斷：超過 1500 字元就用 POST
       var dataJson = (data !== null && data !== undefined) ? JSON.stringify(data) : '';
