@@ -1057,7 +1057,6 @@
         fetchOpts = {
           method: 'POST',
           redirect: 'follow',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ func: func, data: data }),
           signal: controller ? controller.signal : undefined
         };
