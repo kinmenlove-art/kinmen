@@ -2741,9 +2741,36 @@
       const available = appState.adminData.rooms.filter(r => r.status === '空房' || r.id === tenant.room);
       document.getElementById('admin-overlay-title').innerText = '編輯租客';
       document.getElementById('admin-content').innerHTML = `<form onsubmit="handleEditTenantSubmit(event,'${tenant.phone}')" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 text-sm">
-        <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-500 mb-1">房號 *</label><select name="room" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white">${available.map(r=>`<option value="${r.id}" ${r.id===tenant.room?'selected':''}>${r.id} ${r.name}</option>`).join('')}</select></div><div><label class="block text-xs text-gray-500 mb-1">姓名 *</label><input type="text" name="name" value="${tenant.name}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div></div>
-        <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-500 mb-1">電話 *</label><input type="tel" name="phone" value="${tenant.phone}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div><div><label class="block text-xs text-gray-500 mb-1">繳費情形</label><input type="text" name="paymentStatus" value="${tenant.paymentStatus || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div></div>
-        <div><label class="block text-xs text-gray-500 mb-1">合約期間</label><div class="flex items-center gap-2"><input type="date" name="contractStart" value="${tenant.contractStart || ''}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"><span class="text-gray-400">至</span><input type="date" name="contractEnd" value="${tenant.contractEnd || ''}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs text-gray-500 mb-1">房號 *</label><select name="room" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white">${available.map(r=>`<option value="${r.id}" ${r.id===tenant.room?'selected':''}>${r.id} ${r.name}</option>`).join('')}</select></div>
+          <div><label class="block text-xs text-gray-500 mb-1">姓名 *</label><input type="text" name="name" value="${tenant.name}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs text-gray-500 mb-1">電話 *</label><input type="tel" name="phone" value="${tenant.phone}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+          <div><label class="block text-xs text-gray-500 mb-1">性別</label><select name="gender" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white"><option value="男" ${tenant.gender==='男'?'selected':''}>男</option><option value="女" ${tenant.gender==='女'?'selected':''}>女</option></select></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs text-gray-500 mb-1">身份證字號</label><input type="text" name="idNumber" value="${tenant.idNumber || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+          <div><label class="block text-xs text-gray-500 mb-1">出生年月日</label><input type="date" name="birthday" value="${tenant.birthday || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+        </div>
+        <div class="p-3 bg-gray-50 rounded-xl space-y-3">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">保證人資訊</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs text-gray-500 mb-1">姓名</label><input type="text" name="guarantorName" value="${tenant.guarantorName || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+            <div><label class="block text-xs text-gray-500 mb-1">電話</label><input type="tel" name="guarantorPhone" value="${tenant.guarantorPhone || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+          </div>
+          <div><label class="block text-xs text-gray-500 mb-1">關係</label><input type="text" name="guarantorRelation" value="${tenant.guarantorRelation || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs text-gray-500 mb-1">初始電錶</label><input type="number" name="initialMeter" value="${tenant.initialMeter || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+          <div><label class="block text-xs text-gray-500 mb-1">年繳優惠</label><select name="isAnnual" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white"><option value="否" ${tenant.isAnnual!=='是'?'selected':''}>否</option><option value="是" ${tenant.isAnnual==='是'?'selected':''}>是</option></select></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs text-gray-500 mb-1">繳費方式</label><select name="paymentMethod" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white"><option value="匯款" ${tenant.paymentMethod==='匯款'?'selected':''}>匯款</option><option value="現金" ${tenant.paymentMethod==='現金'?'selected':''}>現金</option><option value="LINE Pay" ${tenant.paymentMethod==='LINE Pay'?'selected':''}>LINE Pay</option></select></div>
+          <div><label class="block text-xs text-gray-500 mb-1">繳費情形</label><input type="text" name="paymentStatus" value="${tenant.paymentStatus || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+        </div>
+        <div><label class="block text-xs text-gray-500 mb-1">合約期間 *</label><div class="flex items-center gap-2"><input type="date" name="contractStart" value="${tenant.contractStart || ''}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"><span class="text-gray-400">至</span><input type="date" name="contractEnd" value="${tenant.contractEnd || ''}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div></div>
+        <div><label class="block text-xs text-gray-500 mb-1">登入密碼</label><input type="text" name="password" value="${tenant.password || ''}" placeholder="預設手機後四碼" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
         <div class="flex gap-3 pt-2"><button type="button" onclick="showAdminSection('tenants')" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm">取消</button><button type="submit" id="edit-tenant-btn" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium text-sm">儲存修改</button></div>
       </form>`;
     }
@@ -3558,7 +3585,7 @@
     function adminConfirmReservation(idx, status) {
       var d = appState.adminData && appState.adminData.reservations && appState.adminData.reservations[idx];
       if (!d) return;
-      callGas('updateReservationStatus', { index: idx, status: status }, function(res) {
+      callGas('updateReservationStatus', { timestamp: d.timestamp, status: status }, function(res) {
         if (res && res.success) {
           d.status = status;
           showToast(status==='已確認' ? '已確認預約' : '已取消預約', status==='已確認'?'success':'info');
@@ -3576,7 +3603,7 @@
         placeholder: '例如：已確認，請於該日期準時前來', okText:'送出回覆', isTextarea:true
       }).then(function(reply) {
         if (!reply) return;
-        callGas('updateReservationStatus', { index: idx, status: '已確認', adminReply: reply }, function(res) {
+        callGas('updateReservationStatus', { timestamp: d.timestamp, status: '已確認', adminReply: reply }, function(res) {
           if (res && res.success) {
             d.status = '已確認'; d.adminReply = reply;
             showToast('回覆已送出','success');
@@ -3610,7 +3637,7 @@
       if (!newDate || !newTime) return;
       var d = appState.adminData && appState.adminData.reservations && appState.adminData.reservations[idx];
       callGas('updateReservationStatus', {
-        index:      idx,
+        timestamp:  d.timestamp,
         newDate:    newDate.value,
         newTime:    newTime.value,
         status:     '已確認',
