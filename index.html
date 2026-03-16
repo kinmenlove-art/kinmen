@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.1.0</title>
+  <title>壹參學生宿舍系統 VER1.1.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -712,7 +712,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER1.1.0';
+    const APP_VERSION = 'VER1.1.1';
     document.addEventListener('DOMContentLoaded', function() {
       var el = document.getElementById('header-version');
       if (el) el.textContent = APP_VERSION;
@@ -2094,13 +2094,63 @@
     }
 
     function shareToFriend() {
-      if (navigator.share) {
-        navigator.share({ title: '壹參學生宿舍', text: '推薦好友入住，雙方皆享 1,000 元租金折抵！', url: window.location.href }).catch(console.error);
-      } else if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
-        liff.shareTargetPicker([{ type: 'text', text: '壹參學生宿舍 - 推薦好友入住享優惠！' + window.location.href }]).catch(console.error);
-      } else {
-        showToast('請複製網址分享給好友','info',5000);
+      var shareUrl  = window.location.href;
+      var shareText = '壹參學生宿舍 - 推薦好友入住，雙方皆享 1,000 元租金折抵！\n' + shareUrl;
+
+      // Option 1: In LINE app → use shareTargetPicker (send to LINE friends)
+      if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
+        liff.shareTargetPicker([{
+          type: 'text',
+          text: shareText
+        }]).then(function(res) {
+          if (res && res.status === 'success') showToast('已成功分享給好友 🎉', 'success');
+        }).catch(function(err) {
+          // Fallback to copy
+          _copyShareUrl(shareUrl);
+        });
+        return;
       }
+      // Option 2: Web Share API (iOS/Android native share sheet)
+      if (navigator.share) {
+        navigator.share({
+          title: '壹參學生宿舍',
+          text: '推薦好友入住，雙方皆享 1,000 元租金折抵！',
+          url:  shareUrl
+        }).catch(function(e) {
+          if (e.name !== 'AbortError') _copyShareUrl(shareUrl);
+        });
+        return;
+      }
+      // Option 3: Show modal with copy + LINE open link
+      _showShareModal(shareUrl, shareText);
+    }
+
+    function _copyShareUrl(url) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() {
+          showToast('網址已複製到剪貼簿 📋', 'success', 3000);
+        }).catch(function() {
+          _showShareModal(url, '壹參學生宿舍\n' + url);
+        });
+      } else {
+        _showShareModal(url, '壹參學生宿舍\n' + url);
+      }
+    }
+
+    function _showShareModal(url, text) {
+      var html =
+        '<div class="space-y-4">' +
+          '<p class="text-sm text-gray-600">選擇分享方式：</p>' +
+          '<a href="https://line.me/R/msg/text/?' + encodeURIComponent(text) + '" target="_blank" class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100">' +
+            '<div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shrink-0"><i class="fa-brands fa-line text-white text-xl"></i></div>' +
+            '<div><div class="font-bold text-green-800">用 LINE 分享</div><div class="text-xs text-green-600">開啟 LINE 選擇好友傳送</div></div>' +
+          '</a>' +
+          '<button onclick="_copyShareUrl(\'' + url + '\')" class="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 w-full">' +
+            '<div class="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center shrink-0"><i class="fa-regular fa-copy text-white text-lg"></i></div>' +
+            '<div class="text-left"><div class="font-bold text-gray-700">複製網址</div><div class="text-xs text-gray-500 break-all">' + url + '</div></div>' +
+          '</button>' +
+        '</div>';
+      openGeneralModal('分享給好友', html);
     }
 
     // [FIX #3] 補充未定義函數
@@ -2214,9 +2264,9 @@
     function showAdminSection(section) {
       document.getElementById('admin-overlay').classList.remove('hidden');
       document.getElementById('admin-overlay').classList.add('flex');
-      document.getElementById('admin-overlay-content').innerHTML = '<div class="text-center py-10"><span class="loader"></span></div>';
+      document.getElementById('admin-content').innerHTML = '<div class="text-center py-10"><span class="loader"></span></div>';
       callGas('getAdminData', null, (res) => {
-        if (!res.success) { document.getElementById('admin-overlay-content').innerHTML = '<div class="text-center text-red-500 py-10">載入失敗</div>'; return; }
+        if (!res.success) { document.getElementById('admin-content').innerHTML = '<div class="text-center text-red-500 py-10">載入失敗</div>'; return; }
         appState.adminData = res.data;
         renderAdminSection(section, res.data);
       });
@@ -2228,7 +2278,7 @@
     }
 
     function renderAdminSection(section, data) {
-      const c = document.getElementById('admin-overlay-content');
+      const c = document.getElementById('admin-content');
       document.getElementById('admin-overlay-title').innerText = {
         rooms: '房間管理', tenants: '租客管理', reservations: '預約管理', issues: '留言管理',
         repairs: '報修管理', referrals: '推薦管理', payments: '房租收款', stats: '綜合分析',
@@ -2391,7 +2441,14 @@
         c.innerHTML = html + '</div>';
       } else if (section === 'settings') {
         const s = data.settings;
+        // Show current version in settings
+        const vd = document.getElementById('settings-version-display');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.1');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
+          <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
+            <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
+            <span class="text-[10px] text-blue-500">版本資訊由系統管理</span>
+          </div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">系統名稱</label><input type="text" name="systemName" value="${s.name || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500"></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">宿舍地址</label><input type="text" name="dormAddress" value="${s.dormAddress || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500"></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">房型圖片輪播間隔（秒）</label>
@@ -2572,7 +2629,7 @@
     function showAddRoomForm(room = null) {
       const getVal = (k, d='') => room && room[k] !== undefined ? room[k] : d;
       document.getElementById('admin-overlay-title').innerText = room ? '複製房間' : '新增房間';
-      document.getElementById('admin-overlay-content').innerHTML = `<form onsubmit="handleAddRoomSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 text-sm">
+      document.getElementById('admin-content').innerHTML = `<form onsubmit="handleAddRoomSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 text-sm">
         <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-500 mb-1">房間號碼 *</label><input type="text" name="id" value="${getVal('id') ? getVal('id') + '-copy' : ''}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" placeholder="R03"></div><div><label class="block text-xs text-gray-500 mb-1">房間名稱 *</label><input type="text" name="name" value="${getVal('name')}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div></div>
         <div class="grid grid-cols-3 gap-3"><div><label class="block text-xs text-gray-500 mb-1">租金原價 *</label><input type="number" name="price" value="${getVal('price')}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div><div><label class="block text-xs text-gray-500 mb-1">租金特價</label><input type="number" name="specialPrice" value="${getVal('specialPrice')}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div><div><label class="block text-xs text-gray-500 mb-1">坪數 *</label><input type="text" name="size" value="${getVal('size')}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" placeholder="6 坪"></div></div>
         <div class="grid grid-cols-3 gap-3">
@@ -2614,7 +2671,7 @@
     function showAddTenantForm() {
       const available = appState.adminData.rooms.filter(r => r.status === '空房');
       document.getElementById('admin-overlay-title').innerText = '新增租客';
-      document.getElementById('admin-overlay-content').innerHTML = `<form onsubmit="handleAddTenantSubmit(event)" id="add-tenant-form" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 text-sm">
+      document.getElementById('admin-content').innerHTML = `<form onsubmit="handleAddTenantSubmit(event)" id="add-tenant-form" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 text-sm">
         <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-500 mb-1">房號 *</label><select name="room" id="tenant-room-select" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white"><option value="">請選擇空房</option>${available.map(r=>`<option value="${r.id}">${r.id} ${r.name}</option>`).join('')}</select></div><div><label class="block text-xs text-gray-500 mb-1">姓名 *</label><input type="text" name="name" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div></div>
         <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-500 mb-1">電話 *</label><input type="tel" name="phone" required pattern="09\\d{8}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" placeholder="09XXXXXXXX"></div><div><label class="block text-xs text-gray-500 mb-1">性別</label><select name="gender" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white"><option value="男">男</option><option value="女">女</option></select></div></div>
         <div><label class="block text-xs text-gray-500 mb-1">合約期間 * <span id="contract-days" class="text-blue-600 font-bold ml-2"></span></label><div class="flex items-center gap-2"><input type="date" name="contractStart" id="contractStart" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" onchange="calculateContractDays()"><span class="text-gray-400">至</span><input type="date" name="contractEnd" id="contractEnd" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" onchange="calculateContractDays()"></div></div>
@@ -2640,7 +2697,7 @@
       if (!tenant) return;
       const available = appState.adminData.rooms.filter(r => r.status === '空房' || r.id === tenant.room);
       document.getElementById('admin-overlay-title').innerText = '編輯租客';
-      document.getElementById('admin-overlay-content').innerHTML = `<form onsubmit="handleEditTenantSubmit(event,'${tenant.phone}')" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 text-sm">
+      document.getElementById('admin-content').innerHTML = `<form onsubmit="handleEditTenantSubmit(event,'${tenant.phone}')" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 text-sm">
         <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-500 mb-1">房號 *</label><select name="room" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white">${available.map(r=>`<option value="${r.id}" ${r.id===tenant.room?'selected':''}>${r.id} ${r.name}</option>`).join('')}</select></div><div><label class="block text-xs text-gray-500 mb-1">姓名 *</label><input type="text" name="name" value="${tenant.name}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div></div>
         <div class="grid grid-cols-2 gap-3"><div><label class="block text-xs text-gray-500 mb-1">電話 *</label><input type="tel" name="phone" value="${tenant.phone}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div><div><label class="block text-xs text-gray-500 mb-1">繳費情形</label><input type="text" name="paymentStatus" value="${tenant.paymentStatus || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div></div>
         <div><label class="block text-xs text-gray-500 mb-1">合約期間</label><div class="flex items-center gap-2"><input type="date" name="contractStart" value="${tenant.contractStart || ''}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"><span class="text-gray-400">至</span><input type="date" name="contractEnd" value="${tenant.contractEnd || ''}" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div></div>
@@ -2671,7 +2728,7 @@
     function showAddAdminForm() {
       const perms = [{id:'rooms',name:'房間管理'},{id:'tenants',name:'租客管理'},{id:'reservations',name:'預約管理'},{id:'issues',name:'留言管理'},{id:'calendar',name:'行事曆'},{id:'payments',name:'收款'},{id:'contracts',name:'租約'},{id:'linebot',name:'LINE客服'},{id:'occupancy',name:'出租率'},{id:'stats',name:'分析'},{id:'admins',name:'管理員'},{id:'settings',name:'設置'},{id:'repairs',name:'報修'},{id:'referrals',name:'推薦'},{id:'vendors',name:'廠商'},{id:'checkouts',name:'點交'},{id:'publicAreas',name:'區域'},{id:'bulletin',name:'佈告'},{id:'expenses',name:'支出'},{id:'marketing',name:'行銷'}];
       document.getElementById('admin-overlay-title').innerText = '新增管理員';
-      document.getElementById('admin-overlay-content').innerHTML = `<form onsubmit="handleAddAdminSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 text-sm">
+      document.getElementById('admin-content').innerHTML = `<form onsubmit="handleAddAdminSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 text-sm">
         <div><label class="block text-xs text-gray-500 mb-1">姓名 *</label><input type="text" name="name" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
         <div><label class="block text-xs text-gray-500 mb-1">電話 *</label><input type="tel" name="phone" required pattern="09\\d{8}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" placeholder="09XXXXXXXX"></div>
         <div><label class="block text-xs text-gray-500 mb-1">開放權限 *</label><div class="grid grid-cols-2 gap-2 mt-2">${perms.map(p=>`<label class="flex items-center gap-2 p-2 border border-gray-100 rounded-lg hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="permissions" value="${p.id}" class="w-4 h-4 text-blue-600"><span class="text-xs text-gray-700">${p.name}</span></label>`).join('')}</div></div>
@@ -2766,7 +2823,7 @@
 
     function showAddMarketingForm() {
       document.getElementById('admin-overlay-title').innerText = '新增行銷活動';
-      document.getElementById('admin-overlay-content').innerHTML = `<form onsubmit="submitMarketingCampaign(event)" class="space-y-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100"><div><label class="block text-xs font-bold text-gray-700 mb-1">活動名稱</label><input type="text" name="name" required class="w-full p-2 border rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-700 mb-1">折扣碼</label><input type="text" name="code" required class="w-full p-2 border rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-700 mb-1">折扣金額</label><input type="number" name="discount" required class="w-full p-2 border rounded-lg text-sm"></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-bold text-gray-700 mb-1">開始日期</label><input type="date" name="startDate" required class="w-full p-2 border rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-700 mb-1">結束日期</label><input type="date" name="endDate" required class="w-full p-2 border rounded-lg text-sm"></div></div><button type="submit" class="w-full py-3 bg-pink-600 text-white rounded-xl font-bold shadow-lg">發佈活動</button></form>`;
+      document.getElementById('admin-content').innerHTML = `<form onsubmit="submitMarketingCampaign(event)" class="space-y-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100"><div><label class="block text-xs font-bold text-gray-700 mb-1">活動名稱</label><input type="text" name="name" required class="w-full p-2 border rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-700 mb-1">折扣碼</label><input type="text" name="code" required class="w-full p-2 border rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-700 mb-1">折扣金額</label><input type="number" name="discount" required class="w-full p-2 border rounded-lg text-sm"></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-bold text-gray-700 mb-1">開始日期</label><input type="date" name="startDate" required class="w-full p-2 border rounded-lg text-sm"></div><div><label class="block text-xs font-bold text-gray-700 mb-1">結束日期</label><input type="date" name="endDate" required class="w-full p-2 border rounded-lg text-sm"></div></div><button type="submit" class="w-full py-3 bg-pink-600 text-white rounded-xl font-bold shadow-lg">發佈活動</button></form>`;
     }
     function submitMarketingCampaign(e) {
       e.preventDefault();
