@@ -717,21 +717,70 @@
     };
 
     // [FIX] callGas — 直接走 mock，無需 CORS fetch
+    // ================================================================
+    // callGas — 三層路由：
+    //   1. google.script 環境 (GAS sidebar) → google.script.run
+    //   2. 正式部署環境 (LINE LIFF/瀏覽器) → fetch POST 呼叫真實 GAS
+    //   3. 本機預覽 (file:// / localhost) → mockGas
+    // ================================================================
+    const IS_LOCAL_PREVIEW = (
+      window.location.protocol === 'file:' ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === ''
+    );
+
     function callGas(func, data, cb) {
-      if (typeof google !== 'undefined' && google.script) {
-        // 真實 GAS 環境
+      // 1. GAS sidebar 環境
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(res => { if (cb) cb(res); })
           .withFailureHandler(err => { if (cb) cb({ success: false, message: err.toString() }); })[func](data);
-      } else {
-        // 非 GAS 環境：直接使用 mock，不再嘗試 fetch（避免 CORS 卡住）
-        if (mockGas[func]) {
-          mockGas[func](data).then(res => { if (cb) cb(res); }).catch(err => { if (cb) cb({ success: false, message: err.toString() }); });
-        } else {
-          console.warn('mockGas has no function:', func);
-          if (cb) cb({ success: false, message: 'Function not found: ' + func });
-        }
+        return;
       }
+      // 2. 本機預覽 → mock
+      if (IS_LOCAL_PREVIEW) {
+        _callMock(func, data, cb);
+        return;
+      }
+      // 3. 正式環境 → 呼叫真實 GAS
+      _callGasFetch(func, data, cb);
+    }
+
+    function _callMock(func, data, cb) {
+      if (mockGas[func]) {
+        mockGas[func](data)
+          .then(res => { if (cb) cb(res); })
+          .catch(err => { if (cb) cb({ success: false, message: err.toString() }); });
+      } else {
+        console.warn('[mock] 找不到函數:', func);
+        if (cb) cb({ success: false, message: 'Mock function not found: ' + func });
+      }
+    }
+
+    function _callGasFetch(func, data, cb) {
+      const body = JSON.stringify({ func: func, data: data });
+      fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: body,
+        redirect: 'follow'
+      })
+      .then(res => res.text())
+      .then(text => {
+        try {
+          const json = JSON.parse(text);
+          if (cb) cb(json);
+        } catch (e) {
+          console.error('[GAS] 回應解析失敗:', text.slice(0, 200));
+          // fallback 到 mock
+          _callMock(func, data, cb);
+        }
+      })
+      .catch(err => {
+        console.warn('[GAS] fetch 失敗，切換到 mock:', err.message);
+        _callMock(func, data, cb);
+      });
     }
 
     // --- State ---
