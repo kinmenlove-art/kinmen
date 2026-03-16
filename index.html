@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.1.1</title>
+  <title>壹參學生宿舍系統 VER1.1.2</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -73,7 +73,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s">Ver 1.0.3　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER1.1.2　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -712,7 +712,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER1.1.1';
+    const APP_VERSION = 'VER1.1.2';
     document.addEventListener('DOMContentLoaded', function() {
       var el = document.getElementById('header-version');
       if (el) el.textContent = APP_VERSION;
@@ -905,6 +905,11 @@
         var myRes = mockGas.db.reservations.filter(function(r){ var rp=r.phone?r.phone.toString():''; return rp===phone||rp===p0||rp==='0'+phone; });
         res({ success: true, reservations: myRes });
       }, 200)),
+      updateRoom: (data) => new Promise(res => setTimeout(() => {
+        var r = mockGas.db.rooms.find(function(x){ return x.id===data.id; });
+        if (r) { Object.assign(r, { name:data.name, price:data.price, specialPrice:data.specialPrice, size:data.size, image:data.image||r.image, equipment:data.equipment||r.equipment, city:data.city, district:data.district, branch:data.branch, address:data.address, description:data.description, annualDiscount:data.annualDiscount, hasToilet:data.hasToilet, maxOccupancy:data.maxOccupancy }); }
+        res(r ? { success: true } : { success: false, message: '找不到房間' });
+      }, 300)),
       updateReservationStatus: (data) => new Promise(res => setTimeout(() => {
         if (data.index !== undefined && mockGas.db.reservations[data.index]) {
           var r = mockGas.db.reservations[data.index];
@@ -1030,21 +1035,43 @@
     }
 
     function _callGasFetch(func, data, cb) {
-      var dataStr = (data !== null && data !== undefined)
-        ? encodeURIComponent(JSON.stringify(data)) : '';
-      var url = GAS_URL + '?func=' + encodeURIComponent(func) +
-                (dataStr ? '&data=' + dataStr : '');
-
-      console.log('[GAS] 呼叫:', func, '| URL:', url.slice(0, 120) + '...');
-
       var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       var timer = controller ? setTimeout(function(){ controller.abort(); }, 28000) : null;
+      // 判斷是否使用 POST（大資料或寫入操作改用 POST body 避免 URL 2048 限制）
+      var WRITE_FUNCS = ['addRoom','updateRoom','addTenant','updateTenant','registerMember',
+        'registerMemberByLine','updateMemberProfile','submitReservation','updateReservationStatus',
+        'submitRepair','updateRepairStatus','submitIssue','updateIssueStatus','submitReferral',
+        'addAdmin','updateAdmin','deleteAdmin','updateSettings','addFAQ','updateFAQ','deleteFAQ',
+        'submitMeterRecord','signContract','addExpense','addPayment','markPaid','addBulletin',
+        'updateBulletin','deleteBulletin','bookPublicArea','addCheckout','addVendor','updateVendor'];
+      var usePost = WRITE_FUNCS.indexOf(func) !== -1;
+      // 也依資料大小判斷：超過 1500 字元就用 POST
+      var dataJson = (data !== null && data !== undefined) ? JSON.stringify(data) : '';
+      if (!usePost && dataJson.length > 1500) usePost = true;
 
-      fetch(url, {
-        method: 'GET',
-        redirect: 'follow',
-        signal: controller ? controller.signal : undefined
-      })
+      console.log('[GAS]', usePost?'POST':'GET', func);
+
+      var url, fetchOpts;
+      if (usePost) {
+        url = GAS_URL;
+        fetchOpts = {
+          method: 'POST',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ func: func, data: data }),
+          signal: controller ? controller.signal : undefined
+        };
+      } else {
+        var dataStr = dataJson ? encodeURIComponent(dataJson) : '';
+        url = GAS_URL + '?func=' + encodeURIComponent(func) + (dataStr ? '&data=' + dataStr : '');
+        fetchOpts = {
+          method: 'GET',
+          redirect: 'follow',
+          signal: controller ? controller.signal : undefined
+        };
+      }
+
+      fetch(url, fetchOpts)
         .then(function(res){
           if (timer) clearTimeout(timer);
           if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1312,28 +1339,28 @@
 
     const taiwanCities = {
       '台北市': ['中正區','大同區','中山區','松山區','大安區','萬華區','信義區','士林區','北投區','內湖區','南港區','文山區'],
-      '新北市': ['板橋區','汐止區','新店區','永和區','中和區','土城區','樹林區','三重區','新莊區','泰山區','林口區','蘆洲區','五股區','淡水區'],
-      '桃園市': ['中壢區','平鎮區','龍潭區','楊梅區','桃園區','龜山區','八德區','大溪區','蘆竹區'],
-      '台中市': ['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','豐原區','潭子區','大雅區','神岡區','大肚區','沙鹿區','龍井區','梧棲區','清水區','大甲區'],
-      '台南市': ['中西區','東區','南區','北區','安平區','安南區','永康區','歸仁區','新化區','仁德區','關廟區','新營區','鹽水區','善化區'],
-      '高雄市': ['新興區','前金區','苓雅區','鹽埕區','鼓山區','旗津區','前鎮區','三民區','楠梓區','小港區','左營區','仁武區','岡山區','鳳山區','大寮區','林園區'],
+      '新北市': ['板橋區','汐止區','新店區','永和區','中和區','土城區','樹林區','三重區','新莊區','泰山區','林口區','蘆洲區','五股區','淡水區','深坑區','石碇區','坪林區','三峽區','鶯歌區','瑞芳區','雙溪區','貢寮區','金山區','萬里區','烏來區'],
+      '桃園市': ['中壢區','平鎮區','龍潭區','楊梅區','桃園區','龜山區','八德區','大溪區','蘆竹區','大園區','觀音區','新屋區','復興區'],
+      '台中市': ['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','豐原區','潭子區','大雅區','神岡區','大肚區','沙鹿區','龍井區','梧棲區','清水區','大甲區','外埔區','大安區','烏日區','霧峰區','石岡區','東勢區','新社區','和平區'],
+      '台南市': ['中西區','東區','南區','北區','安平區','安南區','永康區','歸仁區','新化區','仁德區','關廟區','新營區','鹽水區','善化區','麻豆區','佳里區','官田區','大內區','學甲區','西港區','七股區','將軍區','北門區','新市區','安定區','山上區','玉井區','楠西區','南化區','左鎮區','白河區','後壁區','東山區','六甲區','下營區','柳營區'],
+      '高雄市': ['新興區','前金區','苓雅區','鹽埕區','鼓山區','旗津區','前鎮區','三民區','楠梓區','小港區','左營區','仁武區','岡山區','鳳山區','大寮區','林園區','大樹區','橋頭區','燕巢區','田寮區','阿蓮區','路竹區','湖內區','茄萣區','永安區','彌陀區','梓官區','旗山區','美濃區','六龜區','甲仙區','杉林區','內門區','茂林區','桃源區','那瑪夏區'],
       '基隆市': ['仁愛區','信義區','中正區','中山區','安樂區','暖暖區','七堵區'],
       '新竹市': ['東區','北區','香山區'],
       '嘉義市': ['東區','西區'],
-      '新竹縣': ['竹北市','湖口鄉','新豐鄉','新埔鎮','關西鎮','竹東鎮'],
-      '苗栗縣': ['竹南鎮','頭份市','苗栗市','通霄鎮','苑裡鎮'],
-      '彰化縣': ['彰化市','鹿港鎮','員林市','溪湖鎮','北斗鎮'],
-      '南投縣': ['南投市','草屯鎮','埔里鎮','竹山鎮'],
-      '雲林縣': ['斗六市','虎尾鎮','西螺鎮','北港鎮'],
-      '嘉義縣': ['太保市','朴子市','民雄鄉','大林鎮'],
-      '屏東縣': ['屏東市','潮州鎮','東港鎮','恆春鎮'],
-      '宜蘭縣': ['宜蘭市','羅東鎮','蘇澳鎮'],
-      '花蓮縣': ['花蓮市','吉安鄉','壽豐鄉'],
-      '台東縣': ['臺東市','關山鎮'],
-      '澎湖縣': ['馬公市'],
-      '金門縣': ['金城鎮','金湖鎮'],
-      '連江縣': ['南竿鄉','北竿鄉']
-    };
+      '新竹縣': ['竹北市','湖口鄉','新豐鄉','新埔鎮','關西鎮','竹東鎮','寶山鄉','北埔鄉','峨眉鄉','橫山鄉','芎林鄉','尖石鄉','五峰鄉'],
+      '苗栗縣': ['竹南鎮','頭份市','苗栗市','通霄鎮','苑裡鎮','後龍鎮','卓蘭鎮','大湖鄉','公館鄉','銅鑼鄉','南庄鄉','頭屋鄉','三義鄉','西湖鄉','造橋鄉','三灣鄉','獅潭鄉','泰安鄉'],
+      '彰化縣': ['彰化市','鹿港鎮','員林市','溪湖鎮','北斗鎮','和美鎮','線西鄉','伸港鄉','福興鄉','秀水鄉','花壇鄉','芬園鄉','大村鄉','埔鹽鄉','田中鎮','社頭鄉','埔心鄉','永靖鄉','二林鎮','大城鄉','芳苑鄉','竹塘鄉','溪州鄉','二水鄉'],
+      '南投縣': ['南投市','草屯鎮','埔里鎮','竹山鎮','集集鎮','名間鄉','鹿谷鄉','中寮鄉','魚池鄉','國姓鄉','水里鄉','信義鄉','仁愛鄉'],
+      '雲林縣': ['斗六市','虎尾鎮','西螺鎮','北港鎮','斗南鎮','土庫鎮','元長鄉','四湖鄉','口湖鄉','水林鄉','褒忠鄉','台西鄉','東勢鄉','崙背鄉','麥寮鄉','大埤鄉','莿桐鄉','林內鄉','古坑鄉'],
+      '嘉義縣': ['太保市','朴子市','民雄鄉','大林鎮','溪口鄉','新港鄉','六腳鄉','東石鄉','布袋鎮','鹿草鄉','水上鄉','中埔鄉','竹崎鄉','梅山鄉','番路鄉','大埔鄉','阿里山鄉'],
+      '屏東縣': ['屏東市','潮州鎮','東港鎮','恆春鎮','萬丹鄉','長治鄉','麟洛鄉','九如鄉','里港鄉','鹽埔鄉','高樹鄉','萬巒鄉','內埔鄉','竹田鄉','新埤鄉','枋寮鄉','新園鄉','崁頂鄉','林邊鄉','南州鄉','佳冬鄉','琉球鄉','車城鄉','滿州鄉','枋山鄉','霧台鄉','瑪家鄉','泰武鄉','來義鄉','春日鄉','獅子鄉','牡丹鄉','三地門鄉'],
+      '宜蘭縣': ['宜蘭市','羅東鎮','蘇澳鎮','頭城鎮','礁溪鄉','壯圍鄉','員山鄉','冬山鄉','五結鄉','三星鄉','大同鄉','南澳鄉'],
+      '花蓮縣': ['花蓮市','吉安鄉','壽豐鄉','鳳林鎮','光復鄉','豐濱鄉','瑞穗鄉','富里鄉','秀林鄉','萬榮鄉','卓溪鄉'],
+      '台東縣': ['臺東市','關山鎮','成功鎮','長濱鄉','太麻里鄉','大武鄉','綠島鄉','海端鄉','延平鄉','卑南鄉','鹿野鄉','池上鄉','東河鄉','達仁鄉','金峰鄉','蘭嶼鄉'],
+      '澎湖縣': ['馬公市','湖西鄉','白沙鄉','西嶼鄉','望安鄉','七美鄉'],
+      '金門縣': ['金城鎮','金湖鎮','金沙鎮','金寧鄉','烈嶼鄉','烏坵鄉'],
+      '連江縣': ['南竿鄉','北竿鄉','莒光鄉','東引鄉']
+    };;
 
     // ============================================================
     // SPLASH SCREEN 控制器
@@ -2291,11 +2318,15 @@
         let html = '<div class="flex justify-between mb-3"><button onclick="showElectricityCalc()" class="bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-bolt mr-1"></i>電費計算</button><button onclick="showAddRoomForm()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm"><i class="fa-solid fa-plus mr-1"></i> 新增房間</button></div><div class="space-y-3">';
         data.rooms.forEach(r => {
           html += `<div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex gap-3">
-            <img src="${r.image ? r.image.split(',')[0] : 'https://picsum.photos/seed/room/600/400'}" class="w-20 h-20 object-cover rounded-lg" onerror="this.src='https://picsum.photos/seed/fallback/600/400'">
-            <div class="flex-1">
-              <div class="flex justify-between"><h3 class="font-bold">${r.id} ${r.name}</h3><span class="text-xs ${r.status==='空房'?'text-blue-600':'text-red-500'}">${r.status}</span></div>
-              <p class="text-xs text-gray-500 mt-1">${r.specialPrice ? `<span class="line-through text-gray-400">NT$ ${r.price}</span> <span class="text-red-500 font-bold">NT$ ${r.specialPrice}</span>` : `NT$ ${r.price}`} / ${r.size}</p>
-              <div class="mt-2 flex gap-3 text-xs"><span class="text-gray-500 cursor-pointer hover:text-blue-600" onclick="copyRoom('${r.id}')"><i class="fa-solid fa-copy mr-1"></i>複製</span></div>
+            <img src="${r.image ? r.image.split(',')[0] : 'https://picsum.photos/seed/room/600/400'}" class="w-20 h-20 object-cover rounded-lg shrink-0" onerror="this.src='https://picsum.photos/seed/fallback/600/400'">
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start"><h3 class="font-bold text-sm truncate">${r.id} ${r.name}</h3><span class="text-xs font-bold ${r.status==='空房'?'text-green-600':'text-red-500'} shrink-0 ml-1">${r.status}</span></div>
+              <p class="text-xs text-gray-500 mt-0.5">${r.specialPrice ? `<span class="line-through text-gray-400">NT$ ${r.price}</span> <span class="text-red-500 font-bold">NT$ ${r.specialPrice}</span>` : `NT$ ${r.price}`} / ${r.size}</p>
+              <div class="mt-2 flex gap-1.5 flex-wrap">
+                <button data-rid="${r.id}" onclick="showEditRoomForm(this.dataset.rid)" class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold hover:bg-amber-100"><i class="fa-solid fa-pen-to-square mr-1"></i>修改</button>
+                <button data-rid="${r.id}" onclick="toggleRoomStatus(this.dataset.rid)" class="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs hover:bg-gray-200">${r.status==='出租中'?'標記空房':'標記出租'}</button>
+                <button data-rid="${r.id}" onclick="showRoomQR(this.dataset.rid)" class="px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs hover:bg-blue-100">QR</button>
+              </div>
             </div>
           </div>`;
         });
@@ -2443,7 +2474,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.1');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.2');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
@@ -2451,6 +2482,13 @@
           </div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">系統名稱</label><input type="text" name="systemName" value="${s.name || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500"></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">宿舍地址</label><input type="text" name="dormAddress" value="${s.dormAddress || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500"></div>
+          <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-2">
+            <p class="text-xs font-bold text-yellow-800"><i class="fa-solid fa-file-contract mr-1"></i>電子租約 — 甲方（出租人）資料</p>
+            <div><label class="block text-xs text-gray-600 mb-1">甲方姓名／公司</label><input type="text" name="landlordName" value="${s.landlordName||''}" placeholder="例：壹參宿舍" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>
+            <div><label class="block text-xs text-gray-600 mb-1">甲方電話</label><input type="tel" name="landlordPhone" value="${s.landlordPhone||''}" placeholder="0912-345-678" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>
+            <div><label class="block text-xs text-gray-600 mb-1">甲方地址</label><input type="text" name="landlordAddress" value="${s.landlordAddress||''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>
+            <div><label class="block text-xs text-gray-600 mb-1">甲方身分證／統編</label><input type="text" name="landlordId" value="${s.landlordId||''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>
+          </div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">房型圖片輪播間隔（秒）</label>
             <select name="carouselInterval" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 bg-white">
               <option value="2" ${s.carouselInterval==='2'?'selected':''}>2 秒（快）</option>
@@ -2527,7 +2565,12 @@
       const btn = document.getElementById('save-settings-btn');
       btn.innerHTML = '<span class="loader border-white border-t-transparent w-4 h-4"></span> 儲存中...'; btn.disabled = true;
       const fd = new FormData(e.target);
-      const data = { systemName: fd.get('systemName'), dormAddress: fd.get('dormAddress'), tenantRules: fd.get('tenantRules'), announcement: fd.get('announcement'), wifiPassword: fd.get('wifiPassword'), carouselInterval: fd.get('carouselInterval') || '3' };
+      const data = { systemName: fd.get('systemName'), dormAddress: fd.get('dormAddress'), tenantRules: fd.get('tenantRules'), announcement: fd.get('announcement'), wifiPassword: fd.get('wifiPassword'), carouselInterval: fd.get('carouselInterval') || '3',
+        landlordName:       fd.get('landlordName') || '',
+        landlordPhone:      fd.get('landlordPhone') || '',
+        landlordAddress:    fd.get('landlordAddress') || '',
+        landlordId:         fd.get('landlordId') || ''
+      };
       callGas('updateSettings', data, (res) => {
         btn.innerHTML = '儲存設定'; btn.disabled = false;
         if (res.success) { showToast('設定已儲存！','success'); if (data.systemName) document.getElementById('header-title').innerText = data.systemName; showAdminSection('settings'); }
@@ -3061,6 +3104,19 @@
       if (!modal) { showToast('合約功能暫時無法使用','error'); return; }
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+      // Auto-fill landlord info from settings
+      if (appState.adminData && appState.adminData.settings) {
+        var ss = appState.adminData.settings;
+        var ll = document.getElementById('contract-landlord');
+        if (ll && ss.landlordName) ll.value = ss.landlordName;
+        var ldForm = document.querySelector('#contract-modal .landlord-info');
+        if (ldForm) {
+          ['landlordName','landlordPhone','landlordAddress'].forEach(function(fid) {
+            var el = document.getElementById('contract-'+fid.replace('landlord','landlord-').toLowerCase());
+            if (el && ss[fid]) el.value = ss[fid];
+          });
+        }
+      }
       // Populate room select
       if (appState.adminData && appState.adminData.rooms) {
         var sel = document.getElementById('contract-room');
@@ -3598,6 +3654,80 @@
       currentImageIdx = (currentImageIdx + 1) % currentRoomImages.length;
       renderRoomCarousel();
     }
+
+    // ── Room Edit ────────────────────────────────────────────
+    function showEditRoomForm(roomId) {
+      var room = appState.adminData && appState.adminData.rooms.find(function(r){ return r.id===roomId; });
+      if (!room) { showToast('找不到房間資料','error'); return; }
+      var cities = Object.keys(taiwanCities);
+      var cityOpts = cities.map(function(city){ return '<option value="'+city+'"'+(room.city===city?' selected':'')+'>'+city+'</option>'; }).join('');
+      var html = '<form id="edit-room-form" class="space-y-3">' +
+        '<input type="hidden" name="id" value="'+room.id+'">' +
+        '<div class="grid grid-cols-2 gap-3">' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">房間名稱 *</label><input type="text" name="name" value="'+room.name+'" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">空間大小</label><input type="text" name="size" value="'+(room.size||'')+'" placeholder="6坪" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+        '</div>' +
+        '<div class="grid grid-cols-2 gap-3">' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">每月租金 *</label><input type="number" name="price" value="'+room.price+'" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">優惠價格</label><input type="number" name="specialPrice" value="'+(room.specialPrice||'')+'" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+        '</div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">設備（逗號分隔）</label><input type="text" name="equipment" value="'+(room.equipment||room.features||'')+'" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">圖片網址（逗號分隔多張）</label><input type="text" name="image" value="'+(room.image||'')+'" placeholder="https://..." class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+        '<div class="grid grid-cols-2 gap-3">' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">縣市</label><select name="city" onchange="updateDistrictSelect(this)" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm bg-white"><option value="">請選擇</option>'+cityOpts+'</select></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">區域</label><select name="district" id="edit-room-district" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm bg-white"><option value="'+(room.district||'')+'">'+( room.district||'請先選縣市')+'</option></select></div>' +
+        '</div>' +
+        '<div class="grid grid-cols-2 gap-3">' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">分館名稱</label><input type="text" name="branch" value="'+(room.branch||'')+'" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">廁所</label><select name="hasToilet" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm bg-white"><option value="獨立廁所" '+(room.hasToilet==='獨立廁所'?'selected':'')+'>獨立廁所</option><option value="共用廁所" '+(room.hasToilet==='共用廁所'?'selected':'')+'>共用廁所</option><option value="無" '+(room.hasToilet==='無'||!room.hasToilet?'selected':'')+'>無</option></select></div>' +
+        '</div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">詳細說明</label><textarea name="description" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm resize-none">'+(room.description||'')+'</textarea></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">地址</label><input type="text" name="address" value="'+(room.address||'')+'" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+        '<div class="grid grid-cols-2 gap-3">' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">年繳優惠</label><select name="annualDiscount" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm bg-white"><option value="否" '+(room.annualDiscount!=='是'?'selected':'')+'>否</option><option value="是" '+(room.annualDiscount==='是'?'selected':'')+'>是</option></select></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">可住人數</label><input type="number" name="maxOccupancy" value="'+(room.maxOccupancy||1)+'" min="1" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+        '</div>' +
+        '<button type="button" onclick="handleEditRoomSubmit()" class="w-full py-3.5 bg-amber-500 text-white rounded-xl font-bold shadow-md hover:bg-amber-600"><i class="fa-solid fa-floppy-disk mr-2"></i>儲存修改</button>' +
+      '</form>';
+      openGeneralModal('修改房間：' + room.name, html);
+      // Fill district options
+      if (room.city && taiwanCities[room.city]) {
+        var dsel = document.getElementById('edit-room-district');
+        if (dsel) {
+          dsel.innerHTML = taiwanCities[room.city].map(function(d){ return '<option value="'+d+'"'+(d===room.district?' selected':'')+'>'+d+'</option>'; }).join('');
+        }
+      }
+    }
+
+    function updateDistrictSelect(citySelect) {
+      var city = citySelect.value;
+      var dsel = document.getElementById('edit-room-district');
+      if (!dsel) return;
+      dsel.innerHTML = (taiwanCities[city]||[]).map(function(d){ return '<option value="'+d+'">'+d+'</option>'; }).join('');
+    }
+
+    function handleEditRoomSubmit() {
+      var form = document.getElementById('edit-room-form');
+      if (!form) return;
+      var fd   = new FormData(form);
+      var data = Object.fromEntries(fd.entries());
+      if (!data.name || !data.price) { showToast('請填寫房間名稱和租金','warn'); return; }
+      var btn = form.querySelector('button[type="button"]');
+      if (btn) { btn.disabled = true; btn.textContent = '儲存中...'; }
+      callGas('updateRoom', data, function(res) {
+        if (res && res.success) {
+          showToast('房間資料已更新 ✅','success');
+          closeGeneralModal();
+          showAdminSection('rooms');
+        } else {
+          showToast('更新失敗：'+(res&&res.message||'請稍後再試'),'error');
+          if (btn) { btn.disabled=false; btn.textContent='儲存修改'; }
+        }
+      });
+    }
+
+    // Mock updateRoom
+
   </script>
 </body>
 </html>
