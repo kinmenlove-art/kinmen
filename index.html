@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.0.6</title>
+  <title>壹參學生宿舍系統 VER1.0.7</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -262,6 +262,231 @@
       </div>
     </div>
   </div>
+
+      <!-- Tab: Account -->
+      <div id="tab-account" class="tab-content p-4 space-y-4 hidden">
+
+        <!-- Login View -->
+        <div id="view-login" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h2 class="text-2xl font-bold mb-2">登入系統</h2>
+          <p class="text-gray-500 text-sm mb-4">請選擇登入方式</p>
+          <!-- LINE 登入 -->
+          <div class="mb-4">
+            <button onclick="handleLineLogin()" id="line-login-btn" class="btn-line">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M12 2C6.48 2 2 6.03 2 11c0 3.24 1.79 6.08 4.5 7.83V22l3.97-2.17A10.46 10.46 0 0012 20c5.52 0 10-4.03 10-9S17.52 2 12 2z"/></svg>
+              使用 LINE 帳號登入
+            </button>
+            <div id="line-login-status" class="hidden mt-3 p-3 bg-green-50 rounded-xl border border-green-100 items-center gap-3">
+              <img id="line-avatar" src="" class="line-avatar" alt="LINE頭像">
+              <div>
+                <div class="font-bold text-green-800 text-sm" id="line-display-name"></div>
+                <div class="text-xs text-green-600" id="line-login-hint">LINE 帳號已識別，請完成手機驗證</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <span class="text-xs text-gray-400 font-medium">或用手機號碼</span>
+            <div class="flex-1 h-px bg-gray-200"></div>
+          </div>
+          <form onsubmit="handleLogin(event)" class="space-y-4">
+            <div><label class="block text-xs text-gray-500 mb-1">手機號碼</label><input type="tel" id="login-phone" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="09xx-xxx-xxx"></div>
+            <div><label class="block text-xs text-gray-500 mb-1">4 位數密碼</label><input type="password" id="login-password" required maxlength="4" pattern="\d{4}" inputmode="numeric" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="****"></div>
+            <button type="submit" id="login-btn" class="w-full py-3.5 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">登入</button>
+          </form>
+          <div class="mt-4 text-center"><p class="text-sm text-gray-500">還不是會員？</p><button onclick="switchAccountView('register')" class="mt-2 text-blue-600 font-medium hover:underline">立即註冊會員</button></div>
+        </div>
+
+        <!-- Register View -->
+        <div id="view-register" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hidden">
+          <div class="flex items-center gap-3 mb-4">
+            <button onclick="switchAccountView('login')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-arrow-left"></i></button>
+            <h2 class="text-2xl font-bold">註冊會員</h2>
+          </div>
+          <form onsubmit="handleRegister(event)" class="space-y-4">
+            <div><label class="block text-xs text-gray-500 mb-1">姓名 *</label><input type="text" name="name" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+            <div><label class="block text-xs text-gray-500 mb-1">性別 *</label>
+              <select name="gender" required class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white">
+                <option value="">請選擇</option><option value="男">男</option><option value="女">女</option>
+              </select></div>
+            <div><label class="block text-xs text-gray-500 mb-1">手機號碼 *（可LINE登入後補填）</label><input type="tel" name="phone" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" placeholder="09xxxxxxxx"></div>
+            <div><label class="block text-xs text-gray-500 mb-1">生日</label><input type="date" name="birthday" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+            <div><label class="block text-xs text-gray-500 mb-1">Email</label><input type="email" name="email" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">手機驗證</label>
+              <div class="flex gap-2">
+                <input type="text" id="register-code" maxlength="6" placeholder="驗證碼" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 outline-none">
+                <button type="button" onclick="sendSmsCode()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium whitespace-nowrap hover:bg-gray-200">發送驗證碼</button>
+              </div>
+            </div>
+            <button type="submit" id="register-btn" class="w-full py-3.5 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">送出註冊</button>
+          </form>
+        </div>
+
+        <!-- Member View -->
+        <div id="view-member" class="hidden space-y-4">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="relative">
+                <img id="member-avatar-img" src="" class="w-14 h-14 rounded-full object-cover border-2 border-blue-200 hidden">
+                <div id="member-avatar-fallback" class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold">👤</div>
+              </div>
+              <div class="flex-1">
+                <h2 class="text-xl font-bold" id="member-name-display">會員</h2>
+                <p class="text-gray-500 text-xs mt-0.5" id="member-phone-display"></p>
+                <span id="member-line-badge" class="hidden mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full font-bold"><i class="fa-brands fa-line"></i> LINE 已連結</span>
+              </div>
+              <button onclick="logout()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-right-from-bracket text-lg"></i></button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="_memberEditProfile()" class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100 hover:bg-blue-100 transition-colors">
+                <div class="w-9 h-9 bg-blue-500 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-user-pen text-sm"></i></div>
+                <div class="text-left"><div class="font-bold text-blue-900 text-sm">修改資料</div><div class="text-[10px] text-blue-700">姓名、電話等</div></div>
+              </button>
+              <button onclick="switchTab('reserve')" class="flex items-center gap-3 p-3 bg-red-50 rounded-xl border border-red-100 hover:bg-red-100 transition-colors">
+                <div class="w-9 h-9 bg-red-500 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-calendar-check text-sm"></i></div>
+                <div class="text-left"><div class="font-bold text-red-900 text-sm">我要預約</div><div class="text-[10px] text-red-700">預約看房</div></div>
+              </button>
+              <button onclick="_memberMyReservations()" class="flex items-center gap-3 p-3 bg-purple-50 rounded-xl border border-purple-100 hover:bg-purple-100 transition-colors">
+                <div class="w-9 h-9 bg-purple-500 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-list-check text-sm"></i></div>
+                <div class="text-left"><div class="font-bold text-purple-900 text-sm">我的預約</div><div class="text-[10px] text-purple-700">查看預約紀錄</div></div>
+              </button>
+              <button onclick="switchTab('service')" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors">
+                <div class="w-9 h-9 bg-gray-400 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-info text-sm"></i></div>
+                <div class="text-left"><div class="font-bold text-gray-700 text-sm">服務資訊</div><div class="text-[10px] text-gray-500">優惠與功能</div></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tenant View -->
+        <div id="view-tenant" class="hidden space-y-4">
+          <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white p-5 rounded-2xl shadow-lg">
+            <div class="flex justify-between items-start mb-3">
+              <div><div class="text-blue-200 text-xs font-medium mb-0.5">房號</div><div class="text-2xl font-black" id="tenant-room">─</div></div>
+              <div class="text-right"><div class="text-blue-200 text-xs font-medium mb-0.5">租客姓名</div><div class="font-bold" id="tenant-name">─</div></div>
+              <button onclick="logout()" class="text-blue-300 hover:text-white"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-sm bg-blue-900/30 rounded-xl p-3">
+              <div><div class="text-blue-300 text-[10px]">合約到期</div><div class="font-bold text-white" id="tenant-period">─</div></div>
+              <div><div class="text-blue-300 text-[10px]">本月繳費</div><div class="font-bold" id="tenant-status">─</div></div>
+              <div><div class="text-blue-300 text-[10px]">繳費方式</div><div id="tenant-payment">─</div></div>
+              <div><div class="text-blue-300 text-[10px]">當期電費</div><div id="tenant-electricity">─</div></div>
+            </div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <h3 class="font-bold text-gray-800 mb-3 text-sm">租客服務</h3>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="openTenantModal('repair')" class="flex flex-col items-center gap-1.5 p-3 bg-orange-50 rounded-xl border border-orange-100 hover:bg-orange-100 transition-colors active:scale-95">
+                <div class="w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-tools"></i></div>
+                <span class="font-bold text-[10px] text-orange-900 text-center leading-tight">設備<br>報修</span>
+              </button>
+              <button onclick="openTenantModal('referral')" class="flex flex-col items-center gap-1.5 p-3 bg-emerald-50 rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-colors active:scale-95">
+                <div class="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-gift"></i></div>
+                <span class="font-bold text-[10px] text-emerald-900 text-center leading-tight">我要<br>推薦</span>
+              </button>
+              <button onclick="_tenantMyContract()" class="flex flex-col items-center gap-1.5 p-3 bg-indigo-50 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-colors active:scale-95">
+                <div class="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-file-signature"></i></div>
+                <span class="font-bold text-[10px] text-indigo-900 text-center leading-tight">電子<br>租約</span>
+              </button>
+              <button onclick="openTenantModal('bulletin')" class="flex flex-col items-center gap-1.5 p-3 bg-amber-50 rounded-xl border border-amber-100 hover:bg-amber-100 transition-colors active:scale-95 relative">
+                <div class="w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-bullhorn"></i></div>
+                <span class="font-bold text-[10px] text-amber-900 text-center leading-tight">房屋<br>公告</span>
+                <span id="tenant-announcement-badge" class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+              </button>
+              <button onclick="openTenantModal('rules')" class="flex flex-col items-center gap-1.5 p-3 bg-teal-50 rounded-xl border border-teal-100 hover:bg-teal-100 transition-colors active:scale-95">
+                <div class="w-10 h-10 bg-teal-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-scroll"></i></div>
+                <span class="font-bold text-[10px] text-teal-900 text-center leading-tight">生活<br>公約</span>
+              </button>
+              <button onclick="openTenantModal('publicArea')" class="flex flex-col items-center gap-1.5 p-3 bg-cyan-50 rounded-xl border border-cyan-100 hover:bg-cyan-100 transition-colors active:scale-95">
+                <div class="w-10 h-10 bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-clock"></i></div>
+                <span class="font-bold text-[10px] text-cyan-900 text-center leading-tight">區域<br>預約</span>
+              </button>
+            </div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <h3 class="font-bold text-gray-800 mb-3 text-sm">更多功能</h3>
+            <div class="space-y-2">
+              <button onclick="_tenantMeterRecord()" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-yellow-50 hover:border-yellow-200 transition-colors">
+                <div class="w-9 h-9 bg-yellow-400 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-bolt text-sm"></i></div>
+                <div class="text-left flex-1"><div class="font-bold text-gray-800 text-sm">每月電錶度數</div><div class="text-[10px] text-gray-500">拍照上傳電錶讀數</div></div>
+                <i class="fa-solid fa-chevron-right text-gray-300"></i>
+              </button>
+              <button onclick="_tenantMyContract()" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
+                <div class="w-9 h-9 bg-indigo-500 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-house-circle-check text-sm"></i></div>
+                <div class="text-left flex-1"><div class="font-bold text-gray-800 text-sm">有效租約</div><div class="text-[10px] text-gray-500">查看合約資訊與剩餘天數</div></div>
+                <i class="fa-solid fa-chevron-right text-gray-300"></i>
+              </button>
+              <button onclick="showTenantHistory()" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                <div class="w-9 h-9 bg-blue-400 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-clock-rotate-left text-sm"></i></div>
+                <div class="text-left flex-1"><div class="font-bold text-gray-800 text-sm">歷史紀錄</div><div class="text-[10px] text-gray-500">報修、問題反應歷史</div></div>
+                <i class="fa-solid fa-chevron-right text-gray-300"></i>
+              </button>
+            </div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-message text-blue-500"></i> 我要留言</h3>
+            <form onsubmit="handleIssueSubmit(event)" class="space-y-3">
+              <select id="issue-category" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                <option value="">請選擇問題分類</option>
+                <option value="設備報修">設備報修</option>
+                <option value="環境清潔">環境清潔</option>
+                <option value="噪音問題">噪音問題</option>
+                <option value="帳務問題">帳務問題</option>
+                <option value="功能建議">功能建議</option>
+                <option value="其他問題">其他問題</option>
+              </select>
+              <textarea id="issue-text" required placeholder="請詳細描述您的問題或建議..." rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none resize-none text-sm"></textarea>
+              <button type="submit" id="issue-btn" class="w-full py-3.5 bg-blue-500 text-white rounded-xl font-bold text-sm shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">
+                <i class="fa-solid fa-paper-plane mr-2"></i>送出留言
+              </button>
+            </form>
+          </div>
+          <button onclick="triggerSOS()" class="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-base shadow-lg border-b-4 border-red-700 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-3">
+            <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+            緊急求助 SOS
+          </button>
+        </div>
+
+        <!-- Admin View -->
+        <div id="view-admin" class="hidden space-y-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-gray-500 text-sm" id="admin-welcome-msg">管理員</p>
+              <h2 class="text-xl font-bold">管理後台</h2>
+            </div>
+            <button onclick="logout()" class="text-sm text-gray-500 flex items-center gap-1 hover:text-red-500"><i class="fa-solid fa-right-from-bracket"></i> 登出</button>
+          </div>
+          <div id="admin-dashboard-summary" class="col-span-2"></div>
+          <div class="grid grid-cols-2 gap-3" id="admin-buttons-container"></div>
+        </div>
+
+      </div>
+      <!-- End tab-account -->
+
+    </div>
+    <!-- End main-content -->
+
+    <!-- Bottom Navigation -->
+    <nav class="bg-white border-t border-gray-200 flex justify-around items-center py-2 px-2 shrink-0 z-10 shadow-lg" id="bottom-nav">
+      <button onclick="switchTab('rooms')" id="nav-rooms" class="nav-btn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-blue-600 transition-colors">
+        <i class="fa-solid fa-house text-xl"></i>
+        <span class="text-[10px] font-medium">房型</span>
+      </button>
+      <button onclick="switchTab('reserve')" id="nav-reserve" class="nav-btn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-400 transition-colors">
+        <i class="fa-regular fa-calendar-check text-xl"></i>
+        <span class="text-[10px] font-medium">預約</span>
+      </button>
+      <button onclick="switchTab('service')" id="nav-service" class="nav-btn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-400 transition-colors">
+        <i class="fa-solid fa-toolbox text-xl"></i>
+        <span class="text-[10px] font-medium">服務</span>
+      </button>
+      <button onclick="switchTab('account')" id="nav-account" class="nav-btn flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-400 transition-colors">
+        <i class="fa-regular fa-user text-xl"></i>
+        <span class="text-[10px] font-medium">帳號</span>
+      </button>
+    </nav>
+
 
   <!-- 租客功能彈窗 -->
 
