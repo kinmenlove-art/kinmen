@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.0.4</title>
+  <title>壹參學生宿舍系統 VER1.0.5</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -783,7 +783,17 @@
         }
         res({ success: false, message: '找不到此號碼，請先註冊會員' });
       }, 300)),
-      registerMember: (data) => new Promise(res => setTimeout(() => { mockGas.db.members.push(data); res({ success: true }); }, 300)),
+      registerMember: (data) => new Promise(res => setTimeout(() => {
+        var phone = data.phone ? (data.phone.length===9&&data.phone.startsWith('9') ? '0'+data.phone : data.phone) : '';
+        var dup = mockGas.db.members.find(m => m.phone && m.phone===phone);
+        if (dup) { res({ success: false, message: '此電話號碼已註冊，請直接登入' }); return; }
+        mockGas.db.members.push({...data, phone: phone}); res({ success: true });
+      }, 300)),
+      registerMemberByLine: (data) => new Promise(res => setTimeout(() => {
+        var dup = mockGas.db.members.find(m => m.lineId && m.lineId===data.lineId);
+        if (dup) { res({ success: false, existingLineId: true, message: '此 LINE 帳號已存在' }); return; }
+        mockGas.db.members.push(data); res({ success: true });
+      }, 300)),
       addRoom: (data) => new Promise(res => setTimeout(() => { mockGas.db.rooms.push({ id: data.id, name: data.name, price: data.price, specialPrice: data.specialPrice, size: data.size, features: data.equipment, image: 'https://picsum.photos/seed/newroom/600/400', status: '空房', address: data.address, floor: data.floor, hasToilet: data.hasToilet, description: data.description, network: data.network, balcony: data.balcony, parking: data.parking, washingMachine: data.washingMachine, waterDispenser: data.waterDispenser, city: data.city, district: data.district, branch: data.branch, maxOccupancy: data.maxOccupancy, extraPersonCharge: data.extraPersonCharge }); res({ success: true }); }, 300)),
       addTenant: (data) => new Promise(res => setTimeout(() => { mockGas.db.tenants.push({ room: data.room, name: data.name, phone: data.phone, contractStart: data.contractStart, contractEnd: data.contractEnd, paymentMethod: data.paymentMethod, paymentStatus: data.paymentStatus, electricity: '' }); const room = mockGas.db.rooms.find(r => r.id === data.room); if (room) room.status = '出租中'; res({ success: true }); }, 300)),
       updateTenant: (data) => new Promise(res => setTimeout(() => { const idx = mockGas.db.tenants.findIndex(t => t.phone === data.originalPhone); if (idx !== -1) mockGas.db.tenants[idx] = { ...mockGas.db.tenants[idx], ...data }; res({ success: true }); }, 300)),
@@ -824,6 +834,13 @@
         if (t) t.electricity = data.meter + '度';
         res({ success: true });
       }, 300)),
+      updateMemberProfile: (data) => new Promise(res => setTimeout(() => {
+        var lineId = data.lineId || '';
+        var orig   = data.originalPhone ? (data.originalPhone.length===9&&data.originalPhone.startsWith('9')?'0'+data.originalPhone:data.originalPhone) : '';
+        var m = mockGas.db.members.find(function(x){ return (orig && x.phone===orig) || (lineId && x.lineId===lineId); });
+        if (m) { if(data.name) m.name=data.name; if(data.phone) m.phone=data.phone; if(data.email) m.email=data.email; }
+        res({ success: true });
+      }, 200)),
       updateLineProfile: (data) => new Promise(res => setTimeout(() => {
         var phone = data.phone; var lineId = data.lineId;
         // Update in members
@@ -1066,21 +1083,75 @@
     }
 
     function _tryAutoLoginWithLine(lineId) {
-      // Check if this LINE ID is already linked to an account
       callGas('loginWithLineId', { lineId: lineId }, function(res) {
         if (res && res.success) {
-          // Found linked account — log in directly
+          // 找到帳號 → 直接登入
           appState.user = res;
-          // Save memory
-          if (res.phone) _saveUserMemory({ phone: res.phone, name: res.name, lineId: lineId });
+          _saveUserMemory({
+            phone:  res.phone || '',
+            name:   res.name  || _lineProfile && _lineProfile.name || '',
+            lineId: lineId,
+            avatar: _lineProfile && _lineProfile.avatar || ''
+          });
           renderAccountView();
           _autoFillForms();
-          showToast('LINE 登入成功！歡迎回來，' + res.name, 'success');
+          showToast('歡迎回來，' + (res.name || 'LINE 用戶') + '！', 'success');
         } else {
-          // Not linked yet — show hint to complete phone verification
-          const hint = document.getElementById('line-login-hint');
-          if (hint) hint.textContent = '尚未綁定帳號，請輸入手機號碼完成綁定';
-          document.getElementById('login-phone').focus();
+          // 找不到帳號 → 自動用 LINE 資訊建立會員帳號並登入（不需輸入密碼）
+          if (_lineProfile && _lineProfile.name) {
+            _autoCreateLineAccount(_lineProfile);
+          } else {
+            // 無 LINE 資料 → 提示輸入手機
+            var hint = document.getElementById('line-login-hint');
+            if (hint) hint.textContent = '請輸入手機號碼完成首次綁定';
+            var ph = document.getElementById('login-phone');
+            if (ph) ph.focus();
+          }
+        }
+      });
+    }
+
+    // 首次 LINE 登入 → 自動建立會員帳號
+    function _autoCreateLineAccount(profile) {
+      var regData = {
+        name:         profile.name,
+        phone:        '',           // 尚無電話，之後可在「修改資料」補填
+        password:     '0000',
+        lineId:       profile.lineId,
+        lineNickname: profile.name,
+        lineAvatar:   profile.avatar,
+        email:        '',
+        birthday:     '',
+        address:      '',
+        gender:       '未設定'
+      };
+      callGas('registerMemberByLine', regData, function(res) {
+        if (res && res.success) {
+          // 用 LINE ID 登入
+          callGas('loginWithLineId', { lineId: profile.lineId }, function(lr) {
+            if (lr && lr.success) {
+              appState.user = lr;
+              _saveUserMemory({ name: profile.name, lineId: profile.lineId, avatar: profile.avatar });
+              renderAccountView();
+              _autoFillForms();
+              showToast('歡迎加入！' + profile.name, 'success');
+              // 提示補填電話
+              setTimeout(function(){
+                showToast('建議在「修改資料」補填手機號碼', 'info', 5000);
+              }, 2000);
+            }
+          });
+        } else if (res && res.existingLineId) {
+          // 已存在 → 直接登入
+          callGas('loginWithLineId', { lineId: profile.lineId }, function(lr) {
+            if (lr && lr.success) {
+              appState.user = lr;
+              renderAccountView();
+              showToast('歡迎回來，' + (lr.name || profile.name), 'success');
+            }
+          });
+        } else {
+          showToast(res && res.message ? res.message : 'LINE 登入失敗', 'error');
         }
       });
     }
@@ -1672,23 +1743,82 @@
       });
     }
 
+    var _registerSubmitted = false; // 防止重複送出
+
     function handleRegister(e) {
       e.preventDefault();
+      if (_registerSubmitted) return; // 防止重複點擊
+
       const formData = new FormData(e.target);
       const data = Object.fromEntries(formData.entries());
-      const inputCode = document.getElementById('register-code').value;
-      if (!smsVerificationCode || inputCode !== smsVerificationCode) { showToast('驗證碼錯誤或已過期','error'); return; }
+
+      // 前端電話前導零修正
+      data.phone    = _fixPhone(data.phone || '');
+      data.password = data.password ? _fixPwd(data.password) : '0000';
+
+      // 加入 LINE 資訊（若已登入 LINE）
+      if (_lineProfile) {
+        data.lineId       = _lineProfile.lineId;
+        data.lineNickname = _lineProfile.name;
+        data.lineAvatar   = _lineProfile.avatar;
+        // 若未填姓名，用 LINE 暱稱
+        if (!data.name) data.name = _lineProfile.name;
+      }
+
       const btn = document.getElementById('register-btn');
-      btn.disabled = true; btn.innerText = '處理中...';
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loader border-white border-t-transparent w-4 h-4"></span> 處理中...';
+      _registerSubmitted = true;
+
       callGas('registerMember', data, (res) => {
-        btn.disabled = false; btn.innerText = '送出註冊';
-        if (res.success) {
-          showToast('註冊成功！系統已自動登入','success');
-          callGas('loginUser', { phone: data.phone, password: data.password }, (loginRes) => {
-            if (loginRes.success) { appState.user = loginRes; renderAccountView(); }
-            else { switchAccountView('login'); document.getElementById('login-phone').value = data.phone; }
+        if (!res.success) {
+          // 失敗才恢復按鈕
+          btn.disabled = false;
+          btn.innerText = '送出註冊';
+          _registerSubmitted = false;
+          showToast(res.message || '註冊失敗', 'error');
+          return;
+        }
+        // 成功 → 存記憶 → 自動登入
+        _saveUserMemory({
+          name:   data.name,
+          phone:  data.phone,
+          gender: data.gender || '',
+          lineId: data.lineId || '',
+          avatar: data.lineAvatar || ''
+        });
+        showToast('歡迎加入！' + data.name, 'success');
+
+        // 自動登入（用 LINE ID 優先，否則用電話）
+        if (data.lineId) {
+          callGas('loginWithLineId', { lineId: data.lineId }, (lr) => {
+            if (lr && lr.success) {
+              appState.user = lr;
+              renderAccountView();
+              _autoFillForms();
+            } else {
+              _loginAfterRegister(data);
+            }
           });
-        } else showToast(res.message,'error');
+        } else {
+          _loginAfterRegister(data);
+        }
+      });
+    }
+
+    function _loginAfterRegister(data) {
+      callGas('loginUser', { phone: data.phone, password: data.password }, (loginRes) => {
+        if (loginRes && loginRes.success) {
+          appState.user = loginRes;
+          renderAccountView();
+          _autoFillForms();
+        } else {
+          // fallback: 手動切到登入頁面並預填電話
+          switchAccountView('login');
+          const ph = document.getElementById('login-phone');
+          if (ph) ph.value = data.phone;
+          showToast('請重新登入', 'info');
+        }
       });
     }
 
@@ -2886,16 +3016,21 @@
     function _memberEditProfile() {
       var mem  = _loadUserMemory() || {};
       var user = appState.user || {};
+      var curPhone = user.phone || mem.phone || '';
+      var isLineOnly = _lineProfile && !curPhone; // LINE 登入但尚無電話
       var html =
-        '<form id="edit-profile-form" class="space-y-4">' +
-          '<div><label class="block text-xs font-bold text-gray-500 mb-1">姓名</label>' +
-            '<input type="text" name="name" value="'+(user.name||mem.name||'')+'" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
-          '<div><label class="block text-xs font-bold text-gray-500 mb-1">手機號碼</label>' +
-            '<input type="tel" name="phone" value="'+(user.phone||mem.phone||'')+'" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+        '<form id="edit-profile-form" class="space-y-3">' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">姓名 *</label>' +
+            '<input type="text" name="name" value="'+(user.name||mem.name||'')+'" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">手機號碼'+(isLineOnly?' <span class=\"text-red-500\">（請補填）</span>':'')+' </label>' +
+            '<input type="tel" name="phone" value="'+curPhone+'" placeholder="09xxxxxxxx" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
           '<div><label class="block text-xs font-bold text-gray-500 mb-1">性別</label>' +
-            '<select name="gender" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white"><option value="男" '+(mem.gender==='男'?'selected':'')+'>男</option><option value="女" '+(mem.gender==='女'?'selected':'')+'>女</option></select></div>' +
+            '<select name="gender" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white"><option value="未設定">不填寫</option><option value="男" '+(mem.gender==='男'?'selected':'')+'>男</option><option value="女" '+(mem.gender==='女'?'selected':'')+'>女</option></select></div>' +
           '<div><label class="block text-xs font-bold text-gray-500 mb-1">Email</label>' +
             '<input type="email" name="email" value="'+(mem.email||'')+'" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">生日</label>' +
+            '<input type="date" name="birthday" value="'+(mem.birthday||'')+'" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+          '<p class="text-[10px] text-gray-400">* LINE 帳號：' + ((_lineProfile && _lineProfile.name) ? _lineProfile.name+' (已連結)' : '未連結') + '</p>' +
           '<button type="button" onclick="_saveEditProfile()" class="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-md">儲存變更</button>' +
         '</form>';
       openGeneralModal('修改會員資料', html);
@@ -2905,11 +3040,34 @@
       var form = document.getElementById('edit-profile-form');
       if (!form) return;
       var fd = new FormData(form);
-      _saveUserMemory({ name: fd.get('name'), phone: fd.get('phone'), gender: fd.get('gender'), email: fd.get('email') });
-      if (appState.user) appState.user.name = fd.get('name');
-      document.getElementById('member-name-display').textContent = fd.get('name') || '';
-      showToast('資料已更新','success');
-      closeGeneralModal();
+      var name   = fd.get('name') || '';
+      var phone  = _fixPhone(fd.get('phone') || '');
+      var gender = fd.get('gender') || '';
+      var email  = fd.get('email') || '';
+      var birthday = fd.get('birthday') || '';
+
+      // 更新 localStorage 記憶
+      _saveUserMemory({ name: name, phone: phone, gender: gender, email: email, birthday: birthday });
+
+      // 更新 GAS（updateMemberProfile）
+      var oldPhone = appState.user && appState.user.phone || '';
+      callGas('updateMemberProfile', {
+        originalPhone: oldPhone,
+        lineId: _lineProfile ? _lineProfile.lineId : '',
+        name: name, phone: phone, gender: gender, email: email, birthday: birthday
+      }, function(res) {
+        if (res && res.success) {
+          if (appState.user) { appState.user.name = name; if (phone) appState.user.phone = phone; }
+          var nd = document.getElementById('member-name-display');
+          if (nd) nd.textContent = name;
+          var pd = document.getElementById('member-phone-display');
+          if (pd) pd.textContent = phone;
+          showToast('資料已更新','success');
+          closeGeneralModal();
+        } else {
+          showToast('更新失敗：' + (res && res.message || '請稍後再試'), 'error');
+        }
+      });
     }
 
     function _memberMyReservations() {
