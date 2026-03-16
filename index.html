@@ -318,72 +318,130 @@
       </div>
       <!-- Member View -->
       <div id="view-member" class="hidden space-y-4">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
-          <div class="relative w-16 h-16 mx-auto mb-3">
-            <img id="member-avatar-img" src="" class="w-16 h-16 rounded-full object-cover border-2 border-blue-200 hidden">
-            <div id="member-avatar-fallback" class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-user text-2xl"></i></div>
+        <!-- Profile Card -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="relative">
+              <img id="member-avatar-img" src="" class="w-14 h-14 rounded-full object-cover border-2 border-blue-200 hidden">
+              <div id="member-avatar-fallback" class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold" id="member-avatar-initial">👤</div>
+            </div>
+            <div class="flex-1">
+              <h2 class="text-xl font-bold" id="member-name-display">會員</h2>
+              <p class="text-gray-500 text-xs mt-0.5" id="member-phone-display"></p>
+              <span id="member-line-badge" class="hidden mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full font-bold"><i class="fa-brands fa-line"></i> LINE 已連結</span>
+            </div>
+            <button onclick="logout()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-right-from-bracket text-lg"></i></button>
           </div>
-          <h2 class="text-xl font-bold" id="member-name-display">會員姓名</h2>
-          <p class="text-gray-500 text-sm mt-1" id="member-line-name"></p>
-          <p class="text-gray-400 text-xs mt-0.5" id="member-phone-display"></p>
-          <div class="mt-4 flex gap-2 justify-center">
-            <button onclick="logout()" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">登出</button>
-            <button onclick="_showMemberProfile()" class="px-6 py-2 bg-blue-50 text-blue-600 rounded-full text-sm font-medium">我的資料</button>
+          <!-- Member quick actions -->
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="_memberEditProfile()" class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100 hover:bg-blue-100 transition-colors">
+              <div class="w-9 h-9 bg-blue-500 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-user-pen text-sm"></i></div>
+              <div class="text-left"><div class="font-bold text-blue-900 text-sm">修改資料</div><div class="text-[10px] text-blue-700">姓名、電話等</div></div>
+            </button>
+            <button onclick="switchTab('reserve')" class="flex items-center gap-3 p-3 bg-red-50 rounded-xl border border-red-100 hover:bg-red-100 transition-colors">
+              <div class="w-9 h-9 bg-red-500 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-calendar-check text-sm"></i></div>
+              <div class="text-left"><div class="font-bold text-red-900 text-sm">我要預約</div><div class="text-[10px] text-red-700">預約看房</div></div>
+            </button>
+            <button onclick="_memberMyReservations()" class="flex items-center gap-3 p-3 bg-purple-50 rounded-xl border border-purple-100 hover:bg-purple-100 transition-colors">
+              <div class="w-9 h-9 bg-purple-500 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-list-check text-sm"></i></div>
+              <div class="text-left"><div class="font-bold text-purple-900 text-sm">我的預約</div><div class="text-[10px] text-purple-700">查看預約紀錄</div></div>
+            </button>
+            <button onclick="switchTab('service')" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors">
+              <div class="w-9 h-9 bg-gray-400 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-info text-sm"></i></div>
+              <div class="text-left"><div class="font-bold text-gray-700 text-sm">服務資訊</div><div class="text-[10px] text-gray-500">優惠與功能</div></div>
+            </button>
           </div>
         </div>
       </div>
-      <!-- Tenant View -->
+
       <div id="view-tenant" class="hidden space-y-4">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">租客專區</h2>
-            <button onclick="logout()" class="text-sm text-gray-500"><i class="fa-solid fa-right-from-bracket"></i> 登出</button>
-          </div>
-          <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4">
-            <div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-door-open text-blue-600"></i><span class="font-bold text-lg text-blue-800" id="tenant-room"></span></div>
-            <div class="grid grid-cols-2 gap-y-2 text-sm text-gray-700 mt-3">
-              <div><span class="text-gray-500 block text-xs">姓名</span><span id="tenant-name"></span></div>
-              <div><span class="text-gray-500 block text-xs">合約期間</span><span id="tenant-period"></span></div>
-              <div><span class="text-gray-500 block text-xs">繳費方式</span><span id="tenant-payment"></span></div>
-              <div><span class="text-gray-500 block text-xs">本月繳費</span><span id="tenant-status" class="font-bold text-blue-600"></span></div>
-              <div class="col-span-2"><span class="text-gray-500 block text-xs">當期電費</span><span id="tenant-electricity"></span></div>
+        <!-- 租客資訊卡 -->
+        <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white p-5 rounded-2xl shadow-lg">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <div class="text-blue-200 text-xs font-medium mb-0.5">房號</div>
+              <div class="text-2xl font-black" id="tenant-room">─</div>
             </div>
+            <div class="text-right">
+              <div class="text-blue-200 text-xs font-medium mb-0.5">租客姓名</div>
+              <div class="font-bold" id="tenant-name">─</div>
+            </div>
+            <button onclick="logout()" class="text-blue-300 hover:text-white"><i class="fa-solid fa-right-from-bracket"></i></button>
           </div>
-          <div class="grid grid-cols-2 gap-3 mb-6">
-            <button onclick="openTenantModal('repair')" class="flex items-center gap-3 p-4 bg-orange-50 rounded-xl border border-orange-100 hover:bg-orange-100 transition-colors">
+          <div class="grid grid-cols-2 gap-3 text-sm bg-blue-900/30 rounded-xl p-3">
+            <div><div class="text-blue-300 text-[10px]">合約到期</div><div class="font-bold text-white" id="tenant-period">─</div></div>
+            <div><div class="text-blue-300 text-[10px]">本月繳費</div><div class="font-bold" id="tenant-status">─</div></div>
+            <div><div class="text-blue-300 text-[10px]">繳費方式</div><div id="tenant-payment">─</div></div>
+            <div><div class="text-blue-300 text-[10px]">當期電費</div><div id="tenant-electricity">─</div></div>
+          </div>
+        </div>
+
+        <!-- 核心功能 2x3 -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+          <h3 class="font-bold text-gray-800 mb-3 text-sm">租客服務</h3>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="openTenantModal('repair')" class="flex flex-col items-center gap-1.5 p-3 bg-orange-50 rounded-xl border border-orange-100 hover:bg-orange-100 transition-colors active:scale-95">
               <div class="w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-tools"></i></div>
-              <div class="text-left"><div class="font-bold text-orange-900 text-sm">設備報修</div><div class="text-[10px] text-orange-700">房間設備故障申請</div></div>
+              <span class="font-bold text-[10px] text-orange-900 text-center leading-tight">設備<br>報修</span>
             </button>
-            <button onclick="openTenantModal('referral')" class="flex items-center gap-3 p-4 bg-emerald-50 rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-colors">
-              <div class="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-user-plus"></i></div>
-              <div class="text-left"><div class="font-bold text-emerald-900 text-sm">推薦好友</div><div class="text-[10px] text-emerald-700">推薦入住領取回饋</div></div>
+            <button onclick="openTenantModal('referral')" class="flex flex-col items-center gap-1.5 p-3 bg-emerald-50 rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-colors active:scale-95">
+              <div class="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-gift"></i></div>
+              <span class="font-bold text-[10px] text-emerald-900 text-center leading-tight">我要<br>推薦</span>
             </button>
-            <button onclick="openTenantModal('publicArea')" class="flex items-center gap-3 p-4 bg-cyan-50 rounded-xl border border-cyan-100 hover:bg-cyan-100 transition-colors">
-              <div class="w-10 h-10 bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-clock"></i></div>
-              <div class="text-left"><div class="font-bold text-cyan-900 text-sm">區域預約</div><div class="text-[10px] text-cyan-700">公共空間使用預約</div></div>
-            </button>
-            <button onclick="openTenantModal('contract')" class="flex items-center gap-3 p-4 bg-indigo-50 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-colors">
+            <button onclick="_tenantMyContract()" class="flex flex-col items-center gap-1.5 p-3 bg-indigo-50 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-colors active:scale-95">
               <div class="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-file-signature"></i></div>
-              <div class="text-left"><div class="font-bold text-indigo-900 text-sm">電子租約</div><div class="text-[10px] text-indigo-700">合約查看與簽署</div></div>
+              <span class="font-bold text-[10px] text-indigo-900 text-center leading-tight">電子<br>租約</span>
+            </button>
+            <button onclick="openTenantModal('bulletin')" class="flex flex-col items-center gap-1.5 p-3 bg-amber-50 rounded-xl border border-amber-100 hover:bg-amber-100 transition-colors active:scale-95 relative">
+              <div class="w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-bullhorn"></i></div>
+              <span class="font-bold text-[10px] text-amber-900 text-center leading-tight">房屋<br>公告</span>
+              <span id="tenant-announcement-badge" class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+            </button>
+            <button onclick="openTenantModal('rules')" class="flex flex-col items-center gap-1.5 p-3 bg-teal-50 rounded-xl border border-teal-100 hover:bg-teal-100 transition-colors active:scale-95">
+              <div class="w-10 h-10 bg-teal-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-scroll"></i></div>
+              <span class="font-bold text-[10px] text-teal-900 text-center leading-tight">生活<br>公約</span>
+            </button>
+            <button onclick="openTenantModal('publicArea')" class="flex flex-col items-center gap-1.5 p-3 bg-cyan-50 rounded-xl border border-cyan-100 hover:bg-cyan-100 transition-colors active:scale-95">
+              <div class="w-10 h-10 bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-clock"></i></div>
+              <span class="font-bold text-[10px] text-cyan-900 text-center leading-tight">區域<br>預約</span>
             </button>
           </div>
-          <div class="grid grid-cols-4 gap-2 mb-6">
-            <button onclick="openTenantModal('rules')" class="flex flex-col items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
-              <i class="fa-solid fa-book text-blue-500 text-lg mb-1"></i><span class="text-[10px] font-medium text-gray-700">租屋需知</span>
+        </div>
+
+        <!-- 更多功能 -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+          <h3 class="font-bold text-gray-800 mb-3 text-sm">更多功能</h3>
+          <div class="space-y-2">
+            <button onclick="_tenantMeterRecord()" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-yellow-50 hover:border-yellow-200 transition-colors">
+              <div class="w-9 h-9 bg-yellow-400 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-bolt text-sm"></i></div>
+              <div class="text-left flex-1">
+                <div class="font-bold text-gray-800 text-sm">每月電錶度數</div>
+                <div class="text-[10px] text-gray-500">拍照上傳電錶讀數</div>
+              </div>
+              <i class="fa-solid fa-chevron-right text-gray-300"></i>
             </button>
-            <button onclick="openTenantModal('bulletin')" class="flex flex-col items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors relative">
-              <i class="fa-solid fa-bullhorn text-blue-500 text-lg mb-1"></i><span class="text-[10px] font-medium text-gray-700">社區佈告</span>
-              <!-- [FIX #2] 加入 announcement badge 元素 -->
-              <span id="tenant-announcement-badge" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+            <button onclick="_tenantMyContract()" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
+              <div class="w-9 h-9 bg-indigo-500 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-house-circle-check text-sm"></i></div>
+              <div class="text-left flex-1">
+                <div class="font-bold text-gray-800 text-sm">有效租約</div>
+                <div class="text-[10px] text-gray-500">查看合約資訊與剩餘天數</div>
+              </div>
+              <i class="fa-solid fa-chevron-right text-gray-300"></i>
             </button>
-            <button onclick="showTenantHistory()" class="flex flex-col items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
-              <i class="fa-solid fa-clock-rotate-left text-blue-500 text-lg mb-1"></i><span class="text-[10px] font-medium text-gray-700">歷史紀錄</span>
-            </button>
-            <button onclick="triggerSOS()" class="flex flex-col items-center justify-center p-2 bg-red-50 rounded-xl border border-red-100 hover:bg-red-100 hover:border-red-200 transition-colors">
-              <i class="fa-solid fa-triangle-exclamation text-red-500 text-lg mb-1"></i><span class="text-[10px] font-black text-red-700">緊急求助</span>
+            <button onclick="showTenantHistory()" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+              <div class="w-9 h-9 bg-blue-400 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-clock-rotate-left text-sm"></i></div>
+              <div class="text-left flex-1">
+                <div class="font-bold text-gray-800 text-sm">歷史紀錄</div>
+                <div class="text-[10px] text-gray-500">報修、問題反應歷史</div>
+              </div>
+              <i class="fa-solid fa-chevron-right text-gray-300"></i>
             </button>
           </div>
-          <h3 class="font-bold text-gray-800 mb-2">問題反應與建議</h3>
+        </div>
+
+        <!-- 問題反應 -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+          <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-message text-blue-500"></i> 我要留言</h3>
           <form onsubmit="handleIssueSubmit(event)" class="space-y-3">
             <select id="issue-category" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
               <option value="">請選擇問題分類</option>
@@ -394,12 +452,20 @@
               <option value="功能建議">功能建議</option>
               <option value="其他問題">其他問題</option>
             </select>
-            <textarea id="issue-text" required placeholder="請詳細描述您遇到的問題或建議" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none resize-none text-sm"></textarea>
-            <button type="submit" id="issue-btn" class="w-full py-3.5 bg-blue-500 text-white rounded-xl font-bold text-sm shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">送出問題 (透過 LINE 通知)</button>
+            <textarea id="issue-text" required placeholder="請詳細描述您的問題或建議..." rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none resize-none text-sm"></textarea>
+            <button type="submit" id="issue-btn" class="w-full py-3.5 bg-blue-500 text-white rounded-xl font-bold text-sm shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">
+              <i class="fa-solid fa-paper-plane mr-2"></i>送出留言
+            </button>
           </form>
         </div>
+
+        <!-- 緊急求助 -->
+        <button onclick="triggerSOS()" class="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-base shadow-lg border-b-4 border-red-700 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-3">
+          <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+          緊急求助 SOS
+        </button>
       </div>
-      <!-- Admin View -->
+
       <div id="view-admin" class="hidden space-y-4">
         <div class="bg-gray-900 text-white p-5 rounded-2xl shadow-sm">
           <div class="flex justify-between items-center mb-1">
@@ -494,6 +560,111 @@
   </div>
 
   <!-- 租客功能彈窗 -->
+
+  <!-- ===== 電子租約 Modal (崔媽媽版) ===== -->
+  <div id="contract-modal" class="fixed inset-0 bg-gray-50 z-[60] hidden flex-col">
+    <header class="bg-blue-600 text-white shadow-md py-4 px-4 flex items-center justify-between shrink-0">
+      <button onclick="closeContractModal()" class="text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-blue-700"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <h2 class="text-base font-bold">房屋租賃契約書（崔媽媽版）</h2>
+      <button onclick="printContract()" class="text-white text-xs bg-blue-700 px-2 py-1 rounded-lg"><i class="fa-solid fa-print mr-1"></i>列印</button>
+    </header>
+    <div class="flex-1 overflow-y-auto p-4 bg-white" id="contract-modal-content">
+      <div class="prose prose-sm max-w-none text-gray-700 space-y-4 pb-8">
+        <h2 class="text-center font-bold text-xl mb-4">房屋租賃契約書</h2>
+        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-xs text-gray-600 mb-6">
+          <h3 class="font-bold text-yellow-800 mb-2">《注意事項》</h3>
+          <ol class="list-decimal pl-4 space-y-1">
+            <li>本注意事項僅促請訂約雙方注意，並非本約之一部分，無約束雙方之效力。</li>
+            <li>契約應提供至少三日審閱期，訂約時務必詳審契約條文，由雙方簽名、蓋章或按手印，並寫明戶籍地址、身分證字號及統一編號等資料。</li>
+            <li>契約簽訂時應先確定訂約者身份，可請互相提示身分證或駕照等證明文件。</li>
+            <li>立契約書人為未成年人，應得法定代理人同意。</li>
+            <li>依土地法第九十九條，房屋租賃之押金，不得超過二個月之租金總額。</li>
+            <li>交屋時對現有屋況先行拍照存證，並詳細明列附屬傢俱及設備清單。</li>
+            <li>內政部公告不得記載事項：不得約定拋棄審閱期間、廣告僅供參考、承租人不得申報租賃費用支出、承租人不得遷入戶籍等。</li>
+          </ol>
+        </div>
+        <div class="space-y-2">
+          <p>立契約書人出租人 <input type="text" id="contract-landlord" class="border-b border-gray-400 outline-none w-32 text-center" value="壹參宿舍"> (以下簡稱甲方)</p>
+          <p>承租人 <input type="text" id="contract-tenant-name" class="border-b border-gray-400 outline-none w-32 text-center" placeholder="姓名"> (以下簡稱乙方)</p>
+          <p>茲為房屋租賃事宜，雙方同意本契約條款如下：</p>
+        </div>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第一條：房屋租賃標的</h3>
+        <div class="space-y-2 pl-2">
+          <p>一、房屋標示：<input type="text" id="contract-address" class="border-b border-gray-400 outline-none w-full max-w-md" value="台中市西屯區文華路100號"></p>
+          <p>二、租賃範圍：房間編號 <select id="contract-room" class="border-b border-gray-400 outline-none w-24 text-center bg-transparent"></select>，面積約 <input type="number" class="border-b border-gray-400 outline-none w-14 text-center" value="6"> 坪。</p>
+        </div>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第二條：租賃期間</h3>
+        <p class="pl-2">自民國 <input type="date" id="contract-start" class="border-b border-gray-400 outline-none w-36 text-center"> 起至民國 <input type="date" id="contract-end" class="border-b border-gray-400 outline-none w-36 text-center"> 止。</p>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第三條：租金約定及支付</h3>
+        <div class="space-y-2 pl-2">
+          <p>一、乙方每月租金為新臺幣 <input type="number" id="contract-rent" class="border-b border-gray-400 outline-none w-24 text-center"> 元整，於每月 <input type="number" class="border-b border-gray-400 outline-none w-12 text-center" value="5"> 日前支付。</p>
+          <p>二、支付方式：<label><input type="radio" name="payMethod" value="cash"> 現金</label>　<label><input type="radio" name="payMethod" value="transfer" checked> 轉帳</label>　帳號：<input type="text" class="border-b border-gray-400 outline-none w-40 text-center" placeholder="銀行代碼+帳號"></p>
+        </div>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第四條：押金約定及返還</h3>
+        <p class="pl-2">押金新台幣 <input type="number" id="contract-deposit" class="border-b border-gray-400 outline-none w-24 text-center"> 元（最高不得超過二個月租金總額）。租賃關係消滅時，扣除應付費用後無息返還。</p>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第五條：費用約定</h3>
+        <div class="pl-2 space-y-1 text-sm">
+          <p>電費：<label><input type="radio" name="feeElec" value="extra" checked> 每度</label> <input type="number" class="border-b border-gray-400 outline-none w-14 text-center" value="5"> 元另計。</p>
+          <p>水費：<label><input type="radio" name="feeWater" value="included" checked> 含於租金</label>　<label><input type="radio" name="feeWater" value="extra"> 另計</label></p>
+          <p>管理費：<label><input type="radio" name="feeManage" value="included" checked> 含於租金</label>　<label><input type="radio" name="feeManage" value="extra"> 每月 <input type="number" class="border-b border-gray-400 outline-none w-16 text-center"> 元</label></p>
+        </div>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第六條：使用限制</h3>
+        <p class="pl-2 text-sm">未經甲方同意，乙方不得變更用途、轉租或出借。不得存放爆炸性或易燃性物品。</p>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第七條：修繕責任</h3>
+        <p class="pl-2 text-sm">自然損耗由甲方修繕；可歸責乙方之損壞由乙方負責。改裝需取得甲方同意。</p>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第八條：提前終止</h3>
+        <p class="pl-2 text-sm">提前終止須一個月前通知，未先通知者應賠償一個月租金違約金。</p>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第九條：房屋返還</h3>
+        <p class="pl-2 text-sm">租賃關係消滅時，乙方應回復原狀返還，並完成點交手續。</p>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第十條：特別約定</h3>
+        <div class="pl-2 space-y-2">
+          <p class="text-sm">一、甲方提供之設備明細如附件設備清單。</p>
+          <p class="text-sm">二、<input type="text" class="border-b border-gray-400 outline-none w-full max-w-md"></p>
+          <p class="text-sm">三、<input type="text" class="border-b border-gray-400 outline-none w-full max-w-md"></p>
+        </div>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第十一條：爭議處理</h3>
+        <p class="pl-2 text-sm">雙方得申請不動產糾紛調處委員會調解；如涉訴訟，同意以臺灣之地方法院為管轄法院。</p>
+        <h3 class="font-bold text-blue-700 border-b border-blue-200 pb-1 mt-6">第十二條：契約分存</h3>
+        <p class="pl-2 text-sm">本契約書一式貳份，由立契約人各執乙份為憑。</p>
+        <div class="mt-8 border-t border-gray-300 pt-6">
+          <h3 class="font-bold text-lg text-center mb-6">立契約書人</h3>
+          <div class="grid grid-cols-1 gap-6">
+            <div class="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <h4 class="font-bold text-blue-800 border-b border-gray-300 pb-2">甲方（出租人）</h4>
+              <p>姓名：<input type="text" class="border-b border-gray-400 outline-none w-full bg-transparent" value="壹參宿舍"></p>
+              <p>電話：<input type="tel" class="border-b border-gray-400 outline-none w-full bg-transparent"></p>
+              <p>地址：<input type="text" class="border-b border-gray-400 outline-none w-full bg-transparent"></p>
+            </div>
+            <div class="space-y-3 bg-blue-50 p-4 rounded-xl border border-blue-200">
+              <h4 class="font-bold text-blue-800 border-b border-blue-300 pb-2">乙方（承租人）</h4>
+              <p>姓名：<input type="text" id="contract-tenant-name-2" class="border-b border-gray-400 outline-none w-full bg-transparent"></p>
+              <p>身分證：<input type="text" id="contract-id" class="border-b border-gray-400 outline-none w-full bg-transparent"></p>
+              <p>出生：<input type="date" id="contract-birthday" class="border-b border-gray-400 outline-none w-full bg-transparent"></p>
+              <p>電話：<input type="tel" id="contract-phone" class="border-b border-gray-400 outline-none w-full bg-transparent"></p>
+              <p>地址：<input type="text" id="contract-tenant-address" class="border-b border-gray-400 outline-none w-full bg-transparent"></p>
+              <p>Email：<input type="email" id="contract-email" class="border-b border-gray-400 outline-none w-full bg-transparent"></p>
+            </div>
+          </div>
+          <div class="mt-6 text-center text-gray-600">
+            中華民國 <input type="number" id="contract-sign-year" class="border-b border-gray-400 outline-none w-14 text-center"> 年
+            <input type="number" id="contract-sign-month" class="border-b border-gray-400 outline-none w-12 text-center"> 月
+            <input type="number" id="contract-sign-day" class="border-b border-gray-400 outline-none w-12 text-center"> 日
+          </div>
+        </div>
+        <h3 class="font-bold text-blue-700 mt-8 mb-2">乙方簽名</h3>
+        <div class="border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 relative">
+          <canvas id="signature-pad" class="w-full h-40 rounded-xl touch-none"></canvas>
+          <button type="button" onclick="clearSignature()" class="absolute top-2 right-2 bg-white border border-gray-200 text-gray-500 px-2 py-1 rounded text-xs shadow-sm">清除</button>
+        </div>
+        <p class="text-xs text-red-500 text-center mt-1">請在上方空白處簽名</p>
+      </div>
+    </div>
+    <div class="p-4 bg-white border-t border-gray-200 shrink-0 flex gap-3">
+      <button onclick="closeContractModal()" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold">關閉</button>
+      <button onclick="saveContract()" class="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md border-b-4 border-blue-800 active:border-b-0 transition-all">完成簽約</button>
+    </div>
+  </div>
+
   <div id="tenant-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden items-center justify-center p-4">
     <div class="bg-gray-50 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl">
       <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
@@ -644,6 +815,15 @@
       deleteMarketingCampaign: (data) => new Promise(res => setTimeout(() => { const id = data.id || data; mockGas.db.marketing = mockGas.db.marketing.filter(m => m.id !== id); res({ success: true }); }, 300)),
       signContract: (phone) => new Promise(res => setTimeout(() => { const p = typeof phone === 'object' ? phone.phone || phone : phone; const c = mockGas.db.contracts.find(c => c.tenantPhone === p); if (c) { c.status = '已簽署'; c.signedAt = new Date().toISOString().split('T')[0]; } else { mockGas.db.contracts.push({ id: 'C' + Date.now(), tenantPhone: p, status: '已簽署', signedAt: new Date().toISOString().split('T')[0] }); } res({ success: true }); }, 300)),
       triggerSOS: (data) => new Promise(res => setTimeout(() => { console.log('SOS Triggered:', data); res({ success: true }); }, 300)),
+      submitMeterRecord: (data) => new Promise(res => setTimeout(() => {
+        // Store meter record in mock
+        if (!mockGas.db.meterRecords) mockGas.db.meterRecords = [];
+        mockGas.db.meterRecords.push({ ...data, id: 'MTR'+Date.now() });
+        // Update tenant electricity
+        var t = mockGas.db.tenants.find(x => x.room === data.room);
+        if (t) t.electricity = data.meter + '度';
+        res({ success: true });
+      }, 300)),
       updateLineProfile: (data) => new Promise(res => setTimeout(() => {
         var phone = data.phone; var lineId = data.lineId;
         // Update in members
@@ -732,21 +912,67 @@
     function _fixPwd(v){if(!v)return v;var s=String(v).trim();return /^\d{1,3}$/.test(s)?s.padStart(4,'0'):s;}
 
     // [FIX] callGas — 直接走 mock，無需 CORS fetch
+    // ── IS_LOCAL_PREVIEW: true = 本機 file:// 預覽，false = 部署到 LINE/GAS
+    var IS_LOCAL_PREVIEW = (
+      window.location.protocol === 'file:' ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === ''
+    );
+
     function callGas(func, data, cb) {
-      if (typeof google !== 'undefined' && google.script) {
-        // 真實 GAS 環境
+      // 1. GAS 側邊欄環境（google.script.run）
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
-          .withSuccessHandler(res => { if (cb) cb(res); })
-          .withFailureHandler(err => { if (cb) cb({ success: false, message: err.toString() }); })[func](data);
-      } else {
-        // 非 GAS 環境：直接使用 mock，不再嘗試 fetch（避免 CORS 卡住）
-        if (mockGas[func]) {
-          mockGas[func](data).then(res => { if (cb) cb(res); }).catch(err => { if (cb) cb({ success: false, message: err.toString() }); });
-        } else {
-          console.warn('mockGas has no function:', func);
-          if (cb) cb({ success: false, message: 'Function not found: ' + func });
-        }
+          .withSuccessHandler(function(res){ if(cb) cb(res); })
+          .withFailureHandler(function(err){ if(cb) cb({success:false,message:err.toString()}); })[func](data);
+        return;
       }
+      // 2. 本機預覽 → mock
+      if (IS_LOCAL_PREVIEW) {
+        _callMock(func, data, cb);
+        return;
+      }
+      // 3. 正式環境 (LINE LIFF / 瀏覽器) → 真實 GAS fetch
+      _callGasFetch(func, data, cb);
+    }
+
+    function _callMock(func, data, cb) {
+      if (mockGas[func]) {
+        mockGas[func](data)
+          .then(function(res){ if(cb) cb(res); })
+          .catch(function(err){ if(cb) cb({success:false,message:err.toString()}); });
+      } else {
+        console.warn('[mock] 找不到函數:', func);
+        if (cb) cb({success:false, message:'Mock function not found: '+func});
+      }
+    }
+
+    function _callGasFetch(func, data, cb) {
+      var dataStr = (data !== null && data !== undefined)
+        ? encodeURIComponent(JSON.stringify(data)) : '';
+      var url = GAS_URL + '?func=' + encodeURIComponent(func) +
+                (dataStr ? '&data=' + dataStr : '');
+      fetch(url, { method:'GET', redirect:'follow' })
+        .then(function(res){ return res.text(); })
+        .then(function(text){
+          if (text.trim().startsWith('<')) {
+            console.warn('[GAS] 回傳 HTML，fallback to mock');
+            _callMock(func, data, cb);
+            return;
+          }
+          try {
+            var json = JSON.parse(text);
+            if (cb) cb(json);
+          } catch(e) {
+            console.error('[GAS] JSON 解析失敗:', text.slice(0,200));
+            _callMock(func, data, cb);
+          }
+        })
+        .catch(function(err){
+          console.warn('[GAS] fetch 失敗，切換 mock:', err.message);
+          _callMock(func, data, cb);
+        });
     }
 
     // --- State ---
@@ -1102,11 +1328,29 @@
           document.getElementById('visitor-modal').classList.remove('hidden');
           document.getElementById('visitor-modal').classList.add('flex');
         }
+        // Auto-fetch LINE profile if already logged in
+        if (liff.isLoggedIn()) {
+          try { await _fetchLineProfile(); } catch(e) {}
+        }
+        // If IN LINE app → hide phone/password form, prompt LINE login
+        if (liff.isInClient()) {
+          var phoneForm = document.querySelector('#view-login form');
+          var divider   = document.querySelector('#view-login .flex.items-center.gap-3.mb-4');
+          if (phoneForm) phoneForm.style.display = 'none';
+          if (divider)   divider.style.display   = 'none';
+          var hint = document.createElement('p');
+          hint.className = 'text-center text-xs text-green-600 mt-3 font-medium';
+          hint.innerHTML = '<i class="fa-brands fa-line mr-1"></i>您正在 LINE 中，點擊上方按鈕使用 LINE 帳號登入';
+          var loginView = document.getElementById('view-login');
+          if (loginView) loginView.appendChild(hint);
+        }
       } catch (e) {
-        // LIFF 失敗不影響主流程，僅顯示訪客提示
+        // LIFF 失敗不影響主流程
         document.getElementById('visitor-modal').classList.remove('hidden');
         document.getElementById('visitor-modal').classList.add('flex');
       }
+      _hookFormMemory();
+      _autoFillForms();
     }
 
     function sendLiffMessage(text) {
@@ -1216,23 +1460,19 @@
         switchAccountView('tenant');
         return;
       }
-      const mem = _loadUserMemory() || {};
-      document.getElementById('member-name-display').innerText = appState.user.name || '';
-      // Show phone
-      const phoneEl = document.getElementById('member-phone-display');
-      if (phoneEl) phoneEl.textContent = appState.user.phone || '';
-      // Show LINE name hint
-      const lineNameEl = document.getElementById('member-line-name');
-      if (lineNameEl) lineNameEl.textContent = mem.lineId ? '已綁定 LINE' : '一般會員';
-      // Show avatar
-      const avatarImg = document.getElementById('member-avatar-img');
-      const avatarFall = document.getElementById('member-avatar-fallback');
-      const avatarSrc = (mem.avatar || (_lineProfile && _lineProfile.avatar) || '');
-      if (avatarImg && avatarSrc) {
-        avatarImg.src = avatarSrc;
-        avatarImg.classList.remove('hidden');
-        if (avatarFall) avatarFall.style.display = 'none';
-      }
+      var mem2 = _loadUserMemory() || {};
+      var memberNameEl = document.getElementById('member-name-display');
+      if (memberNameEl) memberNameEl.textContent = appState.user.name || mem2.name || '';
+      var memberPhoneEl = document.getElementById('member-phone-display');
+      if (memberPhoneEl) memberPhoneEl.textContent = appState.user.phone || mem2.phone || '';
+      // LINE badge
+      var lineBadge = document.getElementById('member-line-badge');
+      if (lineBadge) { if (mem2.lineId || (_lineProfile && _lineProfile.lineId)) lineBadge.classList.remove('hidden'); else lineBadge.classList.add('hidden'); }
+      // Avatar
+      var avImg = document.getElementById('member-avatar-img');
+      var avFall = document.getElementById('member-avatar-fallback');
+      var avSrc = mem2.avatar || (_lineProfile && _lineProfile.avatar) || '';
+      if (avImg && avSrc) { avImg.src = avSrc; avImg.classList.remove('hidden'); if (avFall) avFall.style.display = 'none'; }
       switchAccountView('member');
     }
 
@@ -2438,6 +2678,235 @@
         }
       });
     }
+
+
+    // ================================================================
+    // CONTRACT MODAL & SIGNATURE PAD
+    // ================================================================
+    var _sigDrawing = false, _sigCtx = null;
+
+    function openOnlineContract() {
+      var modal = document.getElementById('contract-modal');
+      if (!modal) { showToast('合約功能暫時無法使用','error'); return; }
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      // Populate room select
+      if (appState.adminData && appState.adminData.rooms) {
+        var sel = document.getElementById('contract-room');
+        if (sel) sel.innerHTML = appState.adminData.rooms.map(function(r){
+          return '<option value="'+r.id+'">'+r.id+' '+r.name+'</option>';
+        }).join('');
+      }
+      // Sync from add-tenant-form if open
+      var form = document.getElementById('add-tenant-form');
+      if (form) {
+        function sv(fn, cid){ var fe=form[fn]; var ce=document.getElementById(cid); if(fe&&ce&&fe.value) ce.value=fe.value; }
+        sv('name','contract-tenant-name'); sv('name','contract-tenant-name-2');
+        sv('phone','contract-phone'); sv('contractStart','contract-start'); sv('contractEnd','contract-end');
+        var rs=document.getElementById('contract-room'); if(rs&&form.room&&form.room.value) rs.value=form.room.value;
+      }
+      // Sync tenant from logged-in user
+      if (appState.user && appState.user.tenantInfo) {
+        var t = appState.user.tenantInfo;
+        function svi(id,v){ var el=document.getElementById(id); if(el&&v&&!el.value) el.value=v; }
+        svi('contract-tenant-name', t.name); svi('contract-tenant-name-2', t.name);
+        svi('contract-phone', appState.user.phone);
+        svi('contract-start', t.contractStart); svi('contract-end', t.contractEnd);
+      }
+      // Name sync
+      var n1=document.getElementById('contract-tenant-name'), n2=document.getElementById('contract-tenant-name-2');
+      if(n1&&n2){ n1.oninput=function(){n2.value=n1.value;}; n2.oninput=function(){n1.value=n2.value;}; }
+      // Default date
+      var now=new Date();
+      var yr=document.getElementById('contract-sign-year'); if(yr) yr.value=now.getFullYear()-1911;
+      var mo=document.getElementById('contract-sign-month'); if(mo) mo.value=now.getMonth()+1;
+      var dy=document.getElementById('contract-sign-day'); if(dy) dy.value=now.getDate();
+      setTimeout(initSignaturePad, 200);
+    }
+
+    function closeContractModal() {
+      var modal=document.getElementById('contract-modal');
+      if(modal){ modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    }
+
+    function initSignaturePad() {
+      var canvas=document.getElementById('signature-pad');
+      if(!canvas) return;
+      var rect=canvas.getBoundingClientRect();
+      canvas.width=rect.width||300; canvas.height=rect.height||160;
+      _sigCtx=canvas.getContext('2d');
+      _sigCtx.lineWidth=3; _sigCtx.lineCap='round'; _sigCtx.strokeStyle='#1e3a8a';
+      function getPos(e){ var r=canvas.getBoundingClientRect(); var src=e.touches?e.touches[0]:e; return{x:src.clientX-r.left,y:src.clientY-r.top}; }
+      function start(e){ _sigDrawing=true; var p=getPos(e); _sigCtx.beginPath(); _sigCtx.moveTo(p.x,p.y); }
+      function draw(e){ if(!_sigDrawing)return; e.preventDefault(); var p=getPos(e); _sigCtx.lineTo(p.x,p.y); _sigCtx.stroke(); }
+      function stop(){ _sigDrawing=false; _sigCtx.closePath(); }
+      canvas.onmousedown=start; canvas.onmousemove=draw; canvas.onmouseup=stop; canvas.onmouseleave=stop;
+      canvas.ontouchstart=start; canvas.ontouchmove=draw; canvas.ontouchend=stop;
+    }
+
+    function clearSignature() {
+      var canvas=document.getElementById('signature-pad');
+      if(canvas&&_sigCtx) _sigCtx.clearRect(0,0,canvas.width,canvas.height);
+    }
+
+    function saveContract() {
+      var canvas=document.getElementById('signature-pad');
+      if(canvas){
+        var blank=document.createElement('canvas'); blank.width=canvas.width; blank.height=canvas.height;
+        if(canvas.toDataURL()===blank.toDataURL()){ showToast('請先在下方完成簽名','warn'); return; }
+      }
+      // Sync back to add-tenant-form
+      var form=document.getElementById('add-tenant-form');
+      if(form){
+        function get(id){ var el=document.getElementById(id); return el?el.value:''; }
+        if(form.name) form.name.value=get('contract-tenant-name');
+        if(form.phone) form.phone.value=get('contract-phone');
+        if(form.contractStart) form.contractStart.value=get('contract-start');
+        if(form.contractEnd) form.contractEnd.value=get('contract-end');
+        var rs=document.getElementById('contract-room'); if(rs&&form.room) form.room.value=rs.value;
+        var si=form.querySelector('[name="signatureData"]'); if(!si){ si=document.createElement('input'); si.type='hidden'; si.name='signatureData'; form.appendChild(si); }
+        if(canvas) si.value=canvas.toDataURL();
+        if(typeof calculateContractDays==='function') calculateContractDays();
+      }
+      // If tenant signing from tenant view
+      if(appState.user && appState.user.role==='tenant' && !form){
+        callGas('signContract', appState.user.phone, function(res){
+          if(res.success){ showToast('合約簽署成功！','success'); closeContractModal(); }
+          else showToast('簽署失敗：'+res.message,'error');
+        });
+        return;
+      }
+      showToast('簽約完成！資料已帶入表單','success');
+      closeContractModal();
+    }
+
+
+    // ── Tenant Helper Functions ──────────────────────────────
+    function _tenantMyContract() {
+      if (!appState.user || !appState.user.tenantInfo) return;
+      var t = appState.user.tenantInfo;
+      // Check if contract exists
+      var now = new Date();
+      var end = t.contractEnd ? new Date(t.contractEnd) : null;
+      var days = end ? Math.ceil((end - now) / 86400000) : null;
+      var statusColor = days === null ? 'gray' : (days < 0 ? 'red' : days <= 30 ? 'orange' : 'green');
+      var statusText  = days === null ? '未設定' : (days < 0 ? '已過期 '+Math.abs(days)+' 天' : '剩餘 '+days+' 天');
+      var html =
+        '<div class="space-y-4">' +
+          '<div class="bg-gradient-to-br from-indigo-500 to-indigo-700 text-white p-5 rounded-2xl">' +
+            '<div class="text-indigo-200 text-xs mb-1">房號</div><div class="text-2xl font-black mb-3">'+t.room+'</div>' +
+            '<div class="grid grid-cols-2 gap-3 text-sm">' +
+              '<div><div class="text-indigo-300 text-[10px]">開始日期</div><div class="font-bold">'+(t.contractStart||'─')+'</div></div>' +
+              '<div><div class="text-indigo-300 text-[10px]">結束日期</div><div class="font-bold">'+(t.contractEnd||'─')+'</div></div>' +
+              '<div><div class="text-indigo-300 text-[10px]">繳費方式</div><div class="font-bold">'+(t.paymentMethod||'─')+'</div></div>' +
+              '<div><div class="text-indigo-300 text-[10px]">合約狀態</div><div class="font-bold text-'+statusColor+'-300">'+statusText+'</div></div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm text-gray-700">' +
+            '<p>房客：<span class="font-bold">'+t.name+'</span></p>' +
+            '<p class="mt-1">電費：<span class="font-medium">'+(t.electricity||'本月尚未更新')+'</span></p>' +
+          '</div>' +
+          '<button onclick="openOnlineContract()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700"><i class="fa-solid fa-file-signature mr-2"></i>查看 / 簽署電子合約</button>' +
+        '</div>';
+      openGeneralModal('我的有效租約', html);
+    }
+
+    function _tenantMeterRecord() {
+      var html =
+        '<div class="space-y-4">' +
+          '<div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200">' +
+            '<p class="text-sm text-yellow-800 font-medium"><i class="fa-solid fa-lightbulb mr-1"></i>每月按時回報電錶度數，管理員將據此計算電費。</p>' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-sm font-bold text-gray-700 mb-1">本月電錶度數 *</label>' +
+            '<input type="number" id="meter-current" placeholder="請輸入本月電錶數值" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-yellow-500 text-lg font-bold">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-sm font-bold text-gray-700 mb-1">電錶照片（選填）</label>' +
+            '<input type="file" id="meter-photo" accept="image/*" capture="camera" class="w-full text-sm p-2 border border-gray-200 rounded-xl bg-gray-50">' +
+            '<p class="text-[10px] text-gray-400 mt-1">可直接拍照上傳電錶畫面</p>' +
+          '</div>' +
+          '<button onclick="_submitMeterRecord()" class="w-full py-3.5 bg-yellow-500 text-white rounded-xl font-bold shadow-md hover:bg-yellow-600"><i class="fa-solid fa-bolt mr-2"></i>送出電錶度數</button>' +
+        '</div>';
+      openGeneralModal('每月電錶度數', html);
+    }
+
+    function _submitMeterRecord() {
+      var val = document.getElementById('meter-current');
+      if (!val || !val.value) { showToast('請輸入電錶度數','warn'); return; }
+      var meter = val.value;
+      var t = appState.user && appState.user.tenantInfo;
+      if (!t) return;
+      callGas('submitMeterRecord', {
+        room: t.room, name: t.name, phone: appState.user.phone,
+        meter: meter, date: new Date().toLocaleDateString()
+      }, function(res) {
+        if (res.success) {
+          showToast('電錶度數已送出，謝謝！','success');
+          closeGeneralModal();
+          sendLiffMessage('[電錶回報] 房號：'+t.room+' / '+t.name+'\n本月度數：'+meter+'\n日期：'+new Date().toLocaleDateString());
+        } else showToast('送出失敗：'+res.message,'error');
+      });
+    }
+
+    function _memberEditProfile() {
+      var mem  = _loadUserMemory() || {};
+      var user = appState.user || {};
+      var html =
+        '<form id="edit-profile-form" class="space-y-4">' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">姓名</label>' +
+            '<input type="text" name="name" value="'+(user.name||mem.name||'')+'" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">手機號碼</label>' +
+            '<input type="tel" name="phone" value="'+(user.phone||mem.phone||'')+'" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">性別</label>' +
+            '<select name="gender" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white"><option value="男" '+(mem.gender==='男'?'selected':'')+'>男</option><option value="女" '+(mem.gender==='女'?'selected':'')+'>女</option></select></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">Email</label>' +
+            '<input type="email" name="email" value="'+(mem.email||'')+'" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+          '<button type="button" onclick="_saveEditProfile()" class="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-md">儲存變更</button>' +
+        '</form>';
+      openGeneralModal('修改會員資料', html);
+    }
+
+    function _saveEditProfile() {
+      var form = document.getElementById('edit-profile-form');
+      if (!form) return;
+      var fd = new FormData(form);
+      _saveUserMemory({ name: fd.get('name'), phone: fd.get('phone'), gender: fd.get('gender'), email: fd.get('email') });
+      if (appState.user) appState.user.name = fd.get('name');
+      document.getElementById('member-name-display').textContent = fd.get('name') || '';
+      showToast('資料已更新','success');
+      closeGeneralModal();
+    }
+
+    function _memberMyReservations() {
+      if (!appState.user) return;
+      openGeneralModal('我的預約紀錄', '<div class="flex justify-center py-8"><span class="loader border-blue-500 border-t-transparent w-8 h-8"></span></div>');
+      callGas('getAdminData', null, function(res) {
+        if (!res.success) { document.getElementById('general-modal-content').innerHTML = '<p class="text-red-500 text-center">載入失敗</p>'; return; }
+        var phone = appState.user.phone;
+        var myRes = (res.data.reservations || []).filter(function(r){ return r.phone === phone; });
+        var html;
+        if (!myRes.length) {
+          html = '<div class="text-center py-8 text-gray-400"><i class="fa-solid fa-calendar-xmark text-3xl mb-3 block"></i>目前沒有預約紀錄</div>';
+        } else {
+          html = '<div class="space-y-3">' + myRes.map(function(r){
+            return '<div class="bg-gray-50 p-4 rounded-xl border border-gray-100">' +
+              '<div class="flex justify-between items-start mb-2">' +
+                '<div class="font-bold text-gray-800">'+r.name+'</div>' +
+                '<div class="text-xs text-gray-400">'+(r.reserveDate||r.date||'')+'</div>' +
+              '</div>' +
+              '<p class="text-sm text-gray-600">房型：'+r.roomType+'</p>' +
+              '<p class="text-sm text-gray-600">時段：'+r.time+'</p>' +
+            '</div>';
+          }).join('') + '</div>';
+        }
+        document.getElementById('general-modal-content').innerHTML = html;
+      });
+    }
+
+    // Add submitMeterRecord to mock
+
+
 
   </script>
 </body>
