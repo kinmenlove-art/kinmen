@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.0.9</title>
+  <title>壹參學生宿舍系統 VER1.1.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -252,14 +252,6 @@
       <div id="faq-list" class="space-y-2">
         <div class="text-center text-gray-400 text-sm py-4"><span class="loader border-blue-400 border-t-transparent w-5 h-5 inline-block mr-2"></span>載入中...</div>
       </div>
-      <h3 class="text-xl font-bold mb-2 text-blue-800">訪客模式提醒</h3>
-      <p class="text-gray-600 text-sm mb-6 leading-relaxed">
-        您目前未使用 LINE 登入，部分功能將受限。<br>建議您使用手機 LINE 開啟本系統，以享有完整服務與預約功能。
-      </p>
-      <div class="space-y-3">
-        <a href="https://lin.ee/HCs6wqqU" target="_blank" class="block w-full py-3.5 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">點我加入 LINE 官方帳號</a>
-        <button onclick="document.getElementById('visitor-modal').classList.add('hidden'); document.getElementById('visitor-modal').classList.remove('flex');" class="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors">繼續以訪客瀏覽</button>
-      </div>
     </div>
 
       <!-- Tab: Account -->
@@ -334,6 +326,7 @@
                 <h2 class="text-xl font-bold" id="member-name-display">會員</h2>
                 <p class="text-gray-500 text-xs mt-0.5" id="member-phone-display"></p>
                 <span id="member-line-badge" class="hidden mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full font-bold"><i class="fa-brands fa-line"></i> LINE 已連結</span>
+              <button id="member-admin-btn" onclick="switchTab('account');renderAccountView();" class="hidden mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-red-600 text-white text-[10px] rounded-full font-bold hover:bg-red-700 active:scale-95 transition-all"><i class="fa-solid fa-shield-halved mr-1"></i>管理員後台</button>
               </div>
               <button onclick="logout()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-right-from-bracket text-lg"></i></button>
             </div>
@@ -719,7 +712,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER1.0.9';
+    const APP_VERSION = 'VER1.1.0';
     document.addEventListener('DOMContentLoaded', function() {
       var el = document.getElementById('header-version');
       if (el) el.textContent = APP_VERSION;
@@ -908,7 +901,7 @@
       }, 200)),
       getMyReservations: (data) => new Promise(res => setTimeout(() => {
         var phone = data && data.phone ? data.phone : '';
-        var p0 = phone.length===9&&phone.startsWith('9') ? '0'+phone : phone;
+        var p0 = phone && phone.length===9&&phone.startsWith('9') ? '0'+phone : phone;
         var myRes = mockGas.db.reservations.filter(function(r){ var rp=r.phone?r.phone.toString():''; return rp===phone||rp===p0||rp==='0'+phone; });
         res({ success: true, reservations: myRes });
       }, 200)),
@@ -1172,6 +1165,14 @@
             lineId: lineId,
             avatar: _lineProfile && _lineProfile.avatar || ''
           });
+          // Check if this LINE ID is a super admin
+          var _SUPER_ADMIN = ['Uf75aa7a922f3598d4fd6ba6201d8cfd0','U2e0559e74f0259b05b803a9ee3171069','U067959f33a3578bfe1516dd1529a7e66'];
+          if (_SUPER_ADMIN.indexOf(lineId) !== -1 && appState.user && appState.user.role !== 'admin') {
+            appState.user.role = 'admin';
+            if (!appState.user.permissions || !appState.user.permissions.length) {
+              appState.user.permissions = ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts','faq'];
+            }
+          }
           renderAccountView();
           _autoFillForms();
           showToast('歡迎回來，' + (res.name || 'LINE 用戶') + '！', 'success');
@@ -1618,7 +1619,14 @@
       document.getElementById('nav-' + tabId).classList.remove('text-gray-400');
       document.getElementById('nav-' + tabId).classList.add('text-blue-600');
       if (tabId === 'account') renderAccountView();
-      if (tabId === 'service') { setTimeout(loadFAQ, 100); }
+      if (tabId === 'service') {
+        setTimeout(loadFAQ, 100);
+        // Hide visitor modal if user is logged in
+        if (appState.user) {
+          var vm = document.getElementById('visitor-modal');
+          if (vm) { vm.classList.add('hidden'); vm.classList.remove('flex'); }
+        }
+      }
       if (tabId === 'reserve') _autoFillForms(); // auto-fill when switching to reserve
     }
 
@@ -1666,6 +1674,25 @@
       var avFall = document.getElementById('member-avatar-fallback');
       var avSrc = mem2.avatar || (_lineProfile && _lineProfile.avatar) || '';
       if (avImg && avSrc) { avImg.src = avSrc; avImg.classList.remove('hidden'); if (avFall) avFall.style.display = 'none'; }
+      // Show admin button for specific LINE IDs
+      var SUPER_ADMIN_IDS = ['Uf75aa7a922f3598d4fd6ba6201d8cfd0','U2e0559e74f0259b05b803a9ee3171069','U067959f33a3578bfe1516dd1529a7e66'];
+      var curLineId = mem2.lineId || (_lineProfile && _lineProfile.lineId) || '';
+      var adminBtn  = document.getElementById('member-admin-btn');
+      if (adminBtn) {
+        if (curLineId && SUPER_ADMIN_IDS.indexOf(curLineId) !== -1) {
+          adminBtn.classList.remove('hidden');
+          adminBtn.onclick = function() {
+            // Temporarily elevate to admin role for this session
+            if (appState.user) {
+              appState.user.role = 'admin';
+              appState.user.permissions = ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts','faq'];
+            }
+            renderAccountView();
+          };
+        } else {
+          adminBtn.classList.add('hidden');
+        }
+      }
       switchAccountView('member');
     }
 
@@ -3196,19 +3223,31 @@
     function _memberMyReservations() {
       if (!appState.user) return;
       openGeneralModal('我的預約紀錄', '<div class="flex justify-center py-8"><span class="loader border-blue-500 border-t-transparent w-8 h-8"></span></div>');
-      callGas('getMyReservations', { phone: appState.user.phone }, function(res) {
+      var mem = _loadUserMemory() || {};
+      var phone = appState.user.phone || mem.phone || '';
+      // Normalize phone: ensure leading zero
+      if (phone && phone.length===9 && phone.charAt(0)==='9') phone = '0'+phone;
+
+      callGas('getMyReservations', { phone: phone }, function(res) {
         var myRes = [];
-        if (res && res.success && res.reservations) {
+        if (res && res.success && res.reservations && res.reservations.length > 0) {
           myRes = res.reservations;
-        } else if (appState.adminData) {
-          // fallback: filter from cached data
-          var p = appState.user.phone;
-          var pFixed = p.length===9&&p.startsWith('9') ? '0'+p : p;
-          myRes = (appState.adminData.reservations||[]).filter(function(r){
-            var rp = r.phone ? r.phone.toString() : '';
-            return rp === p || rp === pFixed || rp === '0'+p;
+        }
+        // Always also check appState.adminData cache (covers mock mode + freshly submitted)
+        if (appState.adminData && appState.adminData.reservations) {
+          var cached = appState.adminData.reservations.filter(function(r){
+            var rp = r.phone ? r.phone.toString().trim() : '';
+            var rp0 = rp.length===9&&rp.charAt(0)==='9' ? '0'+rp : rp;
+            return rp === phone || rp0 === phone || rp === phone.replace(/^0/,'');
+          });
+          // Merge: add cached entries not already in myRes
+          cached.forEach(function(cr){
+            var exists = myRes.some(function(mr){ return mr.timestamp === cr.timestamp && mr.phone === cr.phone; });
+            if (!exists) myRes.push(cr);
           });
         }
+        // Sort by date descending
+        myRes.sort(function(a,b){ return new Date(b.timestamp||b.date||0) - new Date(a.timestamp||a.date||0); });
         var html;
         if (!myRes.length) {
           html = '<div class="text-center py-8 text-gray-400">' +
