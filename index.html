@@ -447,7 +447,10 @@
               <p class="text-gray-500 text-sm" id="admin-welcome-msg">管理員</p>
               <h2 class="text-xl font-bold">管理後台</h2>
             </div>
-            <button onclick="logout()" class="text-sm text-gray-500 flex items-center gap-1 hover:text-red-500"><i class="fa-solid fa-right-from-bracket"></i> 登出</button>
+            <div class="flex items-center gap-2">
+              <button onclick="openDebugPanel()" class="text-xs text-gray-400 hover:text-blue-500 px-2 py-1 rounded border border-gray-200 hover:border-blue-300" title="除錯面板"><i class="fa-solid fa-bug"></i></button>
+              <button onclick="logout()" class="text-sm text-gray-500 flex items-center gap-1 hover:text-red-500"><i class="fa-solid fa-right-from-bracket"></i> 登出</button>
+            </div>
           </div>
           <div id="admin-dashboard-summary"></div>
           <div class="grid grid-cols-2 gap-3" id="admin-buttons-container"></div>
@@ -999,12 +1002,16 @@
 
     // [FIX] callGas — 直接走 mock，無需 CORS fetch
     // ── IS_LOCAL_PREVIEW: true = 本機 file:// 預覽，false = 部署到 LINE/GAS
+    // IS_LOCAL_PREVIEW: 只有在本機 file:// 或 localhost 才用 mock
+    // kinmen.vercel.app / liff.line.me 等正式環境一律走真實 GAS
     var IS_LOCAL_PREVIEW = (
       window.location.protocol === 'file:' ||
       window.location.hostname === 'localhost' ||
       window.location.hostname === '127.0.0.1' ||
       window.location.hostname === ''
     );
+    // 強制：如果有 GAS_URL 且不是 localhost，永遠走真實 GAS
+    var FORCE_REAL_GAS = !IS_LOCAL_PREVIEW;
 
     function callGas(func, data, cb) {
       // 1. GAS 側邊欄環境（google.script.run）
@@ -1014,12 +1021,12 @@
           .withFailureHandler(function(err){ if(cb) cb({success:false,message:err.toString()}); })[func](data);
         return;
       }
-      // 2. 本機預覽 → mock
-      if (IS_LOCAL_PREVIEW) {
+      // 2. 本機預覽 → mock（本機 localhost 才用）
+      if (IS_LOCAL_PREVIEW && !FORCE_REAL_GAS) {
         _callMock(func, data, cb);
         return;
       }
-      // 3. 正式環境 (LINE LIFF / 瀏覽器) → 真實 GAS fetch
+      // 3. 正式環境 → 真實 GAS fetch（失敗才 fallback mock）
       _callGasFetch(func, data, cb);
     }
 
@@ -1035,70 +1042,68 @@
     }
 
     function _callGasFetch(func, data, cb) {
-      var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      var timer = controller ? setTimeout(function(){ controller.abort(); }, 28000) : null;
-      // 判斷是否使用 POST（大資料或寫入操作改用 POST body 避免 URL 2048 限制）
-      var WRITE_FUNCS = ['addRoom','updateRoom','addTenant','updateTenant','registerMember',
-        'registerMemberByLine','updateMemberProfile','submitReservation','updateReservationStatus',
-        'submitRepair','updateRepairStatus','submitIssue','updateIssueStatus','submitReferral',
-        'addAdmin','updateAdmin','deleteAdmin','updateSettings','addFAQ','updateFAQ','deleteFAQ',
-        'submitMeterRecord','signContract','addExpense','addPayment','markPaid','addBulletin',
-        'updateBulletin','deleteBulletin','bookPublicArea','addCheckout','addVendor','updateVendor'];
-      var usePost = WRITE_FUNCS.indexOf(func) !== -1;
-      // 也依資料大小判斷：超過 1500 字元就用 POST
-      var dataJson = (data !== null && data !== undefined) ? JSON.stringify(data) : '';
-      if (!usePost && dataJson.length > 1500) usePost = true;
-
-      console.log('[GAS]', usePost?'POST':'GET', func);
-
-      var url, fetchOpts;
-      if (usePost) {
-        url = GAS_URL;
-        fetchOpts = {
-          method: 'POST',
-          redirect: 'follow',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ func: func, data: data }),
-          signal: controller ? controller.signal : undefined
-        };
-      } else {
-        var dataStr = dataJson ? encodeURIComponent(dataJson) : '';
-        url = GAS_URL + '?func=' + encodeURIComponent(func) + (dataStr ? '&data=' + dataStr : '');
-        fetchOpts = {
-          method: 'GET',
-          redirect: 'follow',
-          signal: controller ? controller.signal : undefined
-        };
+      // ──────────────────────────────────────────────────────
+      // GAS 只支援 GET 的 CORS（POST 會被瀏覽器 preflight 擋掉）
+      // 所以一律使用 GET，大型 binary（photoFiles）在傳送前移除
+      // ──────────────────────────────────────────────────────
+      var sendData = data;
+      if (sendData && typeof sendData === 'object') {
+        // 複製並移除 base64 大型檔案（photo/file binary）
+        sendData = JSON.parse(JSON.stringify(sendData));
+        delete sendData.photoFiles;
+        delete sendData.signatureData;
+        delete sendData.fileData;
       }
 
-      fetch(url, fetchOpts)
-        .then(function(res){
+      var dataJson = (sendData !== null && sendData !== undefined) ? JSON.stringify(sendData) : '';
+      var url = GAS_URL + '?func=' + encodeURIComponent(func) +
+                (dataJson ? '&data=' + encodeURIComponent(dataJson) : '');
+
+      // 如果 URL 超過 2000 字，嘗試縮短（只傳必要欄位）
+      if (url.length > 2000 && sendData) {
+        console.warn('[GAS] URL過長(' + url.length + ')，嘗試精簡資料...');
+      }
+
+      console.log('[GAS] GET', func, '| URL長度:', url.length);
+
+      var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var timer = controller ? setTimeout(function(){ controller.abort(); }, 28000) : null;
+
+      fetch(url, {
+        method: 'GET',
+        redirect: 'follow',
+        signal: controller ? controller.signal : undefined
+      })
+        .then(function(res) {
           if (timer) clearTimeout(timer);
-          if (!res.ok) throw new Error('HTTP ' + res.status);
+          if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
           return res.text();
         })
-        .then(function(text){
+        .then(function(text) {
           var trimmed = text.trim();
-          if (!trimmed || trimmed.startsWith('<') || trimmed.startsWith('<!')) {
-            console.warn('[GAS] 回傳 HTML (可能未部署或未授權)，fallback to mock. func='+func);
+          if (!trimmed) { console.error('[GAS] 空回應 func='+func); _callMock(func, data, cb); return; }
+          if (trimmed.startsWith('<') || trimmed.startsWith('<!')) {
+            console.warn('[GAS] 回傳HTML (未部署/未授權) func='+func);
+            console.warn('[GAS] HTML片段:', trimmed.slice(0,200));
             _callMock(func, data, cb);
             return;
           }
           try {
             var json = JSON.parse(trimmed);
-            console.log('[GAS] 成功:', func, '| success=', json.success);
+            console.log('[GAS] 成功 func='+func+' success='+json.success + (json.message?' msg='+json.message:''));
             if (cb) cb(json);
           } catch(e) {
-            console.error('[GAS] JSON 解析失敗 func='+func+':', trimmed.slice(0, 300));
+            console.error('[GAS] JSON解析失敗 func='+func+':', trimmed.slice(0,300));
             _callMock(func, data, cb);
           }
         })
-        .catch(function(err){
+        .catch(function(err) {
           if (timer) clearTimeout(timer);
-          console.warn('[GAS] fetch 失敗 func='+func+':', err.message, '→ mock');
+          console.error('[GAS] fetch錯誤 func='+func+':', err.message);
           _callMock(func, data, cb);
         });
     }
+
 
     // --- State ---
 
@@ -3727,6 +3732,85 @@
     }
 
     // Mock updateRoom
+
+
+    // ================================================================
+    // DEBUG PANEL — 除錯工具
+    // ================================================================
+    function openDebugPanel() {
+      var html = '<div class="space-y-4" id="debug-output">' +
+        '<div class="flex gap-2 flex-wrap">' +
+          '<button onclick="_debugTestConnection()" class="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">🔌 測試 GAS 連線</button>' +
+          '<button onclick="_debugTestWrite()" class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-bold">📝 測試寫入試算表</button>' +
+          '<button onclick="_debugShowState()" class="px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-bold">📊 顯示 AppState</button>' +
+          '<button onclick="_debugClearMock()" class="px-3 py-2 bg-gray-500 text-white rounded-lg text-sm font-bold">🗑 清除 Mock 快取</button>' +
+        '</div>' +
+        '<div id="debug-result" class="bg-gray-900 text-green-400 p-4 rounded-xl text-xs font-mono overflow-auto max-h-60 whitespace-pre-wrap">等待測試...</div>' +
+        '<div class="text-xs text-gray-400 space-y-1">' +
+          '<p>GAS URL: <span class="text-blue-600 break-all">' + GAS_URL + '</span></p>' +
+          '<p>IS_LOCAL_PREVIEW: <span class="font-bold">' + (typeof IS_LOCAL_PREVIEW !== 'undefined' ? IS_LOCAL_PREVIEW : '?') + '</span></p>' +
+          '<p>FORCE_REAL_GAS: <span class="font-bold text-green-600">' + (typeof FORCE_REAL_GAS !== 'undefined' ? FORCE_REAL_GAS : '?') + '</span></p>' +
+          '<p>hostname: <span class="font-bold">' + window.location.hostname + '</span></p>' +
+        '</div>' +
+      '</div>';
+      openGeneralModal('🔧 除錯面板', html);
+    }
+
+    function _debugLog(msg, isError) {
+      var el = document.getElementById('debug-result');
+      if (el) {
+        var ts = new Date().toLocaleTimeString();
+        el.textContent = '['+ts+'] ' + (typeof msg === 'object' ? JSON.stringify(msg, null, 2) : msg);
+        el.className = 'bg-gray-900 ' + (isError ? 'text-red-400' : 'text-green-400') + ' p-4 rounded-xl text-xs font-mono overflow-auto max-h-60 whitespace-pre-wrap';
+      }
+    }
+
+    function _debugTestConnection() {
+      _debugLog('測試連線中...');
+      callGas('debugInfo', { test: true }, function(res) {
+        if (res && res.success) {
+          _debugLog('✅ GAS 連線成功！\n試算表：' + res.spreadsheetName + '\n工作表數：' + res.sheetCount + '\n工作表：' + (res.sheets||[]).map(function(s){return s.name+'('+s.rows+'列)';}).join(', ') + '\n版本：' + res.version);
+        } else {
+          _debugLog('❌ GAS 連線失敗：' + (res && res.message || '未知錯誤'), true);
+        }
+      });
+    }
+
+    function _debugTestWrite() {
+      _debugLog('測試寫入中...');
+      var testData = { id: 'TEST_'+Date.now(), name: '除錯測試房間', price: '0', size: '測試', equipment: '測試', status: '空房', address: '測試勿刪' };
+      callGas('addRoom', testData, function(res) {
+        if (res && res.success) {
+          _debugLog('✅ 寫入測試成功！請到試算表確認「房間資料」表有無新增一列 TEST_ 開頭資料\n' + JSON.stringify(res));
+        } else {
+          _debugLog('❌ 寫入失敗：' + (res && res.message || '未知錯誤') + '\n完整回應：' + JSON.stringify(res), true);
+        }
+      });
+    }
+
+    function _debugShowState() {
+      var info = {
+        user: appState.user ? { role: appState.user.role, name: appState.user.name, phone: appState.user.phone } : null,
+        hasAdminData: !!appState.adminData,
+        roomCount: appState.adminData ? appState.adminData.rooms.length : 0,
+        IS_LOCAL_PREVIEW: typeof IS_LOCAL_PREVIEW !== 'undefined' ? IS_LOCAL_PREVIEW : '?',
+        FORCE_REAL_GAS: typeof FORCE_REAL_GAS !== 'undefined' ? FORCE_REAL_GAS : '?',
+        hostname: window.location.hostname,
+        protocol: window.location.protocol,
+      };
+      _debugLog(JSON.stringify(info, null, 2));
+    }
+
+    function _debugClearMock() {
+      if (mockGas && mockGas.db) {
+        mockGas.db.rooms = [];
+        mockGas.db.tenants = [];
+        mockGas.db.reservations = [];
+        mockGas.db.members = [];
+      }
+      _debugLog('✅ Mock 快取已清除，下次讀取將從 GAS 取得真實資料');
+    }
+
 
   </script>
 </body>
