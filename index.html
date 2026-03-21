@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.1.2</title>
+  <title>壹參學生宿舍系統 VER1.1.3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -51,6 +51,11 @@
     .carousel-dot { width:.45rem; height:.45rem; border-radius:50%; background:rgba(255,255,255,.5); transition:background .2s; }
     .carousel-dot.active { background:#fff; }
     .visited-badge { position:absolute; top:.5rem; right:.5rem; background:rgba(16,185,129,.9); color:#fff; font-size:.65rem; font-weight:700; padding:.25rem .55rem; border-radius:.5rem; display:flex; align-items:center; gap:.25rem; }
+
+    /* ── Compact room card ── */
+    .room-card-compact .room-carousel-wrap { height: 7rem; }
+    .room-card-compact .room-card-title { font-size: .875rem; }
+    .room-card-compact .room-card-body { padding: .75rem; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -73,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER1.1.2　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER1.1.3　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -106,7 +111,7 @@
       <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm border-2 border-blue-600">
         <i class="fa-solid fa-bell text-yellow-400 text-lg drop-shadow-sm"></i>
       </div>
-      <h1 class="text-xl font-bold" id="header-title">壹參學生宿舍系統</h1>
+      <h1 class="text-xl font-bold cursor-pointer active:opacity-70 select-none" id="header-title" onclick="refreshRooms()" title="點擊重新整理">壹參學生宿舍系統</h1>
     </div>
     <span class="text-xs bg-blue-600 px-2 py-1 rounded-full font-medium border border-blue-400" id="header-version">載入中...</span>
   </header>
@@ -121,10 +126,26 @@
           <h2 class="text-2xl font-bold">房型介紹</h2>
           <p class="text-gray-500 text-sm mt-1">選擇最適合您的居住空間</p>
         </div>
-        <button onclick="refreshRooms()" id="refresh-btn" class="flex items-center gap-1.5 px-3 py-2 bg-white rounded-xl border border-gray-200 text-gray-500 text-sm shadow-sm active:scale-95 transition-all hover:border-blue-300 hover:text-blue-500">
-          <i class="fa-solid fa-rotate-right"></i>
-          <span class="text-xs font-medium">重新整理</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="refreshRooms()" id="refresh-btn" class="flex items-center gap-1 px-2 py-1.5 bg-white rounded-xl border border-gray-200 text-gray-500 text-xs shadow-sm active:scale-95 transition-all hover:border-blue-300 hover:text-blue-500">
+            <i class="fa-solid fa-rotate-right text-sm"></i>
+          </button>
+        </div>
+      </div>
+      <!-- Sort & View Controls -->
+      <div class="flex items-center gap-2 mb-2 overflow-x-auto no-scrollbar pb-1">
+        <select id="room-sort" onchange="applyRoomSort()" class="px-2 py-1.5 rounded-lg border border-gray-200 outline-none bg-white text-xs shrink-0 text-gray-600">
+          <option value="">排序方式</option>
+          <option value="price-asc">💰 價格低→高</option>
+          <option value="price-desc">💰 價格高→低</option>
+          <option value="size-asc">📐 坪數小→大</option>
+          <option value="size-desc">📐 坪數大→小</option>
+          <option value="status">🟢 空房優先</option>
+        </select>
+        <div class="flex rounded-lg border border-gray-200 overflow-hidden shrink-0">
+          <button onclick="setRoomCardSize('compact')" id="view-compact" class="px-2 py-1.5 bg-blue-50 text-blue-600 text-xs border-r border-gray-200 hover:bg-blue-100" title="縮小卡片"><i class="fa-solid fa-grip text-sm"></i></button>
+          <button onclick="setRoomCardSize('normal')" id="view-normal" class="px-2 py-1.5 bg-white text-gray-500 text-xs hover:bg-gray-50" title="正常大小"><i class="fa-solid fa-list text-sm"></i></button>
+        </div>
       </div>
       <div id="rooms-filter" class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex gap-2 overflow-x-auto no-scrollbar hidden">
         <select id="filter-city" onchange="applyRoomFilter()" class="px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white text-sm min-w-[100px]">
@@ -137,7 +158,7 @@
           <option value="">所有分館</option>
         </select>
       </div>
-      <div id="rooms-container" class="space-y-4">
+      <div id="rooms-container" class="space-y-4" id="rooms-container">
         <div class="text-center py-10 text-gray-400"><span class="loader border-gray-200 border-t-blue-600"></span><p class="mt-2">載入中...</p></div>
       </div>
     </div>
@@ -574,12 +595,13 @@
             <input type="number" id="contract-sign-day" class="border-b border-gray-400 outline-none w-12 text-center"> 日
           </div>
         </div>
-        <h3 class="font-bold text-blue-700 mt-8 mb-2">乙方簽名</h3>
+        <h3 class="font-bold text-blue-700 mt-8 mb-2">乙方親筆簽名 <span class="text-red-500">*</span></h3>
         <div class="border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 relative">
-          <canvas id="signature-pad" class="w-full h-40 rounded-xl touch-none"></canvas>
-          <button type="button" onclick="clearSignature()" class="absolute top-2 right-2 bg-white border border-gray-200 text-gray-500 px-2 py-1 rounded text-xs shadow-sm">清除</button>
+          <canvas id="signature-pad" class="w-full rounded-xl touch-none" style="height:180px;cursor:crosshair;"></canvas>
+          <button type="button" onclick="clearSignature()" class="absolute top-2 right-2 bg-white border border-gray-200 text-gray-500 px-2 py-1 rounded text-xs shadow-sm font-medium hover:bg-gray-100">✕ 清除重簽</button>
+          <button type="button" onclick="_enlargeSignaturePad()" class="absolute bottom-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-xs shadow-sm font-medium hover:bg-blue-700"><i class="fa-solid fa-expand mr-1"></i>放大簽名</button>
         </div>
-        <p class="text-xs text-red-500 text-center mt-1">請在上方空白處簽名</p>
+        <p class="text-xs text-gray-400 text-center mt-1">使用手指在上方空白處簽名</p>
       </div>
     </div>
     <div class="p-4 bg-white border-t border-gray-200 shrink-0 flex gap-3">
@@ -715,7 +737,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER1.1.2';
+    const APP_VERSION = 'VER1.1.3';
     document.addEventListener('DOMContentLoaded', function() {
       var el = document.getElementById('header-version');
       if (el) el.textContent = APP_VERSION;
@@ -1193,9 +1215,11 @@
           appState.user = res;
           _saveUserMemory({
             phone:  res.phone || '',
-            name:   res.name  || _lineProfile && _lineProfile.name || '',
+            name:   res.name  || (_lineProfile && _lineProfile.name) || '',
+            email:  res.email || '',
+            gender: res.gender || '',
             lineId: lineId,
-            avatar: _lineProfile && _lineProfile.avatar || ''
+            avatar: (_lineProfile && _lineProfile.avatar) || ''
           });
           // Check if this LINE ID is a super admin
           var _SUPER_ADMIN = ['Uf75aa7a922f3598d4fd6ba6201d8cfd0','U2e0559e74f0259b05b803a9ee3171069','U067959f33a3578bfe1516dd1529a7e66'];
@@ -1795,7 +1819,7 @@
       } else if (type === 'referral') {
         title.innerText = '推薦好友入住';
         content.innerHTML = `<form onsubmit="handleReferralSubmit(event)" class="space-y-4">
-          <div class="bg-emerald-50 p-4 rounded-xl mb-2"><div class="font-bold text-emerald-800 text-sm mb-1">推薦回饋說明</div><p class="text-xs text-emerald-700">成功推薦好友簽約入住，推薦人可獲得 500 元租金抵用券！</p></div>
+          <div class="bg-emerald-50 p-4 rounded-xl mb-2"><div class="font-bold text-emerald-800 text-sm mb-1">推薦回饋說明</div><p class="text-xs text-emerald-700">${(appState.adminData&&appState.adminData.settings&&appState.adminData.settings.referralBonusAmount)||'500'} 元租金抵用券！</p></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">被推薦人姓名 *</label><input type="text" name="referee" required placeholder="請輸入好友姓名" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">被推薦人電話 *</label><input type="tel" name="phone" required placeholder="請輸入好友電話" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">備註 (選填)</label><textarea name="note" rows="2" placeholder="其他想告訴我們的話..." class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 resize-none"></textarea></div>
@@ -2266,7 +2290,7 @@
         const extrasHtml = extras.map(f => `<span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-md">${f}</span>`).join('');
         const priceHtml = r.specialPrice ? `<div class="flex flex-col items-end"><span class="text-xs text-gray-400 line-through">NT$ ${r.price}</span><span class="text-red-500 font-bold text-lg">NT$ ${r.specialPrice}</span></div>` : `<span class="text-blue-600 font-bold text-lg">NT$ ${r.price}</span>`;
         const descHtml = r.description ? `<p class="text-sm text-gray-600 mb-3">${r.description}</p>` : '';
-        return `<div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100" onmouseenter="_stopCarousel('${r.id}')" onmouseleave="_startCarousel('${r.id}',${images.length},${interval})">
+        return `<div class="${_roomCardSize==='compact'?'room-card-compact':''} bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100" onmouseenter="_stopCarousel('${r.id}')" onmouseleave="_startCarousel('${r.id}',${images.length},${interval})">
           <div class="room-carousel-wrap">${annualBadge}${visitedBadge}<div class="room-carousel-inner" id="ci-${r.id}">${imgSlides}</div>${dotsHtml}</div>
           <div class="p-5">
             <div class="flex justify-between items-start mb-2"><h3 class="text-lg font-bold">${r.name}</h3><div class="text-right">${priceHtml}</div></div>
@@ -2293,15 +2317,32 @@
     // ============================================================
     // Admin Sections (保留原有功能，僅列出關鍵部分)
     // ============================================================
+    var _adminDataTs = 0; // timestamp of last admin data fetch
+
     function showAdminSection(section) {
-      document.getElementById('admin-overlay').classList.remove('hidden');
-      document.getElementById('admin-overlay').classList.add('flex');
-      document.getElementById('admin-content').innerHTML = '<div class="text-center py-10"><span class="loader"></span></div>';
-      callGas('getAdminData', null, (res) => {
-        if (!res.success) { document.getElementById('admin-content').innerHTML = '<div class="text-center text-red-500 py-10">載入失敗</div>'; return; }
+      var overlay = document.getElementById('admin-overlay');
+      overlay.classList.remove('hidden'); overlay.classList.add('flex');
+      // 如果 30 秒內已有快取資料，直接使用
+      var now = Date.now();
+      if (appState.adminData && (now - _adminDataTs) < 30000) {
+        renderAdminSection(section, appState.adminData);
+        return;
+      }
+      document.getElementById('admin-content').innerHTML = '<div class="text-center py-10"><span class="loader"></span><p class="text-xs text-gray-400 mt-2">載入資料中...</p></div>';
+      callGas('getAdminData', null, function(res) {
+        if (!res.success) {
+          document.getElementById('admin-content').innerHTML = '<div class="text-center text-red-500 py-10"><i class="fa-solid fa-circle-exclamation text-2xl mb-2 block"></i>載入失敗：' + (res.message||'') + '<br><button onclick="showAdminSection(\'' + section + '\')" class="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">重試</button></div>';
+          return;
+        }
         appState.adminData = res.data;
+        _adminDataTs = Date.now();
         renderAdminSection(section, res.data);
       });
+    }
+
+    function refreshAdminData(section) {
+      _adminDataTs = 0; // force reload
+      showAdminSection(section || 'rooms');
     }
 
     function closeAdminSection() {
@@ -2479,7 +2520,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.2');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.3');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
@@ -2503,6 +2544,10 @@
               <option value="0" ${s.carouselInterval==='0'?'selected':''}>關閉自動輪播</option>
             </select>
           </div>
+            <div><label class="block text-sm font-bold text-gray-700 mb-1">推薦獎勵金額（元）</label>
+              <input type="number" name="referralBonusAmount" value="${s.referralBonusAmount||'500'}" min="0" step="100" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm">
+              <p class="text-[10px] text-gray-400 mt-0.5">推薦人和被推薦人各獲得此金額，設為 0 可停用</p>
+            </div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">租屋需知</label><textarea name="tenantRules" rows="4" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm resize-none">${s.tenantRules || ''}</textarea></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">公告事項</label><textarea name="announcement" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm resize-none">${s.announcement || ''}</textarea></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">WIFI 密碼</label><input type="text" name="wifiPassword" value="${s.wifiPassword || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>
@@ -2574,7 +2619,8 @@
         landlordName:       fd.get('landlordName') || '',
         landlordPhone:      fd.get('landlordPhone') || '',
         landlordAddress:    fd.get('landlordAddress') || '',
-        landlordId:         fd.get('landlordId') || ''
+        landlordId:         fd.get('landlordId') || '',
+        referralBonusAmount: fd.get('referralBonusAmount') || '500'
       };
       callGas('updateSettings', data, (res) => {
         btn.innerHTML = '儲存設定'; btn.disabled = false;
@@ -3182,34 +3228,63 @@
     }
 
     function saveContract() {
-      var canvas=document.getElementById('signature-pad');
-      if(canvas){
-        var blank=document.createElement('canvas'); blank.width=canvas.width; blank.height=canvas.height;
-        if(canvas.toDataURL()===blank.toDataURL()){ showToast('請先在下方完成簽名','warn'); return; }
+      // 1. 必填欄位驗證
+      var required = [
+        { id: 'contract-tenant-name', label: '乙方姓名' },
+        { id: 'contract-phone', label: '乙方電話' },
+        { id: 'contract-start', label: '租賃開始日期' },
+        { id: 'contract-end',   label: '租賃結束日期' },
+        { id: 'contract-rent',  label: '租金' },
+      ];
+      for (var ri = 0; ri < required.length; ri++) {
+        var el = document.getElementById(required[ri].id);
+        if (!el || !el.value.trim()) {
+          showToast('請填寫「' + required[ri].label + '」', 'warn'); el && el.focus(); return;
+        }
       }
-      // Sync back to add-tenant-form
-      var form=document.getElementById('add-tenant-form');
-      if(form){
-        function get(id){ var el=document.getElementById(id); return el?el.value:''; }
-        if(form.name) form.name.value=get('contract-tenant-name');
-        if(form.phone) form.phone.value=get('contract-phone');
-        if(form.contractStart) form.contractStart.value=get('contract-start');
-        if(form.contractEnd) form.contractEnd.value=get('contract-end');
-        var rs=document.getElementById('contract-room'); if(rs&&form.room) form.room.value=rs.value;
-        var si=form.querySelector('[name="signatureData"]'); if(!si){ si=document.createElement('input'); si.type='hidden'; si.name='signatureData'; form.appendChild(si); }
-        if(canvas) si.value=canvas.toDataURL();
-        if(typeof calculateContractDays==='function') calculateContractDays();
+      // 2. 簽名驗證
+      var canvas = document.getElementById('signature-pad');
+      if (canvas) {
+        var blank = document.createElement('canvas'); blank.width = canvas.width; blank.height = canvas.height;
+        if (canvas.toDataURL() === blank.toDataURL()) { showToast('請完成乙方簽名','warn'); return; }
       }
-      // If tenant signing from tenant view
-      if(appState.user && appState.user.role==='tenant' && !form){
-        callGas('signContract', appState.user.phone, function(res){
-          if(res.success){ showToast('合約簽署成功！','success'); closeContractModal(); }
-          else showToast('簽署失敗：'+res.message,'error');
-        });
-        return;
-      }
-      showToast('簽約完成！資料已帶入表單','success');
-      closeContractModal();
+      // 3. 收集合約資料
+      function gv(id){ var e=document.getElementById(id); return e?e.value.trim():''; }
+      var contractData = {
+        tenantName:    gv('contract-tenant-name'),
+        tenantPhone:   gv('contract-phone'),
+        tenantId:      gv('contract-id'),
+        tenantBirthday:gv('contract-birthday'),
+        tenantEmail:   gv('contract-email'),
+        room:          document.getElementById('contract-room') ? document.getElementById('contract-room').value : '',
+        address:       gv('contract-address'),
+        contractStart: gv('contract-start'),
+        contractEnd:   gv('contract-end'),
+        rent:          gv('contract-rent'),
+        deposit:       gv('contract-deposit'),
+        landlordName:  gv('contract-landlord'),
+        signatureData: canvas ? canvas.toDataURL() : '',
+        signedAt:      new Date().toLocaleString()
+      };
+      // 4. 寫入 GAS 電子租約 + 轉換身份
+      var btn = document.querySelector('#contract-modal button[onclick="saveContract()"]');
+      if (btn) { btn.disabled = true; btn.textContent = '儲存中...'; }
+      callGas('submitContractAndConvert', contractData, function(res) {
+        if (btn) { btn.disabled = false; btn.textContent = '完成簽約'; }
+        if (res && res.success) {
+          showToast('合約簽署成功！' + (res.converted ? '✅ 身份已轉為租客' : ''), 'success', 4000);
+          // Update appState if current user
+          if (appState.user && appState.user.phone === contractData.tenantPhone) {
+            appState.user.role = 'tenant';
+            if (res.tenantInfo) appState.user.tenantInfo = res.tenantInfo;
+            renderAccountView();
+          }
+          closeContractModal();
+          _adminDataTs = 0; // force admin data refresh
+        } else {
+          showToast('儲存失敗：' + (res && res.message || '請稍後再試'), 'error');
+        }
+      });
     }
 
 
@@ -3811,6 +3886,78 @@
       _debugLog('✅ Mock 快取已清除，下次讀取將從 GAS 取得真實資料');
     }
 
+
+
+    // ── Room Sort & Zoom ─────────────────────────────────────
+    var _roomCardSize = 'normal'; // 'compact' | 'normal'
+
+    function applyRoomSort() {
+      if (!appState.adminData || !appState.adminData.rooms) return;
+      var sel = document.getElementById('room-sort');
+      var sortKey = sel ? sel.value : '';
+      var rooms = appState.adminData.rooms.slice(); // clone
+      if (sortKey === 'price-asc')  rooms.sort(function(a,b){ return Number(a.price||0) - Number(b.price||0); });
+      if (sortKey === 'price-desc') rooms.sort(function(a,b){ return Number(b.price||0) - Number(a.price||0); });
+      if (sortKey === 'size-asc')   rooms.sort(function(a,b){ return parseFloat(a.size||0) - parseFloat(b.size||0); });
+      if (sortKey === 'size-desc')  rooms.sort(function(a,b){ return parseFloat(b.size||0) - parseFloat(a.size||0); });
+      if (sortKey === 'status')     rooms.sort(function(a,b){ return (a.status==='空房'?0:1) - (b.status==='空房'?0:1); });
+      _stopAllCarousels();
+      renderRoomsList(rooms);
+    }
+
+    function setRoomCardSize(size) {
+      _roomCardSize = size;
+      var cn = document.getElementById('view-compact');
+      var nn = document.getElementById('view-normal');
+      if (cn) cn.className = 'px-2 py-1.5 text-xs border-r border-gray-200 ' + (size==='compact'?'bg-blue-50 text-blue-600':'bg-white text-gray-500 hover:bg-gray-50');
+      if (nn) nn.className = 'px-2 py-1.5 text-xs ' + (size==='normal'?'bg-blue-50 text-blue-600':'bg-white text-gray-500 hover:bg-gray-50');
+      applyRoomSort();
+    }
+
+
+
+    function _enlargeSignaturePad() {
+      var html = '<div class="relative" style="height:300px;">' +
+        '<canvas id="sig-large" class="w-full h-full rounded-xl border-2 border-blue-400 touch-none bg-white" style="cursor:crosshair;height:300px;"></canvas>' +
+        '<button type="button" onclick="clearSignatureLarge()" class="absolute top-2 right-2 bg-white border border-gray-200 text-gray-500 px-2 py-1 rounded text-xs font-medium">清除</button>' +
+        '</div>' +
+        '<button onclick="_transferLargeSignature()" class="w-full mt-3 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700">確認簽名</button>';
+      openGeneralModal('請在此簽名（放大版）', html);
+      setTimeout(function(){
+        var canvas = document.getElementById('sig-large');
+        if (!canvas) return;
+        var rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width; canvas.height = 300;
+        var ctx = canvas.getContext('2d');
+        ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#1e3a8a';
+        var drawing = false;
+        function _getPosL(e){ var r=canvas.getBoundingClientRect(); var src=e.touches?e.touches[0]:e; return{x:src.clientX-r.left,y:src.clientY-r.top}; }
+        canvas.onmousedown = function(e){ drawing=true; var p=_getPosL(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+        canvas.onmousemove = function(e){ if(!drawing)return; e.preventDefault(); var p=_getPosL(e); ctx.lineTo(p.x,p.y); ctx.stroke(); };
+        canvas.onmouseup = canvas.onmouseleave = function(){ drawing=false; };
+        canvas.ontouchstart = function(e){ drawing=true; e.preventDefault(); var p=_getPosL(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+        canvas.ontouchmove = function(e){ if(!drawing)return; e.preventDefault(); var p=_getPosL(e); ctx.lineTo(p.x,p.y); ctx.stroke(); };
+        canvas.ontouchend = function(){ drawing=false; };
+      }, 300);
+    }
+    function clearSignatureLarge() {
+      var c2 = document.getElementById('sig-large');
+      if (c2) c2.getContext('2d').clearRect(0,0,c2.width,c2.height);
+    }
+    function _transferLargeSignature() {
+      var large = document.getElementById('sig-large');
+      var small = document.getElementById('signature-pad');
+      if (!large || !small) { closeGeneralModal(); return; }
+      // Check not blank
+      var blank = document.createElement('canvas'); blank.width=large.width; blank.height=large.height;
+      if (large.toDataURL() === blank.toDataURL()) { showToast('請先完成簽名','warn'); return; }
+      // Copy to small
+      var ctx = small.getContext('2d');
+      small.width = small.offsetWidth; small.height = 180;
+      ctx.drawImage(large, 0, 0, small.width, small.height);
+      closeGeneralModal();
+      showToast('簽名已確認 ✅','success');
+    }
 
   </script>
 </body>
