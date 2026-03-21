@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.1.3</title>
+  <title>壹參學生宿舍系統 VER1.1.4</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -78,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER1.1.3　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER1.1.4　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -192,9 +192,9 @@
             <div><label class="block text-sm font-medium text-gray-700 mb-1">房間數量</label><input type="number" name="roomCount" value="1" min="1" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"></div>
           </div>
           <div class="space-y-4">
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">預約日期 *</label><input type="date" name="date" required class="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">預約日期 *</label><input type="date" name="date" required id="reserve-date-input" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"></div>
             <div><label class="block text-sm font-medium text-gray-700 mb-1">方便時段</label>
-              <select name="time" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm">
+              <select name="time" id="reserve-time-select" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm">
                 <option value="早上 08:00-10:00">早上 08:00-10:00</option>
                 <option value="早上 10:00-12:00">早上 10:00-12:00</option>
                 <option value="下午 12:00-14:00">下午 12:00-14:00</option>
@@ -226,7 +226,7 @@
             <div class="absolute -right-4 -top-4 text-red-100 opacity-50"><i class="fa-solid fa-bullhorn text-6xl"></i></div>
             <div class="relative z-10">
               <div class="font-bold text-red-700 text-lg mb-1">推薦好友租房優惠</div>
-              <p class="text-xs text-red-600/80 mb-3">成功推薦好友簽約入住，雙方皆可獲得 <span class="font-bold text-red-600">NT$ 1,000</span> 租金折抵！</p>
+              <p class="text-xs text-red-600/80 mb-3">成功推薦好友簽約入住，雙方皆可獲得 <span class="font-bold text-red-600" id="promo-referral-amount">NT$ 500</span> 租金折抵！</p>
               <button onclick="shareToFriend()" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-red-600 transition-colors">立即分享給好友</button>
             </div>
           </div>
@@ -737,10 +737,16 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER1.1.3';
+    const APP_VERSION = 'VER1.1.4';
     document.addEventListener('DOMContentLoaded', function() {
       var el = document.getElementById('header-version');
       if (el) el.textContent = APP_VERSION;
+      // 預約日期最早為明天
+      var dateInput = document.getElementById('reserve-date-input');
+      if (dateInput) {
+        var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+        dateInput.min = tomorrow.toISOString().split('T')[0];
+      }
     });
 
     // ============================================================
@@ -1500,6 +1506,17 @@
       var s = data.settings || {};
       var hdr = document.getElementById('header-title');
       if (hdr && s.name) hdr.innerText = s.name;
+      // Update promo amount from settings
+      var promoAmt = document.getElementById('promo-referral-amount');
+      if (promoAmt && s.referralBonusAmount) promoAmt.textContent = 'NT$ ' + Number(s.referralBonusAmount).toLocaleString();
+      // Update time slots in reserve form
+      if (s.timeSlots) {
+        var tSel = document.getElementById('reserve-time-select');
+        if (tSel) {
+          var slots = s.timeSlots.split(',').filter(Boolean);
+          tSel.innerHTML = slots.map(function(ts){ return '<option value="'+ts+'">'+ts+'</option>'; }).join('');
+        }
+      }
       var promoRef = document.getElementById('promo-referral');
       var promoAnn = document.getElementById('promo-annual');
       if (promoRef) promoRef.style.display = s.referralBonus !== 'false' ? 'block' : 'none';
@@ -2027,7 +2044,8 @@
       e.preventDefault();
       const data = Object.fromEntries(new FormData(e.target).entries());
       const btn = document.getElementById('reserve-btn');
-      btn.disabled = true; btn.innerHTML = '<span class="loader border-white border-t-transparent w-4 h-4"></span> 送出中...';
+      if (!_btnOnce(btn, 10000)) return;
+      btn.innerHTML = '<span class="loader border-white border-t-transparent w-4 h-4"></span> 送出中...';
       callGas('submitReservation', data, (res) => {
         if (res.success) {
           document.getElementById('reserve-form-container').classList.add('hidden');
@@ -2035,6 +2053,20 @@
           document.getElementById('reserve-success').classList.add('flex');
           // Mark room as visited
           if (data.roomType) _markReservedRoomVisited(data.roomType);
+          // Show map modal after brief delay
+          setTimeout(function(){
+            var mapHtml = '<div class="text-center space-y-4">' +
+              '<div class="text-4xl mb-2">📍</div>' +
+              '<h3 class="font-bold text-lg">預約成功！記得來看房</h3>' +
+              '<p class="text-sm text-gray-600">預約日期：' + data.date + ' ' + data.time + '</p>' +
+              '<a href="https://maps.app.goo.gl/VX8NNu2Tpmb3LwCd9" target="_blank" class="flex items-center justify-center gap-3 p-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md">' +
+                '<i class="fa-solid fa-location-dot text-xl"></i>' +
+                '<div class="text-left"><div>宿舍位置導航</div><div class="text-xs opacity-80">點擊開啟 Google Maps</div></div>' +
+              '</a>' +
+              '<p class="text-xs text-gray-400">管理員將盡快確認您的預約時間</p>' +
+            '</div>';
+            openGeneralModal('🎉 預約完成', mapHtml);
+          }, 500);
           sendLiffMessage(
           `[預約看房通知]\n`+
           `姓名：${data.name}${data.gender?'（'+data.gender+'）':''}\n`+
@@ -2324,7 +2356,7 @@
       overlay.classList.remove('hidden'); overlay.classList.add('flex');
       // 如果 30 秒內已有快取資料，直接使用
       var now = Date.now();
-      if (appState.adminData && (now - _adminDataTs) < 30000) {
+      if (appState.adminData && (now - _adminDataTs) < 60000) {
         renderAdminSection(section, appState.adminData);
         return;
       }
@@ -2426,12 +2458,8 @@
         html += '</div>';
         c.innerHTML = html;
       } else if (section === 'calendar') {
-        const upcoming = data.reservations.filter(r => new Date(r.date || r.reserveDate) >= new Date()).sort((a,b) => new Date(a.date || a.reserveDate) - new Date(b.date || b.reserveDate));
-        let html = '<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><h3 class="font-bold text-lg mb-4 text-blue-600"><i class="fa-regular fa-calendar-days mr-2"></i>近期預約看房</h3><div class="space-y-3">';
-        if (upcoming.length === 0) html += '<p class="text-gray-500 text-sm text-center py-4">目前沒有即將到來的預約</p>';
-        else upcoming.forEach(r => { html += `<div class="p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg"><div class="font-bold text-blue-800">${r.date || r.reserveDate} ${r.time}</div><div class="text-sm text-gray-700 mt-1">${r.name} (${r.phone})</div><div class="text-xs text-gray-500 mt-1">${r.roomType}</div></div>`; });
-        c.innerHTML = html + '</div></div>';
-      } else if (section === 'issues') {
+        _renderCalendar(data.reservations);
+} else if (section === 'issues') {
         let html = '<div class="space-y-3">';
         if (!data.issues || data.issues.length === 0) html += '<div class="text-center text-gray-500 py-10">目前沒有問題回報</div>';
         else data.issues.forEach(i => {
@@ -2494,7 +2522,19 @@
         const permNames = { rooms:'房間',tenants:'租客',reservations:'預約',issues:'留言',calendar:'行事曆',payments:'收款',contracts:'租約',linebot:'LINE',occupancy:'統計',stats:'分析',admins:'管理員',settings:'設置',repairs:'報修',referrals:'推薦',vendors:'廠商',checkouts:'點交',publicAreas:'區域',bulletin:'佈告',expenses:'支出' };
         (data.admins || []).forEach(a => {
           const permsHtml = (a.permissions || []).map(p => `<span class="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded border border-blue-100">${permNames[p] || p}</span>`).join('');
-          html += `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><div class="flex justify-between items-start"><div><div class="font-bold text-gray-800">${a.name}</div><div class="text-xs text-gray-500 mt-1">電話：${a.phone}</div><div class="mt-2 flex flex-wrap gap-1">${permsHtml}</div></div><button onclick="deleteAdmin('${a.phone}')" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button></div></div>`;
+          html += `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-gray-800">${a.name}</div>
+                <div class="text-xs text-gray-500 mt-0.5">📱 ${a.phone} ${a.lineId ? '· LINE已設定':'· 未設LINE'}</div>
+              </div>
+              <div class="flex gap-1.5 shrink-0 ml-2">
+                <button data-ai="${idx}" onclick="showEditAdminForm(Number(this.dataset.ai))" class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold hover:bg-amber-100"><i class="fa-solid fa-pen mr-0.5"></i>修改</button>
+                <button onclick="deleteAdmin('${a.phone}')" class="px-2 py-1 bg-red-50 text-red-500 rounded-lg text-xs font-bold hover:bg-red-100"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-1">${permsHtml}</div>
+          </div>`;
         });
         c.innerHTML = html + '</div>';
       } else if (section === 'occupancy') {
@@ -2520,7 +2560,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.3');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.4');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
@@ -2528,7 +2568,16 @@
           </div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">系統名稱</label><input type="text" name="systemName" value="${s.name || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500"></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">宿舍地址</label><input type="text" name="dormAddress" value="${s.dormAddress || ''}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500"></div>
-          <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-2">
+          <div class="bg-green-50 p-3 rounded-xl border border-green-200 space-y-2">
+              <p class="text-xs font-bold text-green-800"><i class="fa-regular fa-clock mr-1"></i>預約看房時間段（勾選啟用）</p>
+              <div class="grid grid-cols-2 gap-1.5" id="timeslots-checkboxes">
+                ${['早上 08:00-10:00','早上 10:00-12:00','下午 12:00-14:00','下午 14:00-16:00','下午 16:00-18:00','晚上 18:00-20:00'].map(ts => {
+                  const active = !s.timeSlots || s.timeSlots.includes(ts);
+                  return `<label class="flex items-center gap-1.5 text-xs cursor-pointer"><input type="checkbox" name="timeSlots[]" value="${ts}" ${active?'checked':''} class="rounded accent-green-600"><span>${ts}</span></label>`;
+                }).join('')}
+              </div>
+            </div>
+            <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-2">
             <p class="text-xs font-bold text-yellow-800"><i class="fa-solid fa-file-contract mr-1"></i>電子租約 — 甲方（出租人）資料</p>
             <div><label class="block text-xs text-gray-600 mb-1">甲方姓名／公司</label><input type="text" name="landlordName" value="${s.landlordName||''}" placeholder="例：壹參宿舍" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>
             <div><label class="block text-xs text-gray-600 mb-1">甲方電話</label><input type="tel" name="landlordPhone" value="${s.landlordPhone||''}" placeholder="0912-345-678" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>
@@ -2620,7 +2669,8 @@
         landlordPhone:      fd.get('landlordPhone') || '',
         landlordAddress:    fd.get('landlordAddress') || '',
         landlordId:         fd.get('landlordId') || '',
-        referralBonusAmount: fd.get('referralBonusAmount') || '500'
+        referralBonusAmount: fd.get('referralBonusAmount') || '500',
+        timeSlots: (function(){var boxes=document.querySelectorAll('[name="timeSlots[]"]:checked');return Array.from(boxes).map(function(b){return b.value;}).join(',');})() || '早上 08:00-10:00,下午 14:00-16:00'
       };
       callGas('updateSettings', data, (res) => {
         btn.innerHTML = '儲存設定'; btn.disabled = false;
@@ -3638,12 +3688,21 @@
     function adminConfirmReservation(idx, status) {
       var d = appState.adminData && appState.adminData.reservations && appState.adminData.reservations[idx];
       if (!d) return;
-      callGas('updateReservationStatus', { index: idx, status: status }, function(res) {
+      var msg = status==='已確認'
+        ? '【預約確認】您的看房預約已確認！\n日期：'+(d.date||d.reserveDate)+' '+d.time+'\n如需更改，請聯絡管理員。'
+        : '【預約通知】您的看房預約已取消，如有疑問請聯絡管理員。';
+      callGas('updateReservationStatus', {
+        index: idx, status: status,
+        adminReply: msg,
+        tenantPhone: d.phone,
+        sendLine: true
+      }, function(res) {
         if (res && res.success) {
-          d.status = status;
-          showToast(status==='已確認' ? '已確認預約' : '已取消預約', status==='已確認'?'success':'info');
+          d.status = status; d.adminReply = msg;
+          showToast(status==='已確認'?'✅ 已確認並通知預約人':'已取消預約', status==='已確認'?'success':'info');
+          _adminDataTs = 0;
           showAdminSection('reservations');
-        } else showToast('操作失敗','error');
+        } else showToast('操作失敗：'+(res&&res.message||''),'error');
       });
     }
 
@@ -3656,7 +3715,7 @@
         placeholder: '例如：已確認，請於該日期準時前來', okText:'送出回覆', isTextarea:true
       }).then(function(reply) {
         if (!reply) return;
-        callGas('updateReservationStatus', { index: idx, status: '已確認', adminReply: reply }, function(res) {
+        callGas('updateReservationStatus', { index: idx, status: '已確認', adminReply: reply, tenantPhone: d && d.phone, sendLine: true }, function(res) {
           if (res && res.success) {
             d.status = '已確認'; d.adminReply = reply;
             showToast('回覆已送出','success');
@@ -3958,6 +4017,203 @@
       closeGeneralModal();
       showToast('簽名已確認 ✅','success');
     }
+
+
+    // ── Edit Admin ────────────────────────────────────────────
+    function showEditAdminForm(adminIndex) {
+      var admin = appState.adminData && appState.adminData.admins && appState.adminData.admins[adminIndex];
+      if (!admin) return;
+      var allPerms = [{id:'rooms',name:'房間'},{id:'tenants',name:'租客'},{id:'reservations',name:'預約'},
+        {id:'issues',name:'留言'},{id:'calendar',name:'行事曆'},{id:'payments',name:'收款'},
+        {id:'contracts',name:'租約'},{id:'linebot',name:'LINE客服'},{id:'occupancy',name:'出租率'},
+        {id:'stats',name:'分析'},{id:'admins',name:'管理員'},{id:'settings',name:'設置'},
+        {id:'repairs',name:'報修'},{id:'referrals',name:'推薦'},{id:'vendors',name:'廠商'},
+        {id:'checkouts',name:'退租'},{id:'publicAreas',name:'區域預約'},{id:'bulletin',name:'公告'},
+        {id:'expenses',name:'支出'},{id:'faq',name:'常見問題'}];
+      var html = '<form id="edit-admin-form" class="space-y-3">' +
+        '<input type="hidden" name="adminIndex" value="'+adminIndex+'">' +
+        '<input type="hidden" name="originalPhone" value="'+admin.phone+'">' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">姓名 *</label>' +
+          '<input type="text" name="name" value="'+admin.name+'" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">手機號碼 *</label>' +
+          '<input type="tel" name="phone" value="'+admin.phone+'" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">LINE User ID</label>' +
+          '<input type="text" name="lineId" value="'+(admin.lineId||'')+'" placeholder="U開頭..." class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">管理權限</label>' +
+          '<div class="grid grid-cols-3 gap-1.5 p-3 bg-gray-50 rounded-xl">' +
+            allPerms.map(function(p){
+              var chk = admin.permissions && admin.permissions.indexOf(p.id) !== -1;
+              return '<label class="flex items-center gap-1 text-xs cursor-pointer"><input type="checkbox" name="perms[]" value="'+p.id+'" '+(chk?'checked':'')+' class="rounded accent-blue-600"><span>'+p.name+'</span></label>';
+            }).join('') +
+          '</div>' +
+          '<button type="button" onclick="_toggleAllAdminPerms()" class="mt-1 text-xs text-blue-500 hover:underline">全選/全不選</button>' +
+        '</div>' +
+        '<button type="button" onclick="_saveEditAdmin()" class="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700">儲存修改</button>' +
+        '<button type="button" onclick="_deleteAdmin()" class="w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100">刪除此管理員</button>' +
+      '</form>';
+      openGeneralModal('修改管理員：'+admin.name, html);
+    }
+
+    function _toggleAllAdminPerms() {
+      var boxes = document.querySelectorAll('[name="perms[]"]');
+      var allChk = Array.from(boxes).every(function(b){ return b.checked; });
+      boxes.forEach(function(b){ b.checked = !allChk; });
+    }
+
+    function _saveEditAdmin() {
+      var form = document.getElementById('edit-admin-form');
+      if (!form) return;
+      var fd = new FormData(form);
+      var perms = Array.from(form.querySelectorAll('[name="perms[]"]:checked')).map(function(b){ return b.value; });
+      var data = {
+        originalPhone: fd.get('originalPhone'),
+        name: fd.get('name'), phone: fd.get('phone'), lineId: fd.get('lineId') || '',
+        permissions: perms.join(',')
+      };
+      callGas('updateAdmin', data, function(res) {
+        if (res && res.success) {
+          showToast('管理員資料已更新','success');
+          closeGeneralModal();
+          _adminDataTs = 0;
+          showAdminSection('admins');
+        } else showToast('更新失敗：'+(res&&res.message||''),'error');
+      });
+    }
+
+    function _deleteAdmin() {
+      var form = document.getElementById('edit-admin-form');
+      if (!form) return;
+      var phone = form.querySelector('[name="originalPhone"]') ? form.querySelector('[name="originalPhone"]').value : '';
+      showConfirm({icon:'fa-trash',iconBg:'#fef2f2',iconColor:'#ef4444',title:'刪除管理員',msg:'確定要刪除此管理員帳號嗎？',okText:'刪除',okColor:'#ef4444'}).then(function(ok){
+        if (!ok) return;
+        callGas('deleteAdmin', { phone: phone }, function(res) {
+          if (res && res.success) { showToast('已刪除','info'); closeGeneralModal(); _adminDataTs=0; showAdminSection('admins'); }
+          else showToast('刪除失敗','error');
+        });
+      });
+    }
+
+
+
+    // ── Monthly Calendar ─────────────────────────────────────
+    var _calYear  = new Date().getFullYear();
+    var _calMonth = new Date().getMonth(); // 0-based
+
+    function _renderCalendar(reservations) {
+      var c_el = document.getElementById('admin-content');
+      if (!c_el) return;
+      // Build reservation map: 'YYYY-MM-DD' → [reservations]
+      var resMap = {};
+      (reservations || []).forEach(function(r) {
+        var d = r.date || r.reserveDate || '';
+        if (d) {
+          var dk = d.toString().slice(0,10);
+          if (!resMap[dk]) resMap[dk] = [];
+          resMap[dk].push(r);
+        }
+      });
+      var now    = new Date();
+      var year   = _calYear;
+      var month  = _calMonth;
+      var first  = new Date(year, month, 1);
+      var last   = new Date(year, month+1, 0);
+      var weeks  = ['日','一','二','三','四','五','六'];
+      var monthNames = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+
+      var html = '<div class="space-y-3">' +
+        '<div class="flex items-center justify-between mb-2">' +
+          '<button onclick="_calPrevMonth()" class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200"><i class="fa-solid fa-chevron-left text-sm"></i></button>' +
+          '<div class="font-bold text-lg">' + year + ' 年 ' + monthNames[month] + '</div>' +
+          '<button onclick="_calNextMonth()" class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200"><i class="fa-solid fa-chevron-right text-sm"></i></button>' +
+        '</div>' +
+        '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">' +
+          '<div class="grid grid-cols-7">' +
+            weeks.map(function(w){ return '<div class="py-2 text-center text-xs font-bold text-gray-500">' + w + '</div>'; }).join('') +
+          '</div>' +
+          '<div class="grid grid-cols-7 border-t border-gray-100">';
+
+      // Empty cells before first
+      for (var d = 0; d < first.getDay(); d++) {
+        html += '<div class="min-h-[44px] border-b border-r border-gray-50"></div>';
+      }
+      for (var day = 1; day <= last.getDate(); day++) {
+        var dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+        var rList   = resMap[dateStr] || [];
+        var isToday = (now.getFullYear()===year && now.getMonth()===month && now.getDate()===day);
+        var dotColor = rList.length > 0 ? (rList.some(function(r){ return r.status==='待確認'; }) ? 'bg-orange-400' : 'bg-green-500') : '';
+        html += '<div data-date="'+dateStr+'" onclick="_calDayClick(this.dataset.date)" class="min-h-[44px] border-b border-r border-gray-100 p-1 cursor-pointer hover:bg-blue-50 '+(isToday?'bg-blue-50':'')+'">' +
+          '<div class="text-xs font-bold text-center '+(isToday?'text-blue-600 bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center mx-auto':'')+'">' + day + '</div>';
+        if (rList.length > 0) {
+          html += '<div class="flex justify-center mt-0.5"><span class="w-5 h-5 '+dotColor+' text-white text-[10px] font-bold rounded-full flex items-center justify-center">'+rList.length+'</span></div>';
+        }
+        html += '</div>';
+      }
+      html += '</div></div>' +
+        '<div id="cal-day-detail" class="space-y-2"></div>' +
+        '<div class="bg-white rounded-xl p-3 border border-gray-100"><div class="font-bold text-sm mb-2 text-gray-700">本月預約列表</div><div class="space-y-2">' +
+          (Object.keys(resMap).filter(function(dk){ return dk.startsWith(year+'-'+String(month+1).padStart(2,'0')); }).length === 0 ?
+            '<p class="text-gray-400 text-sm text-center py-2">本月尚無預約</p>' :
+            Object.entries(resMap).filter(function(e){ return e[0].startsWith(year+'-'+String(month+1).padStart(2,'0')); })
+              .sort(function(a,b){ return a[0].localeCompare(b[0]); })
+              .map(function(entry){
+                var dk = entry[0]; var rs = entry[1];
+                return '<div class="border-l-4 '+(rs.some(function(r){return r.status==='待確認';}) ? 'border-orange-400' : 'border-green-400')+' pl-3 py-1">' +
+                  '<div class="text-xs font-bold text-gray-700">' + dk + '</div>' +
+                  rs.map(function(r){ return '<div class="text-xs text-gray-600">' + r.name + ' (' + r.phone + ') - ' + r.roomType + ' [' + (r.status||'待確認') + ']</div>'; }).join('') +
+                '</div>';
+              }).join('')
+          ) +
+        '</div></div>' +
+      '</div>';
+
+      c_el.innerHTML = html;
+    }
+
+    function _calDayClick(dateStr) {
+      var reservations = appState.adminData && appState.adminData.reservations || [];
+      var rList = reservations.filter(function(r){ return (r.date||r.reserveDate||'').toString().slice(0,10) === dateStr; });
+      var detail = document.getElementById('cal-day-detail');
+      if (!detail) return;
+      if (!rList.length) { detail.innerHTML = ''; return; }
+      detail.innerHTML = '<div class="bg-blue-50 p-3 rounded-xl border border-blue-200"><div class="font-bold text-blue-800 mb-2"><i class="fa-regular fa-calendar-check mr-1"></i>' + dateStr + ' 看房預約（' + rList.length + ' 筆）</div>' +
+        rList.map(function(r, ri){
+          var sc = r.status==='已確認'?'green':r.status==='已取消'?'red':'orange';
+          return '<div class="bg-white p-3 rounded-xl border border-gray-100 mb-2">' +
+            '<div class="flex justify-between items-start mb-1"><span class="font-bold text-sm">' + r.name + '</span><span class="text-[10px] font-bold px-2 py-0.5 bg-'+sc+'-100 text-'+sc+'-700 rounded-full">' + (r.status||'待確認') + '</span></div>' +
+            '<div class="text-xs text-gray-600"><p>' + r.phone + ' · ' + r.roomType + '</p><p>' + r.time + '</p></div>' +
+            '<div class="flex gap-1.5 mt-2">' +
+              '<button data-i="'+reservations.indexOf(r)+'" data-s="已確認" onclick="adminConfirmReservation(Number(this.dataset.i),this.dataset.s)" class="px-2 py-1 bg-green-600 text-white rounded text-xs font-bold hover:bg-green-700">確認</button>' +
+              '<button data-i="'+reservations.indexOf(r)+'" onclick="adminReplyReservation(Number(this.dataset.i))" class="px-2 py-1 bg-blue-600 text-white rounded text-xs font-bold hover:bg-blue-700">回覆</button>' +
+              '<button data-i="'+reservations.indexOf(r)+'" data-s="已取消" onclick="adminConfirmReservation(Number(this.dataset.i),this.dataset.s)" class="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs font-bold hover:bg-gray-300">取消</button>' +
+            '</div>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    }
+
+    function _calPrevMonth() {
+      _calMonth--;
+      if (_calMonth < 0) { _calMonth = 11; _calYear--; }
+      _renderCalendar(appState.adminData && appState.adminData.reservations || []);
+    }
+    function _calNextMonth() {
+      _calMonth++;
+      if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+      _renderCalendar(appState.adminData && appState.adminData.reservations || []);
+    }
+
+
+
+    // ── Button debounce ──────────────────────────────────────
+    function _btnOnce(btn, ms) {
+      if (!btn || btn._busy) return false;
+      btn._busy = true;
+      var orig = btn.innerHTML;
+      btn.disabled = true;
+      setTimeout(function(){ btn._busy=false; btn.disabled=false; btn.innerHTML=orig; }, ms||3000);
+      return true;
+    }
+
 
   </script>
 </body>
