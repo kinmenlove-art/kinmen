@@ -2712,8 +2712,10 @@
       
       } else if (section === 'publicAreas') {
         c.innerHTML = `<div class="space-y-4"><div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><h3 class="font-bold text-sm mb-3">今日預約概況</h3><div class="space-y-2">${data.publicAreaReservations.length === 0 ? '<p class="text-xs text-gray-400 text-center py-4">今日無預約</p>' : data.publicAreaReservations.map(r => `<div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg text-xs"><div><span class="font-bold text-blue-600">${r.area}</span> · ${r.timeSlot}</div><div class="text-gray-500">${r.tenant}</div></div>`).join('')}</div></div></div>`;
+      } else if (['electricity','repairStats','vacancyAd','cashFlow'].indexOf(section) !== -1) {
+        _handleNewSection(section, data);
       } else {
-        c.innerHTML = '<div class="text-center text-gray-400 py-10">此功能開發中</div>';
+        c.innerHTML = '<div class="text-center text-gray-400 py-10"><i class="fa-solid fa-wrench text-2xl mb-2 block"></i>功能開發中...</div>';
       }
     }
 
