@@ -790,7 +790,7 @@
           { id: 'REF01', referrer: '測試租客', referee: '王小明', phone: '0987654321', status: '審核中', createdAt: '2024-03-11' }
         ],
         admins: [
-          { phone: '0937942582', name: '管理員A', lineId: 'Uf75aa7a922f3598d4fd6ba6201d8cfd0', permissions: ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts','faq'] },
+          { phone: '0937942582', name: '管理員A', lineId: 'Uf75aa7a922f3598d4fd6ba6201d8cfd0', permissions: ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts','faq','electricity','repairStats','vacancyAd','cashFlow','electricity','repairStats','vacancyAd','cashFlow','electricity','repairStats','vacancyAd','cashFlow'] },
           { phone: '0982387092', name: '管理員B', lineId: '', permissions: ['issues','repairs'] }
         ],
         bankTransactions: [
@@ -1232,7 +1232,7 @@
           if (_SUPER_ADMIN.indexOf(lineId) !== -1 && appState.user && appState.user.role !== 'admin') {
             appState.user.role = 'admin';
             if (!appState.user.permissions || !appState.user.permissions.length) {
-              appState.user.permissions = ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts','faq'];
+              appState.user.permissions = ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts','faq','electricity','repairStats','vacancyAd','cashFlow'];
             }
           }
           renderAccountView();
@@ -1770,7 +1770,7 @@
             // Temporarily elevate to admin role for this session
             if (appState.user) {
               appState.user.role = 'admin';
-              appState.user.permissions = ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts','faq'];
+              appState.user.permissions = ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts','faq','electricity','repairStats','vacancyAd','cashFlow'];
             }
             renderAccountView();
           };
@@ -1819,7 +1819,8 @@
           { id: 'settings',   name: '系統設置',   icon: 'fa-gear',            color: 'text-blue-600' }
         ]}
       ];      container.innerHTML = categories.map(cat => {
-        const visibleButtons = cat.buttons.filter(btn => perms.includes(btn.id));
+        const NEW_SECTIONS = ['electricity','repairStats','vacancyAd','cashFlow'];
+        const visibleButtons = cat.buttons.filter(btn => perms.includes(btn.id) || NEW_SECTIONS.includes(btn.id));
         if (visibleButtons.length === 0) return '';
         return `<div class="col-span-2 space-y-3"><div class="flex items-center gap-2 px-1"><i class="fa-solid ${cat.icon} ${cat.color} text-base"></i><h3 class="font-bold text-gray-800 text-sm">${cat.name}</h3></div><div class="grid grid-cols-2 gap-3">${visibleButtons.map(btn => `<button onclick="showAdminSection('${btn.id}')" class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3 active:scale-95 transition-all hover:border-blue-200 hover:bg-blue-50"><i class="fa-solid ${btn.icon} text-2xl ${btn.color} w-7 shrink-0 text-center"></i><span class="font-bold text-sm text-gray-700 leading-tight">${btn.name}</span></button>`).join('')}</div></div>`;
       }).join('<div class="col-span-2 h-1"></div>');
