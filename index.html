@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.1.5</title>
+  <title>壹參學生宿舍系統 VER1.1.6</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -78,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER1.1.5　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER1.1.6　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -737,7 +737,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER1.1.5';
+    const APP_VERSION = 'VER1.1.6';
     document.addEventListener('DOMContentLoaded', function() {
       var el = document.getElementById('header-version');
       if (el) el.textContent = APP_VERSION;
@@ -1786,36 +1786,39 @@
       const perms = appState.user.permissions || [];
       const categories = [
         { name: '房屋管理', icon: 'fa-house-chimney', color: 'text-blue-600', buttons: [
-          { id: 'rooms', name: '房間管理', icon: 'fa-bed', color: 'text-blue-600' },
-          { id: 'tenants', name: '租客管理', icon: 'fa-users', color: 'text-blue-600' },
-          { id: 'contracts', name: '電子租約', icon: 'fa-file-signature', color: 'text-blue-600' },
-          { id: 'checkouts', name: '退租點交', icon: 'fa-clipboard-check', color: 'text-rose-600' },
-          { id: 'publicAreas', name: '區域預約', icon: 'fa-clock', color: 'text-cyan-600' },
-          { id: 'faq', name: '常見問題', icon: 'fa-circle-question', color: 'text-blue-600' },
-          { id: 'payments', name: '房租收款', icon: 'fa-file-invoice-dollar', color: 'text-blue-600' }
+          { id: 'rooms',      name: '房間管理',   icon: 'fa-bed',              color: 'text-blue-600' },
+          { id: 'tenants',    name: '租客管理',   icon: 'fa-users',            color: 'text-blue-600' },
+          { id: 'contracts',  name: '電子租約',   icon: 'fa-file-signature',   color: 'text-blue-600' },
+          { id: 'checkouts',  name: '退租點交',   icon: 'fa-clipboard-check',  color: 'text-rose-600' },
+          { id: 'publicAreas',name: '公設預約',   icon: 'fa-building',         color: 'text-cyan-600' },
+          { id: 'faq',        name: '常見問題',   icon: 'fa-circle-question',  color: 'text-blue-600' },
+          { id: 'payments',   name: '房租收款',   icon: 'fa-file-invoice-dollar', color: 'text-blue-600' },
+          { id: 'electricity',name: '電費管理',   icon: 'fa-bolt',             color: 'text-yellow-500' }
         ]},
         { name: '售後管理', icon: 'fa-screwdriver-wrench', color: 'text-orange-600', buttons: [
-          { id: 'issues', name: '留言管理', icon: 'fa-message', color: 'text-blue-600' },
-          { id: 'repairs', name: '報修管理', icon: 'fa-screwdriver-wrench', color: 'text-orange-600' },
-          { id: 'vendors', name: '維修廠商', icon: 'fa-address-book', color: 'text-indigo-600' }
+          { id: 'issues',     name: '留言管理',   icon: 'fa-message',          color: 'text-blue-600' },
+          { id: 'repairs',    name: '報修管理',   icon: 'fa-screwdriver-wrench', color: 'text-orange-600' },
+          { id: 'vendors',    name: '維修廠商',   icon: 'fa-address-book',     color: 'text-indigo-600' },
+          { id: 'repairStats',name: '維修統計',   icon: 'fa-chart-bar',        color: 'text-purple-600' }
         ]},
         { name: '業務推廣', icon: 'fa-bullhorn', color: 'text-emerald-600', buttons: [
-          { id: 'reservations', name: '預約管理', icon: 'fa-calendar-check', color: 'text-blue-600' },
-          { id: 'calendar', name: '看房行事曆', icon: 'fa-calendar-days', color: 'text-blue-600' },
-          { id: 'referrals', name: '推薦管理', icon: 'fa-gift', color: 'text-emerald-600' },
-          { id: 'marketing', name: '行銷活動', icon: 'fa-tags', color: 'text-pink-500' },
-          { id: 'linebot', name: 'LINE自動客服', icon: 'fa-robot', color: 'text-green-500' },
-          { id: 'bulletin', name: '社區佈告', icon: 'fa-bullhorn', color: 'text-amber-600' }
+          { id: 'reservations',name: '預約管理',  icon: 'fa-calendar-check',  color: 'text-blue-600' },
+          { id: 'calendar',   name: '看房行事曆', icon: 'fa-calendar-days',   color: 'text-blue-600' },
+          { id: 'referrals',  name: '推薦管理',   icon: 'fa-gift',            color: 'text-emerald-600' },
+          { id: 'marketing',  name: '行銷活動',   icon: 'fa-tags',            color: 'text-pink-500' },
+          { id: 'linebot',    name: 'LINE自動客服', icon: 'fa-robot',         color: 'text-green-500' },
+          { id: 'bulletin',   name: '社區佈告',   icon: 'fa-bullhorn',        color: 'text-amber-600' },
+          { id: 'vacancyAd',  name: '空屋廣告',   icon: 'fa-house-flag',      color: 'text-teal-600' }
         ]},
         { name: '統計分析', icon: 'fa-chart-line', color: 'text-violet-600', buttons: [
-          { id: 'occupancy', name: '出租率統計', icon: 'fa-chart-line', color: 'text-blue-600' },
-          { id: 'stats', name: '綜合分析', icon: 'fa-chart-pie', color: 'text-blue-600' },
-          { id: 'expenses', name: '支出報表', icon: 'fa-wallet', color: 'text-violet-600' },
-          { id: 'admins', name: '管理人員', icon: 'fa-user-shield', color: 'text-blue-600' },
-          { id: 'settings', name: '系統設置', icon: 'fa-gear', color: 'text-blue-600' }
+          { id: 'occupancy',  name: '出租率統計', icon: 'fa-chart-line',      color: 'text-blue-600' },
+          { id: 'stats',      name: '綜合分析',   icon: 'fa-chart-pie',       color: 'text-blue-600' },
+          { id: 'expenses',   name: '支出報表',   icon: 'fa-wallet',          color: 'text-violet-600' },
+          { id: 'cashFlow',   name: '收支對帳',   icon: 'fa-scale-balanced',  color: 'text-emerald-600' },
+          { id: 'admins',     name: '管理人員',   icon: 'fa-user-shield',     color: 'text-blue-600' },
+          { id: 'settings',   name: '系統設置',   icon: 'fa-gear',            color: 'text-blue-600' }
         ]}
-      ];
-      container.innerHTML = categories.map(cat => {
+      ];      container.innerHTML = categories.map(cat => {
         const visibleButtons = cat.buttons.filter(btn => perms.includes(btn.id));
         if (visibleButtons.length === 0) return '';
         return `<div class="col-span-2 space-y-3"><div class="flex items-center gap-2 px-1"><i class="fa-solid ${cat.icon} ${cat.color} text-base"></i><h3 class="font-bold text-gray-800 text-sm">${cat.name}</h3></div><div class="grid grid-cols-2 gap-3">${visibleButtons.map(btn => `<button onclick="showAdminSection('${btn.id}')" class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3 active:scale-95 transition-all hover:border-blue-200 hover:bg-blue-50"><i class="fa-solid ${btn.icon} text-2xl ${btn.color} w-7 shrink-0 text-center"></i><span class="font-bold text-sm text-gray-700 leading-tight">${btn.name}</span></button>`).join('')}</div></div>`;
@@ -1855,7 +1858,7 @@
           <button type="submit" id="referral-submit-btn" class="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold shadow-md hover:bg-emerald-600 transition-colors">送出推薦資料</button>
         </form>`;
       } else if (type === 'publicArea') {
-        title.innerText = '公共區域預約';
+        title.innerText = '公共公設預約';
         content.innerHTML = `<form onsubmit="handlePublicAreaSubmit(event)" class="space-y-4">
           <div><label class="block text-sm font-bold text-gray-700 mb-1">選擇區域 *</label><select name="area" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white"><option value="健身房">健身房</option><option value="視聽室">視聽室</option><option value="頂樓露台">頂樓露台</option><option value="交誼廳">交誼廳</option></select></div>
           <div><label class="block text-sm font-bold text-gray-700 mb-1">預約日期 *</label><input type="date" name="date" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>
@@ -2408,7 +2411,7 @@
         rooms: '房間管理', tenants: '租客管理', reservations: '預約管理', issues: '留言管理',
         repairs: '報修管理', referrals: '推薦管理', payments: '房租收款', stats: '綜合分析',
         linebot: 'LINE自動客服', settings: '系統設置', admins: '管理人員', vendors: '維修廠商',
-        checkouts: '退租點交', publicAreas: '公共區域預約', bulletin: '社區佈告', expenses: '支出報表',
+        checkouts: '退租點交', publicAreas: '公共公設預約', bulletin: '社區佈告', expenses: '支出報表',
         occupancy: '出租率統計', calendar: '看房行事曆', contracts: '電子租約管理', marketing: '行銷活動'
       }[section] || section;
 
@@ -2533,11 +2536,33 @@
       } else if (section === 'faq') {
         renderAdminFAQSection();
       } else if (section === 'vendors') {
+        // Build vendor → repairs map
+        var vendorRepairMap = {};
+        (data.repairs||[]).forEach(function(r){
+          var vname = r.vendor || '';
+          if (vname) { if (!vendorRepairMap[vname]) vendorRepairMap[vname]=[]; vendorRepairMap[vname].push(r); }
+        });
         let html = '<div class="flex justify-end mb-3"><button onclick="showAddVendorForm()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm"><i class="fa-solid fa-plus mr-1"></i> 新增廠商</button></div><div class="space-y-3">';
         if (!data.vendors || data.vendors.length === 0) html += '<div class="text-center text-gray-500 py-10">目前沒有廠商資料</div>';
-        else data.vendors.forEach(v => { html += `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><div class="flex justify-between items-start mb-2"><div><div class="font-bold text-gray-800">${v.name}</div><div class="text-xs text-blue-600 font-medium">${v.category}</div></div><div class="flex gap-2"><a href="tel:${v.phone}" class="w-8 h-8 bg-green-50 text-green-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-phone"></i></a><button onclick="deleteVendor('${v.id}')" class="w-8 h-8 bg-red-50 text-red-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-trash"></i></button></div></div><div class="text-xs text-gray-600">電話：${v.phone}</div>${v.note ? `<div class="mt-2 p-2 bg-gray-50 rounded text-[10px] text-gray-500 italic">備註：${v.note}</div>` : ''}</div>`; });
-        c.innerHTML = html + '</div>';
-      } else if (section === 'admins') {
+        else data.vendors.forEach((v, vi) => {
+          var repairHistory = vendorRepairMap[v.name] || [];
+          var totalCost = repairHistory.reduce(function(sum,r){ return sum+(Number(r.cost)||0); },0);
+          var histBtn = repairHistory.length > 0
+            ? `<button data-vi="${vi}" onclick="showVendorRepairHistory(Number(this.dataset.vi))" class="px-2 py-1 bg-orange-50 text-orange-600 rounded-lg text-xs font-bold hover:bg-orange-100"><i class="fa-solid fa-clock-rotate-left mr-1"></i>報修紀錄(${repairHistory.length})</button>` : '';
+          html += `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <div class="flex justify-between items-start mb-2">
+              <div><div class="font-bold text-gray-800">${v.name}</div>
+              <div class="text-xs text-gray-500">${v.category||''} · 📱 ${v.phone||''}</div>
+              ${v.note?`<div class="text-xs text-gray-400 mt-0.5">${v.note}</div>`:''}
+              ${totalCost>0?`<div class="text-xs text-orange-600 font-medium mt-0.5">累計費用：NT$ ${totalCost.toLocaleString()}</div>`:''}
+              </div>
+              <div class="flex gap-1.5">${histBtn}<button data-vi="${vi}" onclick="showEditVendorForm(Number(this.dataset.vi))" class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold hover:bg-amber-100"><i class="fa-solid fa-pen"></i></button></div>
+            </div>
+          </div>`;
+        });
+        html += '</div>';
+        c.innerHTML = html;
+} else if (section === 'admins') {
         let html = '<div class="flex justify-end mb-3"><button onclick="showAddAdminForm()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm"><i class="fa-solid fa-plus mr-1"></i> 新增管理員</button></div><div class="space-y-3">';
         const permNames = { rooms:'房間',tenants:'租客',reservations:'預約',issues:'留言',calendar:'行事曆',payments:'收款',contracts:'租約',linebot:'LINE',occupancy:'統計',stats:'分析',admins:'管理員',settings:'設置',repairs:'報修',referrals:'推薦',vendors:'廠商',checkouts:'點交',publicAreas:'區域',bulletin:'佈告',expenses:'支出' };
         (data.admins || []).forEach((a, aIdx) => {
@@ -2580,7 +2605,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.5');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.6');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
@@ -2624,9 +2649,40 @@
         </form>`;
       } else if (section === 'linebot') {
         const s = data.settings;
-        const kwHtml = (s.keywordResponses || []).map((kw, idx) => `<div class="p-3 border border-gray-200 rounded-lg relative group"><div class="text-xs font-bold text-blue-600 mb-1">關鍵字：${kw.keywords}</div><textarea onchange="updateKeywordResponse(${idx}, this.value)" class="w-full text-sm p-2 bg-gray-50 rounded border-none outline-none resize-none" rows="2">${kw.response}</textarea><button onclick="deleteKeywordResponse(${idx})" class="absolute top-2 right-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button></div>`).join('');
-        c.innerHTML = `<div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4"><div class="flex items-center justify-between pb-4 border-b border-gray-100"><div><h3 class="font-bold text-gray-800">自動回覆狀態</h3><p class="text-xs text-gray-500 mt-1">啟用後系統將自動回覆常見問題</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" onchange="updateSetting('autoReply', this.checked ? 'true' : 'false')" class="sr-only peer" ${s.autoReply === 'true' ? 'checked' : ''}><div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div></label></div><div><h4 class="font-bold text-gray-700 mb-3 text-sm">關鍵字回覆設定</h4><div class="space-y-3">${kwHtml}<button onclick="addKeywordResponse()" class="w-full py-2 border-2 border-dashed border-gray-300 text-gray-500 rounded-lg text-sm font-bold hover:bg-gray-50"><i class="fa-solid fa-plus mr-1"></i>新增關鍵字</button></div></div></div>`;
-      } else if (section === 'stats') {
+        let kwList = s.keywordResponses || [];
+        if (typeof kwList === 'string') { try { kwList = JSON.parse(kwList); } catch(e) { kwList = []; } }
+        if (!Array.isArray(kwList)) kwList = [];
+        s.keywordResponses = kwList; // normalize
+        const kwHtml = kwList.map((kw, idx) => `<div class="p-3 border border-gray-200 rounded-lg relative group kw-item">
+          <div class="text-xs font-bold text-blue-600 mb-1">關鍵字：${kw.keywords}</div>
+          <textarea onchange="updateKeywordResponse(${idx}, this.value)" class="w-full text-sm p-2 bg-gray-50 rounded border-none outline-none resize-none" rows="2">${kw.response}</textarea>
+          <button onclick="deleteKeywordResponse(${idx})" class="absolute top-2 right-2 text-gray-300 hover:text-red-500"><i class="fa-solid fa-trash-can text-xs"></i></button>
+        </div>`).join('');
+        c.innerHTML = `<div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div><h3 class="font-bold text-gray-800">LINE 自動回覆</h3><p class="text-xs text-gray-500 mt-0.5">啟用後依關鍵字自動回覆</p></div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="linebot-toggle" onchange="updateSetting('autoReply', this.checked?'true':'false')" class="sr-only peer" ${s.autoReply==='true'?'checked':''}>
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+            </label>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-bold text-sm text-gray-700">關鍵字回覆清單</h4>
+              <button onclick="addKeywordResponse()" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-plus mr-1"></i>新增關鍵字</button>
+            </div>
+            <div class="space-y-2" id="linebot-kw-list">${kwHtml || '<p class="text-gray-400 text-sm text-center py-3">尚未設定任何關鍵字回覆</p>'}</div>
+          </div>
+          <button onclick="saveLinebotSettings()" class="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-md"><i class="fa-solid fa-floppy-disk mr-2"></i>儲存 LINE 客服設定</button>
+          <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 text-xs text-blue-700">
+            <p class="font-bold mb-1">💡 使用說明</p>
+            <p>1. 開啟「LINE 自動回覆」開關</p>
+            <p>2. 新增關鍵字（多個用逗號分隔）及對應回覆</p>
+            <p>3. 點擊「儲存」讓設定生效</p>
+            <p>4. 確認 LINE Webhook URL 已設為 GAS 部署網址</p>
+          </div>
+        </div>`;
+} else if (section === 'stats') {
         const total = data.rooms.length, rented = data.rooms.filter(r => r.status === '出租中').length;
         const rate = total ? Math.round((rented/total)*100) : 0;
         const cy = new Date().getFullYear();
@@ -2931,7 +2987,15 @@
       e.preventDefault();
       const fd = new FormData(e.target);
       const data = Object.fromEntries(fd.entries());
-      callGas('addVendor', data, (res) => { if (res.success) { showToast('廠商已新增！','success'); document.getElementById('tenant-overlay').classList.add('hidden'); document.getElementById('tenant-overlay').classList.remove('flex'); showAdminSection('vendors'); } });
+      callGas('addVendor', data, (res) => {
+        if (res.success) {
+          showToast('廠商已新增！','success');
+          document.getElementById('tenant-overlay').classList.add('hidden');
+          document.getElementById('tenant-overlay').classList.remove('flex');
+          _adminDataTs = 0; // force refresh
+          showAdminSection('vendors');
+        } else showToast('新增失敗：'+(res.message||''),'error');
+      });
     }
     function deleteVendor(id) {
       showConfirm({icon:'fa-trash',iconBg:'#fef2f2',iconColor:'#ef4444',title:'刪除廠商',msg:'確定要刪除此廠商資料嗎？',okText:'刪除',okColor:'#ef4444'}).then(function(ok){
@@ -3008,7 +3072,11 @@
     // ── Contract Admin Helpers (⑤ fix) ──────────────────────
     function _viewTenantContract(phone) {
       if (!appState.adminData) return;
-      var t = appState.adminData.tenants.find(function(x){ return x.phone===phone; });
+      var normPhone = phone.length===9&&phone.charAt(0)==='9' ? '0'+phone : phone;
+      var t = appState.adminData.tenants.find(function(x){
+        var tp = x.phone ? x.phone.toString() : '';
+        return tp===phone || tp===normPhone || tp==='0'+phone;
+      });
       if (!t) { showToast('找不到租客資料','error'); return; }
       var modal = document.getElementById('contract-modal');
       modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -4048,7 +4116,7 @@
         {id:'contracts',name:'租約'},{id:'linebot',name:'LINE客服'},{id:'occupancy',name:'出租率'},
         {id:'stats',name:'分析'},{id:'admins',name:'管理員'},{id:'settings',name:'設置'},
         {id:'repairs',name:'報修'},{id:'referrals',name:'推薦'},{id:'vendors',name:'廠商'},
-        {id:'checkouts',name:'退租'},{id:'publicAreas',name:'區域預約'},{id:'bulletin',name:'公告'},
+        {id:'checkouts',name:'退租'},{id:'publicAreas',name:'公設預約'},{id:'bulletin',name:'公告'},
         {id:'expenses',name:'支出'},{id:'faq',name:'常見問題'}];
       var html = '<form id="edit-admin-form" class="space-y-3">' +
         '<input type="hidden" name="adminIndex" value="'+adminIndex+'">' +
@@ -4232,6 +4300,186 @@
       btn.disabled = true;
       setTimeout(function(){ btn._busy=false; btn.disabled=false; btn.innerHTML=orig; }, ms||3000);
       return true;
+    }
+
+
+
+    // ── Vendor Functions ──────────────────────────────────────
+    function showVendorRepairHistory(vi) {
+      var v = appState.adminData && appState.adminData.vendors && appState.adminData.vendors[vi];
+      if (!v) return;
+      var repairs = (appState.adminData.repairs||[]).filter(function(r){ return r.vendor===v.name; });
+      var html = '<div class="space-y-3">';
+      if (!repairs.length) {
+        html += '<p class="text-center text-gray-400 py-4">此廠商尚無報修紀錄</p>';
+      } else {
+        var total = repairs.reduce(function(s,r){ return s+(Number(r.cost)||0); },0);
+        html += '<div class="bg-orange-50 p-3 rounded-xl border border-orange-100 mb-2"><p class="text-xs font-bold text-orange-800">共 '+repairs.length+' 筆報修 · 總費用：NT$ '+total.toLocaleString()+'</p></div>';
+        repairs.forEach(function(r) {
+          html += '<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">' +
+            '<div class="flex justify-between items-start mb-2">' +
+              '<div class="font-bold text-sm text-gray-800">' + (r.item||'報修項目') + '</div>' +
+              '<div class="text-xs text-gray-400">' + (r.createdAt||r.date||'') + '</div>' +
+            '</div>' +
+            '<div class="text-xs text-gray-600 space-y-0.5">' +
+              '<p>🏠 房號：' + (r.room||'─') + '</p>' +
+              '<p>👤 租客：' + (r.tenant||r.name||'─') + '</p>' +
+              '<p>📋 說明：' + (r.description||'─') + '</p>' +
+              (r.fixContent ? '<p>🔧 修復內容：' + r.fixContent + '</p>' : '') +
+              (r.cost ? '<p class="text-orange-600 font-medium">💰 費用：NT$ ' + Number(r.cost).toLocaleString() + '</p>' : '') +
+            '</div>' +
+            '<div class="mt-2 inline-block px-2 py-0.5 text-[10px] font-bold rounded-full '+(r.status==='已完成'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700')+'">' + (r.status||'待處理') + '</div>' +
+          '</div>';
+        });
+      }
+      html += '</div>';
+      openGeneralModal('📋 ' + v.name + ' 報修紀錄', html);
+    }
+
+    function showEditVendorForm(vi) {
+      var v = appState.adminData && appState.adminData.vendors && appState.adminData.vendors[vi];
+      if (!v) return;
+      var html = '<form id="edit-vendor-form" class="space-y-3">' +
+        '<input type="hidden" name="id" value="' + (v.id||vi) + '">' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">廠商名稱 *</label><input type="text" name="name" value="' + v.name + '" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">類別</label><input type="text" name="category" value="' + (v.category||'') + '" placeholder="冷氣/水電/油漆..." class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">電話</label><input type="tel" name="phone" value="' + (v.phone||'') + '" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">備註</label><input type="text" name="note" value="' + (v.note||'') + '" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+        '<button type="button" onclick="_saveEditVendor()" class="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-md">儲存修改</button>' +
+      '</form>';
+      openGeneralModal('修改廠商：' + v.name, html);
+    }
+
+    function _saveEditVendor() {
+      var form = document.getElementById('edit-vendor-form');
+      if (!form) return;
+      var fd = new FormData(form);
+      var data = Object.fromEntries(fd.entries());
+      callGas('updateVendor', data, function(res) {
+        if (res && res.success) {
+          showToast('廠商資料已更新','success');
+          closeGeneralModal();
+          _adminDataTs = 0;
+          showAdminSection('vendors');
+        } else showToast('更新失敗','error');
+      });
+    }
+
+
+
+    function saveLinebotSettings() {
+      var s = appState.adminData && appState.adminData.settings;
+      if (!s) return;
+      var kwHtml = document.querySelectorAll('#linebot-kw-list .kw-item');
+      // Rebuild keywordResponses from DOM
+      // (already handled by updateKeywordResponse/deleteKeywordResponse)
+      callGas('updateSettings', {
+        autoReply:        s.autoReply || 'false',
+        keywordResponses: JSON.stringify(s.keywordResponses || [])
+      }, function(res) {
+        if (res && res.success) showToast('LINE 客服設定已儲存','success');
+        else showToast('儲存失敗','error');
+      });
+    }
+
+
+
+    // ── New Admin Sections ────────────────────────────────────
+    function _handleNewSection(section, data) {
+      if (section === 'electricity') {
+        var html = '<div class="space-y-3">' +
+          '<div class="flex justify-between items-center mb-2"><h3 class="font-bold text-gray-800">電費管理</h3>' +
+          '<button onclick="showAddElectricityForm()" class="px-3 py-2 bg-yellow-500 text-white rounded-lg text-sm font-bold hover:bg-yellow-600"><i class="fa-solid fa-plus mr-1"></i>新增電費</button></div>';
+        var meters = (data.meterRecords||[]).sort(function(a,b){ return b.date>a.date?1:-1; });
+        if (!meters.length) html += '<p class="text-center text-gray-400 py-6">尚無電錶紀錄</p>';
+        else meters.slice(0,20).forEach(function(m){
+          html += '<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">' +
+            '<div class="flex justify-between"><span class="font-bold">'+m.room+' '+m.name+'</span><span class="text-xs text-gray-400">'+m.date+'</span></div>' +
+            '<div class="text-sm text-gray-600 mt-1">本月度數：<span class="font-bold text-yellow-600">'+m.meter+'度</span>' +
+            (m.cost ? ' · 費用：<span class="font-bold text-orange-600">NT$'+m.cost+'</span>' : '') + '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+        document.getElementById('admin-content').innerHTML = html;
+      } else if (section === 'repairStats') {
+        var repairs = data.repairs || [];
+        var total = repairs.length;
+        var done  = repairs.filter(function(r){ return r.status==='已完成'; }).length;
+        var totalCost = repairs.reduce(function(s,r){ return s+(Number(r.cost)||0); },0);
+        var byVendor = {};
+        repairs.forEach(function(r){ var v=r.vendor||'未指定'; if(!byVendor[v])byVendor[v]=0; byVendor[v]++; });
+        document.getElementById('admin-content').innerHTML =
+          '<div class="space-y-3">' +
+          '<div class="grid grid-cols-3 gap-3">' +
+            '<div class="bg-orange-50 p-3 rounded-xl text-center"><div class="text-2xl font-black text-orange-600">'+total+'</div><div class="text-xs text-orange-700">總報修數</div></div>' +
+            '<div class="bg-green-50 p-3 rounded-xl text-center"><div class="text-2xl font-black text-green-600">'+done+'</div><div class="text-xs text-green-700">已完成</div></div>' +
+            '<div class="bg-purple-50 p-3 rounded-xl text-center"><div class="text-2xl font-black text-purple-600">'+totalCost.toLocaleString()+'</div><div class="text-xs text-purple-700">總費用NT$</div></div>' +
+          '</div>' +
+          '<div class="bg-white p-4 rounded-xl border border-gray-100"><h3 class="font-bold text-sm mb-3">按廠商統計</h3>' +
+          Object.entries(byVendor).sort(function(a,b){ return b[1]-a[1]; }).map(function(e){
+            return '<div class="flex justify-between items-center py-1.5 border-b border-gray-50"><span class="text-sm">'+e[0]+'</span><span class="text-sm font-bold text-orange-600">'+e[1]+'筆</span></div>';
+          }).join('') + '</div></div>';
+      } else if (section === 'vacancyAd') {
+        var vacantRooms = (data.rooms||[]).filter(function(r){ return r.status==='空房'; });
+        var html = '<div class="space-y-3"><div class="bg-teal-50 p-3 rounded-xl border border-teal-200 mb-2"><p class="text-xs font-bold text-teal-800">📢 空屋廣告 — 共 '+vacantRooms.length+' 間空房</p></div>';
+        if (!vacantRooms.length) html += '<p class="text-center text-gray-400 py-6">目前沒有空房</p>';
+        else vacantRooms.forEach(function(r){
+          html += '<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">' +
+            '<div class="flex justify-between items-start mb-2"><span class="font-bold">'+r.name+'</span><span class="text-green-600 font-bold text-sm">空房</span></div>' +
+            '<div class="text-xs text-gray-600 space-y-0.5">' +
+              '<p>租金：<span class="font-bold text-blue-600">NT$ '+r.price+'</span>/月</p>' +
+              '<p>大小：'+r.size+' · '+r.branch+'</p>' +
+            '</div>' +
+            '<button onclick="shareToFriend()" class="mt-2 w-full py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700"><i class="fa-solid fa-share-nodes mr-1"></i>分享此房間資訊</button>' +
+          '</div>';
+        });
+        html += '</div>';
+        document.getElementById('admin-content').innerHTML = html;
+      } else if (section === 'cashFlow') {
+        var payments = data.rentPayments || [];
+        var expenses = data.expenses || [];
+        var yr = new Date().getFullYear();
+        var mo = new Date().getMonth()+1;
+        var income  = payments.filter(function(p){ return p.year===yr && p.month===mo && p.status==='已繳清'; }).reduce(function(s,p){ return s+(Number(p.amount)||0); }, 0);
+        var expenseSum = expenses.reduce(function(s,e){ return s+(Number(e.amount)||0); }, 0);
+        document.getElementById('admin-content').innerHTML =
+          '<div class="space-y-3">' +
+          '<div class="bg-white p-4 rounded-xl border border-gray-100">' +
+            '<h3 class="font-bold mb-3">本月收支（'+yr+'年'+mo+'月）</h3>' +
+            '<div class="space-y-2">' +
+              '<div class="flex justify-between items-center p-3 bg-green-50 rounded-xl"><span class="text-sm font-medium text-green-800">租金收入</span><span class="font-black text-green-600">NT$ '+income.toLocaleString()+'</span></div>' +
+              '<div class="flex justify-between items-center p-3 bg-red-50 rounded-xl"><span class="text-sm font-medium text-red-800">支出費用</span><span class="font-black text-red-600">NT$ '+expenseSum.toLocaleString()+'</span></div>' +
+              '<div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-200"><span class="text-sm font-bold text-blue-800">淨收益</span><span class="font-black text-blue-600 text-lg">NT$ '+(income-expenseSum).toLocaleString()+'</span></div>' +
+            '</div>' +
+          '</div></div>';
+      }
+    }
+
+    function showAddElectricityForm() {
+      var html = '<form id="elec-form" class="space-y-3">' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">房號 *</label>' +
+          '<select name="room" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white text-sm">' +
+          (appState.adminData&&appState.adminData.rooms||[]).map(function(r){ return '<option value="'+r.id+'">'+r.id+' '+r.name+'</option>'; }).join('') + '</select></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">本月電錶度數 *</label><input type="number" name="meter" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">收費金額（NT$）</label><input type="number" name="cost" placeholder="自動計算或手動輸入" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+        '<button type="button" onclick="_saveElectricity()" class="w-full py-3.5 bg-yellow-500 text-white rounded-xl font-bold shadow-md hover:bg-yellow-600"><i class="fa-solid fa-bolt mr-2"></i>儲存電費紀錄</button>' +
+      '</form>';
+      openGeneralModal('新增電費紀錄', html);
+    }
+
+    function _saveElectricity() {
+      var form = document.getElementById('elec-form');
+      if (!form) return;
+      var fd = new FormData(form);
+      var data = Object.fromEntries(fd.entries());
+      callGas('submitMeterRecord', data, function(res) {
+        if (res && res.success) {
+          showToast('電費紀錄已儲存','success');
+          closeGeneralModal();
+          _adminDataTs = 0;
+          showAdminSection('electricity');
+        } else showToast('儲存失敗','error');
+      });
     }
 
 
