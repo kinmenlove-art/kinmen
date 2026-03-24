@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER1.1.6</title>
+  <title>壹參學生宿舍系統 VER1.1.8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -78,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER1.1.6　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER1.1.8　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -422,7 +422,12 @@
             <div class="space-y-2">
               <button onclick="_tenantMeterRecord()" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-yellow-50 hover:border-yellow-200 transition-colors">
                 <div class="w-9 h-9 bg-yellow-400 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-bolt text-sm"></i></div>
-                <div class="text-left flex-1"><div class="font-bold text-gray-800 text-sm">每月電錶度數</div><div class="text-[10px] text-gray-500">拍照上傳電錶讀數</div></div>
+                <div class="text-left flex-1"><div class="font-bold text-gray-800 text-sm">回報電錶度數</div><div class="text-[10px] text-gray-500">每月填寫電錶讀數</div></div>
+                <i class="fa-solid fa-chevron-right text-gray-300"></i>
+              </button>
+              <button onclick="_tenantViewElectricity()" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-yellow-50 hover:border-yellow-200 transition-colors">
+                <div class="w-9 h-9 bg-orange-400 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-chart-line text-sm"></i></div>
+                <div class="text-left flex-1"><div class="font-bold text-gray-800 text-sm">我的電費紀錄</div><div class="text-[10px] text-gray-500">查看全年用電統計</div></div>
                 <i class="fa-solid fa-chevron-right text-gray-300"></i>
               </button>
               <button onclick="_tenantMyContract()" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
@@ -737,7 +742,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER1.1.6';
+    const APP_VERSION = 'VER1.1.8';
     document.addEventListener('DOMContentLoaded', function() {
       var el = document.getElementById('header-version');
       if (el) el.textContent = APP_VERSION;
@@ -941,6 +946,13 @@
         if (r) { Object.assign(r, { name:data.name, price:data.price, specialPrice:data.specialPrice, size:data.size, image:data.image||r.image, equipment:data.equipment||r.equipment, city:data.city, district:data.district, branch:data.branch, address:data.address, description:data.description, annualDiscount:data.annualDiscount, hasToilet:data.hasToilet, maxOccupancy:data.maxOccupancy }); }
         res(r ? { success: true } : { success: false, message: '找不到房間' });
       }, 300)),
+      getMyMeterRecords: (data) => new Promise(res2 => setTimeout(() => {
+        var room = data && data.room;
+        var phone = data && data.phone;
+        var records = (mockGas.db.meterRecords||[]).filter(function(m){ return (!room||m.room===room)&&(!phone||m.phone===phone); });
+        records.sort(function(a,b){ return b.date>a.date?1:-1; });
+        res2({ success: true, records: records });
+      }, 200)),
       updateReservationStatus: (data) => new Promise(res => setTimeout(() => {
         if (data.index !== undefined && mockGas.db.reservations[data.index]) {
           var r = mockGas.db.reservations[data.index];
@@ -2606,7 +2618,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.6');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER1.1.8');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
@@ -2622,6 +2634,10 @@
                   return `<label class="flex items-center gap-1.5 text-xs cursor-pointer"><input type="checkbox" name="timeSlots[]" value="${ts}" ${active?'checked':''} class="rounded accent-green-600"><span>${ts}</span></label>`;
                 }).join('')}
               </div>
+            </div>
+            <div><label class="block text-sm font-bold text-gray-700 mb-1">電費費率（元/度）</label>
+              <input type="number" name="electricityRate" value="${s.electricityRate||'5'}" min="1" step="0.5" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm">
+              <p class="text-[10px] text-gray-400 mt-0.5">每度電費用，用於自動計算電費（預設5元）</p>
             </div>
             <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-2">
             <p class="text-xs font-bold text-yellow-800"><i class="fa-solid fa-file-contract mr-1"></i>電子租約 — 甲方（出租人）資料</p>
@@ -2639,6 +2655,10 @@
               <option value="0" ${s.carouselInterval==='0'?'selected':''}>關閉自動輪播</option>
             </select>
           </div>
+            <div><label class="block text-sm font-bold text-gray-700 mb-1">電費費率（元/度）</label>
+              <input type="number" name="electricityRate" value="${s.electricityRate||'5'}" min="1" step="0.5" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm">
+              <p class="text-[10px] text-gray-400 mt-0.5">每度電費率，用於計算電費（預設 NT$5/度）</p>
+            </div>
             <div><label class="block text-sm font-bold text-gray-700 mb-1">推薦獎勵金額（元）</label>
               <input type="number" name="referralBonusAmount" value="${s.referralBonusAmount||'500'}" min="0" step="100" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm">
               <p class="text-[10px] text-gray-400 mt-0.5">推薦人和被推薦人各獲得此金額，設為 0 可停用</p>
@@ -2749,6 +2769,8 @@
         landlordAddress:    fd.get('landlordAddress') || '',
         landlordId:         fd.get('landlordId') || '',
         referralBonusAmount: fd.get('referralBonusAmount') || '500',
+        electricityRate:      fd.get('electricityRate') || '5',
+        electricityRate: fd.get('electricityRate') || '5',
         timeSlots: (function(){var boxes=document.querySelectorAll('[name="timeSlots[]"]:checked');return Array.from(boxes).map(function(b){return b.value;}).join(',');})() || '早上 08:00-10:00,下午 14:00-16:00'
       };
       callGas('updateSettings', data, (res) => {
@@ -3460,23 +3482,78 @@
     }
 
     function _tenantMeterRecord() {
-      var html =
-        '<div class="space-y-4">' +
-          '<div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200">' +
-            '<p class="text-sm text-yellow-800 font-medium"><i class="fa-solid fa-lightbulb mr-1"></i>每月按時回報電錶度數，管理員將據此計算電費。</p>' +
+      openGeneralModal('⚡ 我的電費紀錄', '<div class="flex justify-center py-6"><span class="loader border-yellow-400 border-t-transparent w-8 h-8"></span></div>');
+      var t = appState.user && appState.user.tenantInfo;
+      var room = t ? t.room : '';
+      var phone = appState.user ? appState.user.phone : '';
+      callGas('getMyMeterRecords', { room: room, phone: phone }, function(res) {
+        var records = res && res.success ? res.records : [];
+        var RATE = Number((appState.adminData&&appState.adminData.settings&&appState.adminData.settings.electricityRate)||5);
+        var monthNames = ['','一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+        var yr = new Date().getFullYear();
+
+        // Build month map for current year
+        var monthMap = {};
+        records.filter(function(m){ return m.date&&m.date.toString().startsWith(yr+''); })
+          .forEach(function(m) {
+            var mo = parseInt((m.date||'').toString().slice(5,7),10);
+            if (mo && !monthMap[mo]) monthMap[mo] = m;
+          });
+
+        var nowMo = new Date().getMonth()+1;
+        var html = '<div class="space-y-4">' +
+          // Submit form
+          '<div class="bg-white p-4 rounded-2xl border border-yellow-200">' +
+            '<h4 class="font-bold text-yellow-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-500"></i>回報本月電錶</h4>' +
+            '<div class="space-y-3">' +
+              '<input type="number" id="meter-current" placeholder="輸入本月電錶度數" class="w-full px-4 py-3 rounded-xl border-2 border-yellow-300 outline-none focus:border-yellow-500 text-lg font-bold text-yellow-600">' +
+              '<input type="file" id="meter-photo" accept="image/*" capture="camera" class="w-full text-sm p-2 border border-gray-200 rounded-xl bg-gray-50">' +
+              '<button onclick="_submitMeterRecord()" class="w-full py-3 bg-yellow-500 text-white rounded-xl font-bold shadow-md hover:bg-yellow-600"><i class="fa-solid fa-bolt mr-2"></i>送出電錶度數</button>' +
+            '</div>' +
           '</div>' +
-          '<div>' +
-            '<label class="block text-sm font-bold text-gray-700 mb-1">本月電錶度數 *</label>' +
-            '<input type="number" id="meter-current" placeholder="請輸入本月電錶數值" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-yellow-500 text-lg font-bold">' +
-          '</div>' +
-          '<div>' +
-            '<label class="block text-sm font-bold text-gray-700 mb-1">電錶照片（選填）</label>' +
-            '<input type="file" id="meter-photo" accept="image/*" capture="camera" class="w-full text-sm p-2 border border-gray-200 rounded-xl bg-gray-50">' +
-            '<p class="text-[10px] text-gray-400 mt-1">可直接拍照上傳電錶畫面</p>' +
-          '</div>' +
-          '<button onclick="_submitMeterRecord()" class="w-full py-3.5 bg-yellow-500 text-white rounded-xl font-bold shadow-md hover:bg-yellow-600"><i class="fa-solid fa-bolt mr-2"></i>送出電錶度數</button>' +
+          // Monthly grid
+          '<h4 class="font-bold text-gray-700 text-sm flex items-center gap-2"><i class="fa-regular fa-calendar text-yellow-500"></i>'+yr+'年 月份電費一覽</h4>' +
+          '<div class="grid grid-cols-3 gap-2">';
+
+        for (var mo = 1; mo <= 12; mo++) {
+          var rec = monthMap[mo];
+          var isFuture = (yr === new Date().getFullYear() && mo > nowMo);
+          if (rec) {
+            html += '<div class="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-2 text-center">' +
+              '<div class="text-[10px] text-yellow-700 font-bold">'+monthNames[mo]+'</div>' +
+              '<div class="text-lg font-black text-yellow-600">'+rec.meter+'</div>' +
+              '<div class="text-[10px] text-gray-500">度</div>' +
+              (rec.cost ? '<div class="text-[10px] font-bold text-orange-600">NT$'+rec.cost+'</div>' : '') +
+            '</div>';
+          } else if (isFuture) {
+            html += '<div class="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-2 text-center opacity-40">' +
+              '<div class="text-[10px] text-gray-400 font-bold">'+monthNames[mo]+'</div>' +
+              '<div class="text-gray-300">─</div>' +
+            '</div>';
+          } else {
+            html += '<div class="bg-orange-50 border border-dashed border-orange-200 rounded-xl p-2 text-center">' +
+              '<div class="text-[10px] text-orange-600 font-bold">'+monthNames[mo]+'</div>' +
+              '<div class="text-[10px] text-orange-400">未回報</div>' +
+            '</div>';
+          }
+        }
+
+        html += '</div>' +
+          // Recent history
+          (records.length ?
+            '<h4 class="font-bold text-gray-700 text-sm">歷史紀錄</h4>' +
+            '<div class="space-y-2">' +
+            records.slice(0,5).map(function(m) {
+              return '<div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">' +
+                '<div><div class="text-xs text-gray-400">'+m.date+'</div><div class="font-bold">'+m.meter+' 度</div></div>' +
+                (m.cost ? '<div class="font-bold text-orange-600">NT$'+m.cost+'</div>' : '<div class="text-gray-400 text-sm">待計算</div>') +
+              '</div>';
+            }).join('') +
+            '</div>' : '') +
         '</div>';
-      openGeneralModal('每月電錶度數', html);
+
+        document.getElementById('general-modal-content').innerHTML = html;
+      });
     }
 
     function _submitMeterRecord() {
@@ -4390,20 +4467,7 @@
     // ── New Admin Sections ────────────────────────────────────
     function _handleNewSection(section, data) {
       if (section === 'electricity') {
-        var html = '<div class="space-y-3">' +
-          '<div class="flex justify-between items-center mb-2"><h3 class="font-bold text-gray-800">電費管理</h3>' +
-          '<button onclick="showAddElectricityForm()" class="px-3 py-2 bg-yellow-500 text-white rounded-lg text-sm font-bold hover:bg-yellow-600"><i class="fa-solid fa-plus mr-1"></i>新增電費</button></div>';
-        var meters = (data.meterRecords||[]).sort(function(a,b){ return b.date>a.date?1:-1; });
-        if (!meters.length) html += '<p class="text-center text-gray-400 py-6">尚無電錶紀錄</p>';
-        else meters.slice(0,20).forEach(function(m){
-          html += '<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">' +
-            '<div class="flex justify-between"><span class="font-bold">'+m.room+' '+m.name+'</span><span class="text-xs text-gray-400">'+m.date+'</span></div>' +
-            '<div class="text-sm text-gray-600 mt-1">本月度數：<span class="font-bold text-yellow-600">'+m.meter+'度</span>' +
-            (m.cost ? ' · 費用：<span class="font-bold text-orange-600">NT$'+m.cost+'</span>' : '') + '</div>' +
-          '</div>';
-        });
-        html += '</div>';
-        document.getElementById('admin-content').innerHTML = html;
+        _renderElectricityDashboard(data);
       } else if (section === 'repairStats') {
         var repairs = data.repairs || [];
         var total = repairs.length;
@@ -4458,30 +4522,357 @@
       }
     }
 
-    function showAddElectricityForm() {
-      var html = '<form id="elec-form" class="space-y-3">' +
-        '<div><label class="block text-xs font-bold text-gray-500 mb-1">房號 *</label>' +
-          '<select name="room" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 bg-white text-sm">' +
-          (appState.adminData&&appState.adminData.rooms||[]).map(function(r){ return '<option value="'+r.id+'">'+r.id+' '+r.name+'</option>'; }).join('') + '</select></div>' +
-        '<div><label class="block text-xs font-bold text-gray-500 mb-1">本月電錶度數 *</label><input type="number" name="meter" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
-        '<div><label class="block text-xs font-bold text-gray-500 mb-1">收費金額（NT$）</label><input type="number" name="cost" placeholder="自動計算或手動輸入" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500"></div>' +
+
+
+
+    // ================================================================
+    // ELECTRICITY MANAGEMENT DASHBOARD
+    // ================================================================
+    var _elecSelectedRoom = '';
+    var _elecYear = new Date().getFullYear();
+
+    function _renderElectricityDashboard(data) {
+      var container = document.getElementById('admin-content');
+      if (!container) return;
+      var rooms   = data.rooms   || [];
+      var tenants = data.tenants || [];
+      var meters  = data.meterRecords || [];
+      var RATE    = Number((data.settings && data.settings.electricityRate) || 5);
+      var html = '<div class="space-y-4">' +
+        '<div class="flex flex-wrap gap-2 items-center justify-between">' +
+          '<h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-500"></i>電費管理</h3>' +
+          '<div class="flex gap-2">' +
+            '<button onclick="showAddElectricityForm()" class="px-3 py-2 bg-yellow-500 text-white rounded-lg text-sm font-bold hover:bg-yellow-600 shadow-sm"><i class="fa-solid fa-plus mr-1"></i>新增度數</button>' +
+            '<button onclick="_elecShowStats()" class="px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-bold hover:bg-purple-700 shadow-sm"><i class="fa-solid fa-chart-bar mr-1"></i>統計</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="overflow-x-auto no-scrollbar"><div class="flex gap-2 pb-1" id="elec-room-tabs">' +
+          '<button onclick="_elecSelectRoom(String(\'\'))" id="elec-tab-all" class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-yellow-500 text-white">全部</button>' +
+          tenants.map(function(t){
+            return '<button data-room="'+t.room+'" data-r="'+t.room+'" onclick="_elecSelectRoom(this.dataset.r)" class="elec-room-tab px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-white border border-gray-200 text-gray-600 hover:border-yellow-400">'+t.room+'</button>';
+          }).join('') +
+        '</div></div>' +
+        '<div class="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100">' +
+          '<button onclick="_elecPrevYear()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"><i class="fa-solid fa-chevron-left text-sm"></i></button>' +
+          '<span class="font-bold text-gray-800" id="elec-year-label">'+new Date().getFullYear()+' 年</span>' +
+          '<button onclick="_elecNextYear()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"><i class="fa-solid fa-chevron-right text-sm"></i></button>' +
+        '</div>' +
+        '<div id="elec-monthly-grid"></div>' +
+        '<div id="elec-summary-card"></div>' +
+      '</div>';
+      container.innerHTML = html;
+      _elecSelectedRoom = '';
+      _elecYear = new Date().getFullYear();
+      _elecRenderMonthlyGrid(meters, tenants, RATE);
+    }
+
+    function _elecSelectRoom(room) {
+      _elecSelectedRoom = room;
+      document.querySelectorAll('.elec-room-tab').forEach(function(b){ b.className=b.className.replace('bg-yellow-500 text-white','bg-white border border-gray-200 text-gray-600 hover:border-yellow-400'); });
+      var allTab=document.getElementById('elec-tab-all');
+      if(room===''){if(allTab)allTab.className=allTab.className.replace('bg-white border border-gray-200 text-gray-600 hover:border-yellow-400','bg-yellow-500 text-white');}
+      else{if(allTab)allTab.className=allTab.className.replace('bg-yellow-500 text-white','bg-white border border-gray-200 text-gray-600 hover:border-yellow-400');var at=document.querySelector('[data-room="'+room+'"]');if(at)at.className=at.className.replace('bg-white border border-gray-200 text-gray-600 hover:border-yellow-400','bg-yellow-500 text-white');}
+      var d=appState.adminData||{};
+      _elecRenderMonthlyGrid(d.meterRecords||[],d.tenants||[],Number((d.settings&&d.settings.electricityRate)||5));
+    }
+
+    function _elecPrevYear(){_elecYear--;var el=document.getElementById('elec-year-label');if(el)el.textContent=_elecYear+' 年';var d=appState.adminData||{};_elecRenderMonthlyGrid(d.meterRecords||[],d.tenants||[],Number((d.settings&&d.settings.electricityRate)||5));}
+    function _elecNextYear(){_elecYear++;var el=document.getElementById('elec-year-label');if(el)el.textContent=_elecYear+' 年';var d=appState.adminData||{};_elecRenderMonthlyGrid(d.meterRecords||[],d.tenants||[],Number((d.settings&&d.settings.electricityRate)||5));}
+
+        function _elecRenderMonthlyGrid(meters, tenants, RATE) {
+      var grid = document.getElementById('elec-monthly-grid');
+      var summary = document.getElementById('elec-summary-card');
+      if (!grid) return;
+      var room = _elecSelectedRoom || '';
+      var yr   = _elecYear;
+      var monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+      var curMo = new Date().getMonth()+1;
+      var curYr = new Date().getFullYear();
+
+      // Filter meters for this room/year
+      var roomMeters = meters.filter(function(m){
+        var d = (m.date||'').toString();
+        var mYr = parseInt(d.slice(0,4));
+        return (!room || m.room===room) && mYr===yr;
+      });
+
+      // Build month→record map
+      var moMap = {};
+      roomMeters.forEach(function(m){
+        var d = (m.date||'').toString();
+        var mo = parseInt(d.slice(5,7));
+        if (!moMap[mo] || d > (moMap[mo].date||'')) moMap[mo] = m;
+      });
+
+      // Get initial meter (first record or from tenant data)
+      var initMeter = 0;
+      if (room) {
+        var t = tenants.find(function(x){ return x.room===room; });
+        if (t && t.initialMeter) initMeter = Number(t.initialMeter);
+      }
+
+      var totalKwh = 0, totalCost = 0;
+      var gh = '<div class="grid grid-cols-3 gap-2">';
+      for (var mo = 1; mo <= 12; mo++) {
+        var rec = moMap[mo];
+        var isFuture = (yr > curYr) || (yr===curYr && mo > curMo);
+        if (rec) {
+          var prevRec = moMap[mo-1];
+          var prevM   = prevRec ? Number(prevRec.meter) : initMeter;
+          var usage   = Number(rec.meter) - prevM;
+          if (usage < 0) usage = 0;
+          var cost    = rec.cost ? Number(rec.cost) : (usage * RATE);
+          if (room) { totalKwh += usage; totalCost += cost; }
+          gh += '<div class="bg-white rounded-xl border-2 border-yellow-400 p-2.5 shadow-sm cursor-pointer hover:bg-yellow-50 active:scale-95 transition-all" data-mo="'+mo+'" data-yr="'+yr+'" onclick="_elecShowMonthDetail(Number(this.dataset.mo),Number(this.dataset.yr))">' +
+            '<div class="flex justify-between mb-1"><span class="font-bold text-xs text-yellow-700">'+monthNames[mo-1]+'</span><span class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">有紀錄</span></div>' +
+            '<div class="text-xl font-black text-yellow-600 my-1">'+rec.meter+'<span class="text-xs font-normal text-gray-400 ml-0.5">度</span></div>' +
+            (room ? '<div class="text-[10px] text-gray-500">用 '+usage+' 度</div>' : '') +
+            '<div class="text-xs font-bold text-orange-600">NT$'+Number(cost).toLocaleString()+'</div>' +
+          '</div>';
+        } else if (isFuture) {
+          gh += '<div class="bg-gray-50 rounded-xl border border-dashed border-gray-100 p-2.5 opacity-40">' +
+            '<div class="font-bold text-xs text-gray-300">'+monthNames[mo-1]+'</div>' +
+            '<div class="text-lg font-black text-gray-200 my-1">─</div>' +
+          '</div>';
+        } else {
+          gh += '<div class="bg-orange-50 rounded-xl border-2 border-dashed border-orange-200 p-2.5 cursor-pointer hover:bg-orange-100 active:scale-95 transition-all" data-mo="'+mo+'" data-yr="'+yr+'" onclick="_elecShowMonthDetail(Number(this.dataset.mo),Number(this.dataset.yr))">' +
+            '<div class="flex justify-between mb-1"><span class="font-bold text-xs text-orange-400">'+monthNames[mo-1]+'</span><span class="text-[10px] bg-orange-100 text-orange-500 px-1.5 py-0.5 rounded-full font-bold">未記錄</span></div>' +
+            '<div class="text-lg font-black text-orange-300 my-1">?</div>' +
+            '<div class="text-[10px] text-orange-400">點擊新增</div>' +
+          '</div>';
+        }
+      }
+      gh += '</div>';
+      grid.innerHTML = gh;
+
+      // Summary card
+      if (room && summary) {
+        var t2 = tenants.find(function(x){ return x.room===room; });
+        var recorded = Object.keys(moMap).length;
+        summary.innerHTML = '<div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-2xl border border-yellow-200">' +
+          '<h4 class="font-bold text-yellow-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-chart-bar text-yellow-600"></i>'+yr+'年 統計摘要</h4>' +
+          '<div class="grid grid-cols-3 gap-3">' +
+            '<div class="bg-white p-3 rounded-xl text-center shadow-sm"><div class="text-xl font-black text-yellow-600">'+recorded+'</div><div class="text-[10px] text-gray-500">已記錄月份</div></div>' +
+            '<div class="bg-white p-3 rounded-xl text-center shadow-sm"><div class="text-xl font-black text-blue-600">'+totalKwh+'</div><div class="text-[10px] text-gray-500">總用電度數</div></div>' +
+            '<div class="bg-white p-3 rounded-xl text-center shadow-sm"><div class="text-xl font-black text-orange-600">'+totalCost.toLocaleString()+'</div><div class="text-[10px] text-gray-500">總費用NT$</div></div>' +
+          '</div>' +
+          (t2 && t2.initialMeter ? '<div class="mt-2 text-xs text-gray-500 text-center">初始電度：'+t2.initialMeter+' 度</div>' : '') +
+        '</div>';
+      } else if (summary) {
+        summary.innerHTML = '';
+      }
+    }
+
+
+        function _elecShowMonthDetail(mo, yr) {
+      var meters  = (appState.adminData && appState.adminData.meterRecords) || [];
+      var tenants = (appState.adminData && appState.adminData.tenants) || [];
+      var RATE    = Number(appState.adminData && appState.adminData.settings && appState.adminData.settings.electricityRate || 5);
+      var room    = _elecSelectedRoom || '';
+      var moStr   = String(mo).padStart(2,'0');
+      var monthNames = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+      var filtered = meters.filter(function(m){
+        var d = m.date ? m.date.toString() : '';
+        return (d.indexOf(yr+'-'+moStr)===0 || d.indexOf(yr+'/'+moStr)===0) && (!room || m.room===room);
+      });
+      var html = '<div class="space-y-3">';
+      if (!filtered.length) {
+        html += '<p class="text-center text-gray-400 py-4">此月尚無紀錄</p>' +
+          '<button data-mo="'+mo+'" data-yr="'+yr+'" onclick="showAddElectricityFormMonth(Number(this.dataset.mo),Number(this.dataset.yr))" class="w-full py-3 bg-yellow-500 text-white rounded-xl font-bold hover:bg-yellow-600">補填此月度數</button>';
+      } else {
+        filtered.forEach(function(m){
+          var t  = tenants.find(function(x){ return x.room===m.room; });
+          var nm = t ? t.name : m.name || '';
+          html += '<div class="bg-gray-50 p-4 rounded-xl border border-gray-100">' +
+            '<div class="flex justify-between mb-2">' +
+              '<span class="font-bold text-sm">'+m.room+' '+nm+'</span>' +
+              '<span class="text-xs text-gray-400">'+m.date+'</span>' +
+            '</div>' +
+            '<div class="grid grid-cols-2 gap-2 text-sm">' +
+              '<div class="bg-yellow-50 p-2 rounded-lg text-center"><div class="font-black text-yellow-600">'+m.meter+'</div><div class="text-[10px] text-gray-400">本月度數</div></div>' +
+              '<div class="bg-orange-50 p-2 rounded-lg text-center"><div class="font-black text-orange-600">NT$'+(m.cost?Number(m.cost).toLocaleString():'計算中')+'</div><div class="text-[10px] text-gray-400">電費金額</div></div>' +
+            '</div>' +
+            (m.note ? '<p class="text-xs text-gray-400 mt-2">備註：'+m.note+'</p>' : '') +
+          '</div>';
+        });
+      }
+      html += '</div>';
+      openGeneralModal(yr+'年 '+monthNames[mo-1]+' 電費紀錄', html);
+    }
+
+
+    function _elecShowStats() {
+      var data=appState.adminData||{};
+      var meters=data.meterRecords||[];
+      var tenants=data.tenants||[];
+      var roomStats={};
+      tenants.forEach(function(t){roomStats[t.room]={name:t.name,records:[],totalCost:0};});
+      meters.forEach(function(m){if(!roomStats[m.room])roomStats[m.room]={name:m.name||'',records:[],totalCost:0};roomStats[m.room].records.push(m);roomStats[m.room].totalCost+=Number(m.cost)||0;});
+      var rooms2=Object.entries(roomStats).sort(function(a,b){return b[1].totalCost-a[1].totalCost;});
+      var grandTotal=rooms2.reduce(function(s,r){return s+r[1].totalCost;},0);
+      var html='<div class="space-y-4">' +
+        '<div class="grid grid-cols-2 gap-3">' +
+          '<div class="bg-yellow-50 p-3 rounded-xl text-center border border-yellow-200"><div class="text-2xl font-black text-yellow-600">'+rooms2.filter(function(r){return r[1].records.length;}).length+'</div><div class="text-xs text-yellow-700">有紀錄房間</div></div>' +
+          '<div class="bg-orange-50 p-3 rounded-xl text-center border border-orange-200"><div class="text-2xl font-black text-orange-600">'+grandTotal.toLocaleString()+'</div><div class="text-xs text-orange-700">電費總計(元)</div></div>' +
+        '</div>' +
+        '<div class="bg-white rounded-xl border border-gray-100"><div class="px-4 py-3 border-b border-gray-50 font-bold text-sm">各房間累計電費</div><div class="divide-y divide-gray-50">' +
+        rooms2.filter(function(r){return r[1].records.length;}).map(function(r){
+          var pct=grandTotal?Math.round(r[1].totalCost/grandTotal*100):0;
+          return '<div class="px-4 py-3"><div class="flex justify-between mb-1"><span class="text-sm font-medium">'+r[0]+' '+r[1].name+'</span><span class="text-sm font-bold text-orange-600">NT$'+r[1].totalCost.toLocaleString()+'</span></div><div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-yellow-400 h-2 rounded-full" style="width:'+pct+'%"></div></div><div class="text-[10px] text-gray-400 mt-0.5">'+r[1].records.length+'筆 · '+pct+'%</div></div>';
+        }).join('') +
+        '</div></div></div>';
+      openGeneralModal('📊 電費統計分析', html);
+    }
+
+    function showAddElectricityFormMonth(mo, yr) { showAddElectricityFormForMonth(mo, yr); }
+    function showAddElectricityFormForMonth(mo, yr) {
+      var t = appState.adminData && appState.adminData.tenants && _elecSelectedRoom ? appState.adminData.tenants.find(function(x){return x.room===_elecSelectedRoom;}) : null;
+      var defaultDate = yr+'-'+String(mo).padStart(2,'0')+'-01';
+      showAddElectricityForm(); // open modal
+    }
+    function _submitElecMonth() { _saveElectricity(); }
+
+    function showAddElectricityForm(defaultMo, defaultYr) {
+      var tenants=(appState.adminData&&appState.adminData.tenants)||[];
+      var todayStr=new Date().toISOString().split('T')[0];
+      if(defaultMo&&defaultYr){var m2=String(defaultMo).padStart(2,'0');todayStr=defaultYr+'-'+m2+'-01';}
+      var roomOpts=tenants.map(function(t){var sel=(t.room===_elecSelectedRoom)?' selected':'';return '<option value="'+t.room+'"'+sel+'>'+t.room+' '+t.name+'</option>';}).join('');
+      var html='<form id="elec-add-form" class="space-y-3">' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">房號 *</label><select name="room" id="elec-room-sel" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-yellow-500 bg-white text-sm">'+roomOpts+'</select></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">日期 *</label><input type="date" name="date" value="'+todayStr+'" required class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-yellow-500 text-sm"></div>' +
+        '<div class="grid grid-cols-2 gap-3">' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">上月電錶</label><input type="number" id="elec-prev" placeholder="0" oninput="_elecCalcCost()" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-yellow-500 text-sm"></div>' +
+          '<div><label class="block text-xs font-bold text-gray-500 mb-1">本月電錶 *</label><input type="number" id="elec-curr" name="meter" required placeholder="例：1234" oninput="_elecCalcCost()" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-yellow-500 text-sm font-bold text-yellow-600"></div>' +
+        '</div>' +
+        '<div id="elec-calc-result" class="bg-yellow-50 p-3 rounded-xl border border-yellow-200 hidden"><p class="text-sm text-yellow-800"><i class="fa-solid fa-calculator mr-1"></i><span id="elec-calc-text"></span></p></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">收費金額（NT$）</label><input type="number" name="cost" id="elec-cost" placeholder="自動計算或手動輸入" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-yellow-500 text-sm"></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">備註</label><input type="text" name="note" placeholder="例：更換電錶" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-yellow-500 text-sm"></div>' +
         '<button type="button" onclick="_saveElectricity()" class="w-full py-3.5 bg-yellow-500 text-white rounded-xl font-bold shadow-md hover:bg-yellow-600"><i class="fa-solid fa-bolt mr-2"></i>儲存電費紀錄</button>' +
       '</form>';
       openGeneralModal('新增電費紀錄', html);
+      setTimeout(function(){var sel=document.getElementById('elec-room-sel');if(sel){sel.onchange=function(){_elecFillPrevMeter(sel.value);};_elecFillPrevMeter(sel.value);}},300);
+    }
+
+    function _elecFillPrevMeter(room) {
+      var meters=(appState.adminData&&appState.adminData.meterRecords)||[];
+      var rm=meters.filter(function(m){return m.room===room;}).sort(function(a,b){return b.date>a.date?1:-1;});
+      var el=document.getElementById('elec-prev');
+      if(el&&rm.length)el.value=rm[0].meter;
+    }
+
+    function _elecCalcCost() {
+      var prev=document.getElementById('elec-prev');
+      var curr=document.getElementById('elec-curr');
+      var costEl=document.getElementById('elec-cost');
+      var resultEl=document.getElementById('elec-calc-result');
+      var textEl=document.getElementById('elec-calc-text');
+      if(!prev||!curr||!prev.value||!curr.value){if(resultEl)resultEl.classList.add('hidden');return;}
+      var RATE=Number((appState.adminData&&appState.adminData.settings&&appState.adminData.settings.electricityRate)||5);
+      var usage=Number(curr.value)-Number(prev.value);
+      var cost=Math.max(0,usage)*RATE;
+      if(textEl)textEl.textContent='用電'+Math.max(0,usage)+'度 × NT$'+RATE+'/度 = NT$'+cost.toLocaleString();
+      if(costEl&&!costEl._manual)costEl.value=cost;
+      if(resultEl)resultEl.classList.remove('hidden');
     }
 
     function _saveElectricity() {
-      var form = document.getElementById('elec-form');
-      if (!form) return;
-      var fd = new FormData(form);
-      var data = Object.fromEntries(fd.entries());
-      callGas('submitMeterRecord', data, function(res) {
-        if (res && res.success) {
-          showToast('電費紀錄已儲存','success');
-          closeGeneralModal();
-          _adminDataTs = 0;
-          showAdminSection('electricity');
-        } else showToast('儲存失敗','error');
+      var form=document.getElementById('elec-add-form');
+      if(!form)return;
+      var fd=new FormData(form);
+      var data=Object.fromEntries(fd.entries());
+      if(!data.meter){showToast('請填寫電錶度數','warn');return;}
+      var t=(appState.adminData&&appState.adminData.tenants||[]).find(function(x){return x.room===data.room;});
+      if(t){data.name=t.name;data.phone=t.phone;}
+      callGas('submitMeterRecord',data,function(res){
+        if(res&&res.success){showToast('電費紀錄已儲存 ✅','success');closeGeneralModal();_adminDataTs=0;showAdminSection('electricity');}
+        else showToast('儲存失敗：'+(res&&res.message||''),'error');
+      });
+    }
+
+
+
+    // ── Tenant Electricity View ───────────────────────────────
+    function _tenantViewElectricity() {
+      if (!appState.user || !appState.user.tenantInfo) return;
+      var room = appState.user.tenantInfo.room;
+      openGeneralModal('⚡ 我的電費紀錄', '<div class="flex justify-center py-6"><span class="loader border-yellow-400 border-t-transparent w-8 h-8"></span></div>');
+      callGas('getAdminData', null, function(res) {
+        if (!res || !res.success) {
+          document.getElementById('general-modal-content').innerHTML = '<p class="text-red-500 text-center py-4">載入失敗</p>';
+          return;
+        }
+        var data    = res.data;
+        var meters  = (data.meterRecords||[]).filter(function(m){ return m.room===room; }).sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
+        var tenants = data.tenants||[];
+        var t       = tenants.find(function(x){ return x.room===room; });
+        var RATE    = Number((data.settings&&data.settings.electricityRate)||5);
+        var initM   = t && t.initialMeter ? Number(t.initialMeter) : 0;
+
+        var yr = new Date().getFullYear();
+        var monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+        // Build month map for current year
+        var moMap = {};
+        meters.forEach(function(m){
+          var d = (m.date||'').toString();
+          if (d.slice(0,4) == yr) { var mo=parseInt(d.slice(5,7)); if(!moMap[mo]||d>(moMap[mo].date||'')) moMap[mo]=m; }
+        });
+
+        var totalKwh=0, totalCost=0;
+        var html = '<div class="space-y-4">' +
+          '<div class="bg-yellow-50 p-3 rounded-xl border border-yellow-200 flex items-center gap-3">' +
+            '<i class="fa-solid fa-bolt text-yellow-500 text-xl"></i>' +
+            '<div><div class="font-bold text-yellow-800">房號 '+room+'</div>' +
+              (t&&t.initialMeter?'<div class="text-xs text-gray-500">初始電度：'+t.initialMeter+' 度</div>':'')+
+            '</div>' +
+          '</div>' +
+          '<div class="grid grid-cols-3 gap-2">';
+
+        for (var mo=1; mo<=12; mo++) {
+          var rec = moMap[mo];
+          var curMo = new Date().getMonth()+1;
+          var isFuture = mo > curMo;
+          if (rec) {
+            var prev = moMap[mo-1] ? Number(moMap[mo-1].meter) : initM;
+            var usage = Math.max(0, Number(rec.meter)-prev);
+            var cost  = rec.cost ? Number(rec.cost) : usage*RATE;
+            totalKwh += usage; totalCost += cost;
+            html += '<div class="bg-white rounded-xl border-2 border-yellow-300 p-2.5 text-center shadow-sm">' +
+              '<div class="text-xs font-bold text-yellow-700 mb-1">'+monthNames[mo-1]+'</div>' +
+              '<div class="text-lg font-black text-yellow-600">'+rec.meter+'</div>' +
+              '<div class="text-[10px] text-gray-400 mb-1">度</div>' +
+              '<div class="text-[10px] text-orange-600 font-bold">NT$'+Number(cost).toLocaleString()+'</div>' +
+            '</div>';
+          } else if (isFuture) {
+            html += '<div class="bg-gray-50 rounded-xl border border-dashed p-2.5 text-center opacity-30">' +
+              '<div class="text-xs text-gray-300">'+monthNames[mo-1]+'</div>' +
+              '<div class="text-lg text-gray-200 font-black">─</div>' +
+            '</div>';
+          } else {
+            html += '<div class="bg-orange-50 rounded-xl border-2 border-dashed border-orange-200 p-2.5 text-center">' +
+              '<div class="text-xs font-bold text-orange-400">'+monthNames[mo-1]+'</div>' +
+              '<div class="text-lg text-orange-300 font-black">?</div>' +
+              '<div class="text-[10px] text-orange-400">未記錄</div>' +
+            '</div>';
+          }
+        }
+        html += '</div>' +
+          '<div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-2xl border border-yellow-200">' +
+            '<h4 class="font-bold text-yellow-800 mb-3">'+yr+'年度統計</h4>' +
+            '<div class="grid grid-cols-2 gap-3">' +
+              '<div class="bg-white p-3 rounded-xl text-center"><div class="text-xl font-black text-blue-600">'+totalKwh+'</div><div class="text-xs text-gray-500">總用電度數</div></div>' +
+              '<div class="bg-white p-3 rounded-xl text-center"><div class="text-xl font-black text-orange-600">'+totalCost.toLocaleString()+'</div><div class="text-xs text-gray-500">總費用 NT$</div></div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="space-y-2"><h4 class="font-bold text-sm text-gray-700">完整紀錄</h4>' +
+          meters.slice().reverse().map(function(m){
+            return '<div class="bg-white p-3 rounded-xl border border-gray-100 flex justify-between items-center">' +
+              '<div><div class="text-sm font-bold">'+m.date+'</div><div class="text-xs text-gray-400">度數：'+m.meter+'</div></div>' +
+              (m.cost?'<div class="font-bold text-orange-600">NT$'+Number(m.cost).toLocaleString()+'</div>':'') +
+            '</div>';
+          }).join('') +
+          '</div></div>';
+        document.getElementById('general-modal-content').innerHTML = html;
       });
     }
 
