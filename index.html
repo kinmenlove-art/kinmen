@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER2.0.0</title>
+  <title>壹參學生宿舍系統 VER2.1.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -78,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.0.0　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.1.0　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -832,7 +832,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER2.0.0';
+    const APP_VERSION = 'VER2.1.0';
     document.addEventListener('DOMContentLoaded', function() {
       var el = document.getElementById('header-version');
       if (el) el.textContent = APP_VERSION;
@@ -2711,7 +2711,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.0.0');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.1.0');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
@@ -2978,7 +2978,15 @@
         <div><label class="block text-xs text-gray-500 mb-1">詳細地址</label><input type="text" name="address" value="${getVal('address')}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
         <div><label class="block text-xs text-gray-500 mb-1">設備 (逗號分隔)</label><input type="text" name="equipment" value="${getVal('features')}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" placeholder="冷氣,冰箱,洗衣機"></div>
         <div><label class="block text-xs text-gray-500 mb-1">房間說明</label><textarea name="description" rows="2" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none resize-none">${getVal('description')}</textarea></div>
-        <div><label class="block text-xs text-gray-500 mb-1">照片 (可多選)</label><input type="file" id="roomPhotoFiles" accept="image/*" multiple class="w-full text-xs p-2 border border-gray-200 rounded-lg bg-gray-50"></div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 mb-1">房間照片</label>
+          <div id="room-photo-preview" class="grid grid-cols-3 gap-2 mb-2"></div>
+          <input type="hidden" id="room-photo-urls" name="image">
+          <button type="button" onclick="_openRoomPhotoUpload()" class="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-blue-200 rounded-xl text-blue-500 hover:bg-blue-50 hover:border-blue-400 transition-all text-sm font-medium">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span id="room-photo-btn-text">從手機相簿上傳照片</span>
+          </button>
+        </div>
         <div class="flex gap-3 pt-2"><button type="button" onclick="showAdminSection('rooms')" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm">取消</button><button type="submit" id="add-room-btn" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium text-sm">儲存</button></div>
       </form>`;
     }
@@ -2995,11 +3003,8 @@
       btn.innerHTML = '<span class="loader border-white border-t-transparent w-4 h-4"></span> 處理中...'; btn.disabled = true;
       const fd = new FormData(e.target);
       const data = Object.fromEntries(fd.entries());
-      const files = document.getElementById('roomPhotoFiles').files;
-      data.photoFiles = [];
-      for (let i = 0; i < files.length; i++) {
-        try { const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.readAsDataURL(files[i]); r.onload = () => res(r.result); r.onerror = rej; }); data.photoFiles.push(b64); } catch(err) {}
-      }
+      // image URLs already in data.image from hidden field
+      delete data.photoFiles;
       callGas('addRoom', data, (res) => {
         if (res.success) { showToast('新增房間成功！','success'); showAdminSection('rooms'); }
         else { showToast('發生錯誤：'+res.message,'error'); btn.innerHTML = '儲存'; btn.disabled = false; }
@@ -3600,7 +3605,11 @@
             '<h4 class="font-bold text-yellow-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-500"></i>回報本月電錶</h4>' +
             '<div class="space-y-3">' +
               '<input type="number" id="meter-current" placeholder="輸入本月電錶度數" class="w-full px-4 py-3 rounded-xl border-2 border-yellow-300 outline-none focus:border-yellow-500 text-lg font-bold text-yellow-600">' +
-              '<input type="file" id="meter-photo" accept="image/*" capture="camera" class="w-full text-sm p-2 border border-gray-200 rounded-xl bg-gray-50">' +
+              '<input type="hidden" name="meterPhotoUrl" id="meter-photo-url">' +
+              '<div id="meter-photo-preview" class="mb-2"></div>' +
+              '<button type="button" onclick="_quickUploadImage(\'meter\',\'上傳電錶照片\',function(u){document.getElementById(\'meter-photo-url\').value=u;document.getElementById(\'meter-photo-preview\').innerHTML=\'<img src="\'+u+\'" class=\"w-full h-28 object-cover rounded-xl\">\'})" class="w-full py-3 border-2 border-dashed border-yellow-300 rounded-xl text-sm text-yellow-600 hover:bg-yellow-50 font-medium transition-all">' +
+              '<i class="fa-solid fa-camera mr-2"></i>拍攝電錶照片' +
+              '</button>'
               '<button onclick="_submitMeterRecord()" class="w-full py-3 bg-yellow-500 text-white rounded-xl font-bold shadow-md hover:bg-yellow-600"><i class="fa-solid fa-bolt mr-2"></i>送出電錶度數</button>' +
             '</div>' +
           '</div>' +
@@ -4072,7 +4081,13 @@
           '<div><label class="block text-xs font-bold text-gray-500 mb-1">優惠價格</label><input type="number" name="specialPrice" value="'+(room.specialPrice||'')+'" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
         '</div>' +
         '<div><label class="block text-xs font-bold text-gray-500 mb-1">設備（逗號分隔）</label><input type="text" name="equipment" value="'+(room.equipment||room.features||'')+'" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
-        '<div><label class="block text-xs font-bold text-gray-500 mb-1">圖片網址（逗號分隔多張）</label><input type="text" name="image" value="'+(room.image||'')+'" placeholder="https://..." class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm"></div>' +
+        '<div><label class="block text-xs font-bold text-gray-500 mb-1">圖片</label>' +
+        '<div id="edit-room-photo-preview" class="grid grid-cols-3 gap-2 mb-2">' +
+          (room.image?room.image.split(',').filter(Boolean).map(function(u){return '<div class="relative rounded-xl overflow-hidden bg-gray-100"><img src="'+u+'" class="w-full h-20 object-cover"><button type="button" onclick="this.parentElement.remove();_syncEditRoomPhotoUrls()" class="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center hover:bg-red-600">✕</button></div>';}).join(''):'') +
+        '</div>' +
+        '<input type="hidden" name="image" id="edit-room-photo-hidden" value="'+(room.image||'')+'">' +
+        '<button type="button" onclick="_openEditRoomPhotoUpload()" class="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-blue-200 rounded-xl text-blue-500 hover:bg-blue-50 text-sm font-medium transition-all"><i class=\"fa-solid fa-cloud-arrow-up\"></i> 上傳更多照片</button>' +
+        '</div>' +
         '<div class="grid grid-cols-2 gap-3">' +
           '<div><label class="block text-xs font-bold text-gray-500 mb-1">縣市</label><select name="city" onchange="updateDistrictSelect(this)" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm bg-white"><option value="">請選擇</option>'+cityOpts+'</select></div>' +
           '<div><label class="block text-xs font-bold text-gray-500 mb-1">區域</label><select name="district" id="edit-room-district" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm bg-white"><option value="'+(room.district||'')+'">'+( room.district||'請先選縣市')+'</option></select></div>' +
@@ -5231,6 +5246,208 @@
         if (badge) badge.classList.remove('hidden');
       } catch(e) {}
     }
+
+
+    // ================================================================
+    // 🖼️ 通用雲端圖片上傳管理器 (_imgUploadManager)
+    // 用法：_imgUploadManager.open(options) 
+    // options: { category, onSuccess(urls), maxFiles, label }
+    // ================================================================
+    var _imgUploadManager = (function() {
+      var _cb = null;
+      var _cat = 'general';
+      var _max = 5;
+      var _uploading = false;
+
+      function open(opts) {
+        opts = opts || {};
+        _cb  = opts.onSuccess || function(){};
+        _cat = opts.category  || 'general';
+        _max = opts.maxFiles  || 5;
+        var label = opts.label || '上傳圖片';
+
+        var html =
+          '<div class="space-y-4" id="img-upload-panel">' +
+            '<div class="border-2 border-dashed border-blue-200 rounded-2xl p-6 text-center bg-blue-50 cursor-pointer hover:bg-blue-100 transition-all" onclick="document.getElementById(\'img-file-input\').click()">' +
+              '<i class="fa-solid fa-cloud-arrow-up text-4xl text-blue-400 mb-2 block"></i>' +
+              '<p class="font-bold text-blue-700">點擊選擇照片</p>' +
+              '<p class="text-xs text-blue-400 mt-1">支援 JPG/PNG/WEBP，最多 '+_max+' 張</p>' +
+            '</div>' +
+            '<input type="file" id="img-file-input" accept="image/*" multiple class="hidden" onchange="_imgUploadManager._onFilePick(this)">' +
+            '<div id="img-preview-list" class="grid grid-cols-3 gap-2"></div>' +
+            '<div id="img-upload-progress" class="hidden">' +
+              '<div class="flex items-center gap-2 text-sm text-blue-600">' +
+                '<span class="loader border-blue-400 border-t-transparent w-4 h-4"></span>' +
+                '<span id="img-upload-msg">上傳中...</span>' +
+              '</div>' +
+              '<div class="w-full bg-gray-200 rounded-full h-2 mt-2"><div id="img-upload-bar" class="bg-blue-500 h-2 rounded-full transition-all" style="width:0%"></div></div>' +
+            '</div>' +
+            '<button onclick="_imgUploadManager._doUpload()" id="img-upload-btn" class="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 hidden">'+
+              '<i class="fa-solid fa-cloud-arrow-up mr-2"></i>上傳到雲端' +
+            '</button>' +
+          '</div>';
+        openGeneralModal(label, html);
+      }
+
+      function _onFilePick(input) {
+        var files = Array.from(input.files).slice(0, _max);
+        var preview = document.getElementById('img-preview-list');
+        var btn     = document.getElementById('img-upload-btn');
+        if (!preview || !files.length) return;
+
+        preview.innerHTML = '';
+        files.forEach(function(f, i) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            var div = document.createElement('div');
+            div.className = 'relative rounded-xl overflow-hidden bg-gray-100';
+            div.innerHTML =
+              '<img src="'+e.target.result+'" class="w-full h-20 object-cover">' +
+              '<div class="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] px-1 py-0.5 truncate">'+f.name+'</div>';
+            preview.appendChild(div);
+          };
+          reader.readAsDataURL(f);
+        });
+        if (btn) btn.classList.remove('hidden');
+        input._files = files;
+      }
+
+      function _doUpload() {
+        var input = document.getElementById('img-file-input');
+        if (!input || !input._files || !input._files.length) { showToast('請先選擇圖片','warn'); return; }
+        var files = input._files;
+        var btn   = document.getElementById('img-upload-btn');
+        var prog  = document.getElementById('img-upload-progress');
+        var bar   = document.getElementById('img-upload-bar');
+        var msg   = document.getElementById('img-upload-msg');
+        if (btn) btn.disabled = true;
+        if (prog) prog.classList.remove('hidden');
+        _uploading = true;
+
+        var results = [];
+        var done = 0;
+
+        function uploadOne(idx) {
+          if (idx >= files.length) {
+            // All done
+            _uploading = false;
+            if (prog) prog.classList.add('hidden');
+            closeGeneralModal();
+            showToast('✅ 已上傳 '+results.length+' 張圖片', 'success', 3000);
+            if (_cb) _cb(results);
+            return;
+          }
+          var f = files[idx];
+          if (msg) msg.textContent = '上傳第 '+(idx+1)+'/'+files.length+' 張：'+f.name;
+          if (bar) bar.style.width = Math.round((idx/files.length)*100)+'%';
+
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            callGas('uploadImageForWeb', {
+              base64:   e.target.result,
+              filename: f.name,
+              category: _cat
+            }, function(res) {
+              if (res && res.success) {
+                results.push({ url: res.url, thumbUrl: res.thumbUrl, fileId: res.fileId, name: f.name });
+              } else {
+                showToast('第'+(idx+1)+'張上傳失敗：'+(res&&res.message||''),'warn');
+              }
+              uploadOne(idx+1);
+            });
+          };
+          reader.readAsDataURL(f);
+        }
+        uploadOne(0);
+      }
+
+      return { open: open, _onFilePick: _onFilePick, _doUpload: _doUpload };
+    })();
+
+    // ── Quick upload shortcut for single image ─────────────────
+    function _quickUploadImage(category, label, onSuccess) {
+      _imgUploadManager.open({ category: category, label: label || '上傳圖片', maxFiles: 1,
+        onSuccess: function(urls) { if (urls.length) onSuccess(urls[0].url); } });
+    }
+
+
+
+    function _openRoomPhotoUpload() {
+      _imgUploadManager.open({
+        category: 'room',
+        label: '上傳房間照片',
+        maxFiles: 6,
+        onSuccess: function(imgs) {
+          var urls = imgs.map(function(i){ return i.url; });
+          var hidden = document.getElementById('room-photo-urls');
+          if (hidden) {
+            var existing = hidden.value ? hidden.value.split(',').filter(Boolean) : [];
+            existing = existing.concat(urls);
+            hidden.value = existing.join(',');
+          }
+          // Update preview
+          var preview = document.getElementById('room-photo-preview');
+          if (preview) {
+            urls.forEach(function(u) {
+              var d = document.createElement('div');
+              d.className = 'relative rounded-xl overflow-hidden bg-gray-100';
+              d.innerHTML = '<img src="'+u+'" class="w-full h-20 object-cover">' +
+                '<button type="button" onclick="this.parentElement.remove();_syncRoomPhotoUrls()" class="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center">✕</button>';
+              preview.appendChild(d);
+            });
+          }
+          var btnText = document.getElementById('room-photo-btn-text');
+          if (btnText) {
+            var total = document.getElementById('room-photo-urls').value.split(',').filter(Boolean).length;
+            btnText.textContent = '已上傳 '+total+' 張 · 繼續新增';
+          }
+        }
+      });
+    }
+
+    function _syncRoomPhotoUrls() {
+      var preview = document.getElementById('room-photo-preview');
+      var hidden  = document.getElementById('room-photo-urls');
+      if (!preview || !hidden) return;
+      var imgs = Array.from(preview.querySelectorAll('img')).map(function(img){ return img.src; }).filter(function(u){ return u.startsWith('http'); });
+      hidden.value = imgs.join(',');
+    }
+
+    function _openEditRoomPhotoUpload() {
+      _imgUploadManager.open({
+        category: 'room',
+        label: '上傳房間照片',
+        maxFiles: 6,
+        onSuccess: function(imgs) {
+          var urls = imgs.map(function(i){ return i.url; });
+          var hidden = document.getElementById('edit-room-photo-hidden');
+          var preview = document.getElementById('edit-room-photo-preview');
+          if (hidden) {
+            var existing = hidden.value ? hidden.value.split(',').filter(Boolean) : [];
+            existing = existing.concat(urls);
+            hidden.value = existing.join(',');
+          }
+          if (preview) {
+            urls.forEach(function(u) {
+              var d = document.createElement('div');
+              d.className = 'relative rounded-xl overflow-hidden bg-gray-100';
+              d.innerHTML = '<img src="'+u+'" class="w-full h-20 object-cover">' +
+                '<button type="button" onclick="this.parentElement.remove();_syncEditRoomPhotoUrls()" class="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center">✕</button>';
+              preview.appendChild(d);
+            });
+          }
+        }
+      });
+    }
+
+    function _syncEditRoomPhotoUrls() {
+      var preview = document.getElementById('edit-room-photo-preview');
+      var hidden  = document.getElementById('edit-room-photo-hidden');
+      if (!preview || !hidden) return;
+      var imgs = Array.from(preview.querySelectorAll('img')).map(function(img){ return img.src; }).filter(function(u){ return u.startsWith('http'); });
+      hidden.value = imgs.join(',');
+    }
+
 
   </script>
 </body>
