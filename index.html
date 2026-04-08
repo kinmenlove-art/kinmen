@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER2.3.0</title>
+  <title>壹參學生宿舍系統 VER2.3.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -78,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.3.0　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.3.1　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -946,7 +946,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER2.3.0';
+    const APP_VERSION = 'VER2.3.1';
     document.addEventListener('DOMContentLoaded', function() {
       _checkReferralParam();
       var el = document.getElementById('header-version');
@@ -1179,7 +1179,51 @@
         if (member) { res({ success:true, role:'member', phone:member.phone, name:member.name }); return; }
         res({ success:false, message:'此 LINE 帳號尚未綁定，請輸入手機號碼登入' });
       }, 200)),
-      getAdminData: () => new Promise(res => setTimeout(() => res({ success: true, data: mockGas.db }), 300))
+            // ── Image upload mocks ──────────────────────────────
+      uploadImageForWeb: (data) => new Promise(res => setTimeout(() => {
+        // In mock mode: just return a placeholder image URL
+        var cat = (data && data.category) || 'general';
+        var fname = (data && data.filename) || 'img.jpg';
+        var fakeId = 'mock_' + Date.now();
+        // Use a real placeholder image service so preview works
+        var url = 'https://picsum.photos/seed/' + fakeId + '/400/300';
+        console.log('[mock] uploadImageForWeb:', fname, '→', url);
+        res({ success: true, url: url, thumbUrl: url, fileId: fakeId, filename: fname });
+      }, 800)),
+
+      uploadFileToDrive: (data) => new Promise(res => setTimeout(() => {
+        var fakeId = 'mock_drive_' + Date.now();
+        var url = 'https://picsum.photos/seed/' + fakeId + '/400/300';
+        res({ success: true, url: url, fileId: fakeId });
+      }, 600)),
+
+      ensureReferralCode: (data) => new Promise(res => setTimeout(() => {
+        // Generate a mock referral code
+        var phone = (data && data.phone) || '0900000000';
+        var code = 'M' + phone.slice(-4) + 'AB';
+        res({ success: true, referralCode: code });
+      }, 200)),
+
+      getReferralCodeInfo: (data) => new Promise(res => setTimeout(() => {
+        var code = (data && data.code) || '';
+        // Check mock members for this code
+        var member = mockGas.db.members.find(function(m){ return (m.referralCode||'').toUpperCase() === code.toUpperCase(); });
+        if (member) {
+          res({ success: true, referrerName: member.name, referrerPhone: member.phone });
+        } else {
+          res({ success: false, message: '推薦碼不存在' });
+        }
+      }, 300)),
+
+      updateReferralStatus: (data) => new Promise(res => setTimeout(() => {
+        var ref = mockGas.db.referrals.find(function(r){ return r.id === data.id; });
+        if (ref) ref.status = data.status || '待審核';
+        res({ success: true });
+      }, 200)),
+
+      getAdminData: (data) => new Promise(resolve => {
+        setTimeout(() => resolve({ success: true, data: mockGas.db }), 300);
+      })
     };
 
     // ── UI Utilities (replaces alert/confirm/prompt) ─────────
@@ -2899,7 +2943,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.3.0');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.3.1');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
