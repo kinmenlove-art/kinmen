@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER2.2.0</title>
+  <title>壹參學生宿舍系統 VER2.3.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -78,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.2.0　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.3.0　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -286,12 +286,54 @@
       <div id="promo-section">
         <h3 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-gift text-red-500"></i> 優惠活動</h3>
         <div class="space-y-3 mb-6">
-          <div id="promo-referral" class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl shadow-sm border border-red-100 p-4 relative overflow-hidden">
-            <div class="absolute -right-4 -top-4 text-red-100 opacity-50"><i class="fa-solid fa-bullhorn text-6xl"></i></div>
-            <div class="relative z-10">
-              <div class="font-bold text-red-700 text-lg mb-1">推薦好友租房優惠</div>
-              <p class="text-xs text-red-600/80 mb-3">成功推薦好友簽約入住，雙方皆可獲得 <span class="font-bold text-red-600" id="promo-referral-amount">NT$ 500</span> 租金折抵！</p>
-              <button onclick="shareToFriend()" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-red-600 transition-colors">立即分享給好友</button>
+          <div id="promo-referral" class="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 rounded-2xl shadow-sm border border-red-100 p-5 relative overflow-hidden">
+            <!-- Background decoration -->
+            <div class="absolute -right-6 -top-6 text-red-100 opacity-40 pointer-events-none"><i class="fa-solid fa-gift text-8xl"></i></div>
+            <div class="relative z-10 space-y-3">
+              <!-- Badge -->
+              <div class="inline-flex items-center gap-1.5 bg-red-500 text-white text-[11px] font-black px-2.5 py-1 rounded-full shadow-sm">
+                <i class="fa-solid fa-star text-yellow-300 animate-pulse"></i>
+                推薦有禮 · 雙向獎勵
+              </div>
+              <div>
+                <div class="font-black text-red-700 text-xl mb-1">推薦好友租房</div>
+                <p class="text-xs text-red-600/80 leading-relaxed">成功推薦好友簽約入住，<span class="font-bold text-red-600">你我各享好禮</span>！</p>
+              </div>
+              <!-- Reward cards -->
+              <div class="grid grid-cols-2 gap-2">
+                <div class="bg-white/80 rounded-xl p-2.5 border border-red-100 text-center">
+                  <div class="text-lg font-black text-red-500">🎁 推薦人</div>
+                  <div class="text-xs font-bold text-gray-700 mt-0.5">折價券 NT$1,500</div>
+                  <div class="text-[10px] text-gray-400">或 現金 NT$1,000</div>
+                </div>
+                <div class="bg-white/80 rounded-xl p-2.5 border border-orange-100 text-center">
+                  <div class="text-lg font-black text-orange-500">💰 被推薦人</div>
+                  <div class="text-xs font-bold text-gray-700 mt-0.5">簽約折抵 <span id="promo-referral-amount">NT$ 500</span></div>
+                  <div class="text-[10px] text-gray-400">首月租金優惠</div>
+                </div>
+              </div>
+              <!-- My referral code (shown when logged in) -->
+              <div id="promo-my-code-area" class="hidden bg-white/90 rounded-xl border border-purple-100 p-3">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-purple-700 flex items-center gap-1"><i class="fa-solid fa-qrcode text-purple-500"></i> 我的推薦碼</span>
+                  <button onclick="_copyReferralCode()" class="text-[10px] text-purple-500 hover:text-purple-700 font-bold">複製</button>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-2xl font-black tracking-widest text-purple-700 font-mono" id="promo-code-badge">─</span>
+                  <button onclick="_shareReferralCode()" class="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 shadow-sm">
+                    <i class="fa-brands fa-line text-base"></i> 分享
+                  </button>
+                </div>
+              </div>
+              <!-- Action buttons -->
+              <div class="flex gap-2">
+                <button onclick="shareToFriend()" class="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-red-600 active:scale-95 transition-all">
+                  <i class="fa-solid fa-share-nodes"></i> 立即分享
+                </button>
+                <button onclick="switchTab('account')" id="promo-login-hint" class="flex items-center gap-1.5 px-3 py-2.5 bg-white border border-red-200 text-red-500 rounded-xl text-xs font-bold hover:bg-red-50 active:scale-95 transition-all">
+                  <i class="fa-solid fa-right-to-bracket"></i> 登入取碼
+                </button>
+              </div>
             </div>
           </div>
           <div id="promo-annual" class="bg-gradient-to-r from-blue-50 to-teal-50 rounded-xl shadow-sm border border-blue-100 p-4">
@@ -904,7 +946,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER2.2.0';
+    const APP_VERSION = 'VER2.3.0';
     document.addEventListener('DOMContentLoaded', function() {
       _checkReferralParam();
       var el = document.getElementById('header-version');
@@ -1930,6 +1972,8 @@
       if (memberNameEl) memberNameEl.textContent = appState.user.name || mem2.name || '';
       var memberPhoneEl = document.getElementById('member-phone-display');
       if (memberPhoneEl) memberPhoneEl.textContent = appState.user.phone || mem2.phone || '';
+      // Ensure referral code exists and show it
+      _ensureUserReferralCode();
       // LINE badge
       var lineBadge = document.getElementById('member-line-badge');
       if (lineBadge) { if (mem2.lineId || (_lineProfile && _lineProfile.lineId)) lineBadge.classList.remove('hidden'); else lineBadge.classList.add('hidden'); }
@@ -2695,14 +2739,78 @@
         });
         c.innerHTML = html + '</div>';
       } else if (section === 'referrals') {
-        let html = '<div class="space-y-3">';
-        if (!data.referrals || data.referrals.length === 0) html += '<div class="text-center text-gray-500 py-10">目前沒有推薦資料</div>';
-        else data.referrals.forEach(r => {
-          const sc = r.status === '審核中' ? 'bg-yellow-100 text-yellow-700' : (r.status === '已發放' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700');
-          html += `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><div class="flex justify-between items-start mb-2"><span class="font-bold text-gray-800">推薦人：${r.referrer}</span><select onchange="updateReferralStatus('${r.id}', this.value)" class="text-xs ${sc} px-2 py-1 rounded-lg border-none outline-none font-medium cursor-pointer"><option value="審核中" ${r.status==='審核中'?'selected':''}>審核中</option><option value="已發放" ${r.status==='已發放'?'selected':''}>已發放</option><option value="不符合" ${r.status==='不符合'?'selected':''}>不符合</option></select></div><div class="text-sm text-gray-700"><p>被推薦人：<span class="font-bold">${r.referee}</span></p><p>聯絡電話：${r.phone}</p></div></div>`;
-        });
-        c.innerHTML = html + '</div>';
-      } else if (section === 'payments') {
+        // Build referral code → member name map
+        var codeToMember = {};
+        (data.members||[]).forEach(function(m){ if(m.referralCode) codeToMember[m.referralCode.toUpperCase()] = m.name||m.phone; });
+
+        var totalRef  = (data.referrals||[]).length;
+        var pending   = (data.referrals||[]).filter(function(r){ return r.status==='待審核'||r.status==='審核中'; }).length;
+        var approved  = (data.referrals||[]).filter(function(r){ return r.status==='已發放'; }).length;
+        var totalReward = (data.referrals||[]).filter(function(r){ return r.status==='已發放'; }).reduce(function(s,r){ return s+(Number(r.rewardAmount)||0); },0);
+
+        var html = '<div class="space-y-4">' +
+          // Stats
+          '<div class="grid grid-cols-4 gap-2">' +
+            '<div class="bg-purple-50 p-3 rounded-xl text-center"><div class="text-xl font-black text-purple-600">'+totalRef+'</div><div class="text-[10px] text-purple-700">總推薦數</div></div>' +
+            '<div class="bg-yellow-50 p-3 rounded-xl text-center"><div class="text-xl font-black text-yellow-600">'+pending+'</div><div class="text-[10px] text-yellow-700">待審核</div></div>' +
+            '<div class="bg-green-50 p-3 rounded-xl text-center"><div class="text-xl font-black text-green-600">'+approved+'</div><div class="text-[10px] text-green-700">已發放</div></div>' +
+            '<div class="bg-orange-50 p-3 rounded-xl text-center"><div class="text-xl font-black text-orange-600">'+totalReward.toLocaleString()+'</div><div class="text-[10px] text-orange-700">發放NT$</div></div>' +
+          '</div>' +
+          // Member referral codes list
+          '<div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">' +
+            '<h3 class="font-bold text-sm text-gray-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-id-card text-purple-500"></i>會員推薦碼一覽</h3>' +
+            '<div class="space-y-1.5">' +
+            (data.members||[]).filter(function(m){ return m.referralCode; }).map(function(m){
+              var refCount = (data.referrals||[]).filter(function(r){ return (r.referralCode||'').toUpperCase()===(m.referralCode||'').toUpperCase(); }).length;
+              return '<div class="flex items-center justify-between p-2 bg-gray-50 rounded-xl">' +
+                '<div class="flex items-center gap-2">' +
+                  '<span class="font-mono font-black text-purple-700 text-sm tracking-widest bg-purple-50 px-2 py-0.5 rounded-lg">' + m.referralCode + '</span>' +
+                  '<span class="text-sm text-gray-700">' + m.name + '</span>' +
+                  '<span class="text-xs text-gray-400">' + m.phone + '</span>' +
+                '</div>' +
+                '<span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">' + refCount + ' 筆</span>' +
+              '</div>';
+            }).join('') +
+            (!((data.members||[]).filter(function(m){ return m.referralCode; }).length) ? '<p class="text-center text-gray-400 text-sm py-3">尚無會員推薦碼</p>' : '') +
+            '</div>' +
+          '</div>' +
+          // Referral records
+          '<div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">' +
+            '<h3 class="font-bold text-sm text-gray-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-list text-emerald-500"></i>推薦紀錄</h3>' +
+            '<div class="space-y-2">';
+
+        if (!data.referrals || data.referrals.length === 0) {
+          html += '<p class="text-center text-gray-400 text-sm py-4">目前沒有推薦紀錄</p>';
+        } else {
+          (data.referrals||[]).slice().reverse().forEach(function(r, ri) {
+            var sc = r.status==='已發放' ? 'bg-green-100 text-green-700' : r.status==='不符合' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700';
+            var referrerName = codeToMember[(r.referralCode||r.code||'').toUpperCase()] || r.referrer || r.referralCode || '─';
+            html +=
+              '<div class="bg-gray-50 p-4 rounded-xl border border-gray-100">' +
+                '<div class="flex justify-between items-start mb-2">' +
+                  '<div>' +
+                    '<div class="font-bold text-sm text-gray-800">推薦人：' + referrerName + '</div>' +
+                    '<div class="text-xs text-gray-500">推薦碼：<span class="font-mono font-bold text-purple-600">' + (r.referralCode||r.code||'─') + '</span></div>' +
+                  '</div>' +
+                  '<select data-rid="' + r.id + '" onchange="adminUpdateReferralStatus(this.dataset.rid, this.value)" class="text-xs ' + sc + ' px-2 py-1 rounded-lg border border-gray-200 outline-none font-bold cursor-pointer">' +
+                    '<option value="待審核"' + (r.status==='待審核'?' selected':'') + '>待審核</option>' +
+                    '<option value="審核中"' + (r.status==='審核中'?' selected':'') + '>審核中</option>' +
+                    '<option value="已發放"' + (r.status==='已發放'?' selected':'') + '>已發放</option>' +
+                    '<option value="不符合"' + (r.status==='不符合'?' selected':'') + '>不符合</option>' +
+                  '</select>' +
+                '</div>' +
+                '<div class="text-xs text-gray-600 space-y-0.5">' +
+                  '<p>被推薦人：<span class="font-bold">' + (r.newMemberName||r.referee||'─') + '</span> · ' + (r.newMemberPhone||r.phone||'') + '</p>' +
+                  '<p>時間：' + (r.createdAt||r.time||'─') + '</p>' +
+                  '<p>獎勵：<span class="font-bold text-orange-600">' + (r.rewardType||'折價券') + ' NT$' + (r.rewardAmount||'1500') + '</span></p>' +
+                '</div>' +
+              '</div>';
+          });
+        }
+
+        html += '</div></div></div>';
+        c.innerHTML = html;
+} else if (section === 'payments') {
         const currentYear = new Date().getFullYear(), currentMonth = new Date().getMonth() + 1;
         const monthPays = data.rentPayments.filter(p => p.year === currentYear && p.month === currentMonth);
         const paidAmt = monthPays.filter(p => p.status === '已繳清').reduce((s,p) => s + Number(p.amount), 0);
@@ -2791,7 +2899,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.2.0');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.3.0');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
@@ -5578,12 +5686,21 @@
 
     function _showMemberReferralCode() {
       var code = appState.user && appState.user.referralCode;
+      if (!code) return;
+
+      // 1. Member view referral section
       var section = document.getElementById('member-referral-section');
       var display = document.getElementById('member-referral-code-display');
-      if (section && code) {
-        section.classList.remove('hidden');
-        if (display) display.textContent = code;
-      }
+      if (section) section.classList.remove('hidden');
+      if (display) display.textContent = code;
+
+      // 2. Service tab promo area
+      var promoArea  = document.getElementById('promo-my-code-area');
+      var promoBadge = document.getElementById('promo-code-badge');
+      var loginHint  = document.getElementById('promo-login-hint');
+      if (promoArea)  promoArea.classList.remove('hidden');
+      if (promoBadge) promoBadge.textContent = code;
+      if (loginHint)  loginHint.classList.add('hidden');
     }
 
     function _copyReferralCode() {
@@ -5764,6 +5881,31 @@
     function _syncFacilitiesHidden() {
       var el = document.getElementById('facilities-data-hidden');
       if (el) el.value = JSON.stringify(_facilityItems);
+    }
+
+
+
+    // Ensure referral code exists for logged-in user
+    function _ensureUserReferralCode() {
+      if (!appState.user || !appState.user.phone) return;
+      if (appState.user.referralCode) { _showMemberReferralCode(); return; }
+      callGas('ensureReferralCode', { phone: appState.user.phone }, function(res) {
+        if (res && res.success && res.referralCode) {
+          appState.user.referralCode = res.referralCode;
+          _showMemberReferralCode();
+        }
+      });
+    }
+
+
+
+    function adminUpdateReferralStatus(rid, status) {
+      callGas('updateReferralStatus', { id: rid, status: status }, function(res) {
+        if (res && res.success) {
+          showToast('狀態已更新：' + status, 'success');
+          _adminDataTs = 0;
+        } else showToast('更新失敗', 'error');
+      });
     }
 
 
