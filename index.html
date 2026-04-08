@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER2.1.0</title>
+  <title>壹參學生宿舍系統 VER2.2.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -78,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.1.0　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.2.0　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -319,7 +319,42 @@
           <span class="font-medium text-sm">生活公約</span>
         </button>
       </div>
-      <h3 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-address-card text-gray-500"></i> 聯絡資訊</h3>
+      <!-- 週邊環境 -->
+      <div id="surroundings-section">
+        <h3 class="font-bold text-lg mb-3 flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-teal-500"></i> 週邊環境</h3>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-3">
+          <iframe src="https://maps.google.com/maps?q=24.162,120.646&z=16&output=embed" id="surroundings-map"
+            width="100%" height="220" style="border:0;" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div id="surroundings-list" class="grid grid-cols-2 gap-2">
+          <div class="bg-teal-50 p-3 rounded-xl border border-teal-100 flex items-center gap-2">
+            <i class="fa-solid fa-store text-teal-500 text-lg w-6 text-center"></i>
+            <div><div class="font-bold text-teal-800 text-xs">便利商店</div><div class="text-[10px] text-teal-600">步行 2 分鐘</div></div>
+          </div>
+          <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center gap-2">
+            <i class="fa-solid fa-graduation-cap text-blue-500 text-lg w-6 text-center"></i>
+            <div><div class="font-bold text-blue-800 text-xs">附近學校</div><div class="text-[10px] text-blue-600">步行 5 分鐘</div></div>
+          </div>
+          <div class="bg-red-50 p-3 rounded-xl border border-red-100 flex items-center gap-2">
+            <i class="fa-solid fa-utensils text-red-500 text-lg w-6 text-center"></i>
+            <div><div class="font-bold text-red-800 text-xs">餐廳</div><div class="text-[10px] text-red-600">步行 3 分鐘</div></div>
+          </div>
+          <div class="bg-green-50 p-3 rounded-xl border border-green-100 flex items-center gap-2">
+            <i class="fa-solid fa-bus text-green-500 text-lg w-6 text-center"></i>
+            <div><div class="font-bold text-green-800 text-xs">公車站</div><div class="text-[10px] text-green-600">步行 1 分鐘</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 宿舍設備 -->
+      <div id="facilities-section">
+        <h3 class="font-bold text-lg mb-3 flex items-center gap-2"><i class="fa-solid fa-toolbox text-orange-500"></i> 宿舍設備</h3>
+        <div id="facilities-list" class="space-y-3">
+          <div class="text-center text-gray-400 py-4 text-sm"><span class="loader border-gray-300 border-t-transparent w-5 h-5 inline-block"></span></div>
+        </div>
+      </div>
+
+            <h3 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-address-card text-gray-500"></i> 聯絡資訊</h3>
       <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 space-y-3">
         <div class="flex items-start gap-3">
           <i class="fa-solid fa-location-dot text-blue-600 mt-1 w-5 text-center"></i>
@@ -395,6 +430,16 @@
                 <button type="button" onclick="sendSmsCode()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium whitespace-nowrap hover:bg-gray-200">發送驗證碼</button>
               </div>
             </div>
+            <div id="referral-code-section">
+              <label class="block text-xs text-gray-500 mb-1">推薦碼（選填）</label>
+              <div class="flex gap-2">
+                <input type="text" name="referredBy" id="register-referral-code"
+                  placeholder="輸入朋友的推薦碼" maxlength="8"
+                  class="flex-1 px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 uppercase tracking-widest text-sm font-mono">
+                <button type="button" onclick="_verifyReferralCode()" class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200">驗證</button>
+              </div>
+              <div id="referral-verify-result" class="mt-1 text-xs"></div>
+            </div>
             <button type="submit" id="register-btn" class="w-full py-3.5 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 shadow-md border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">送出註冊</button>
           </form>
         </div>
@@ -432,6 +477,33 @@
                 <div class="w-9 h-9 bg-gray-400 text-white rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-info text-sm"></i></div>
                 <div class="text-left"><div class="font-bold text-gray-700 text-sm">服務資訊</div><div class="text-[10px] text-gray-500">優惠與功能</div></div>
               </button>
+            </div>
+          </div>
+          <!-- 我的推薦碼 -->
+          <div id="member-referral-section" class="hidden bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-2xl border border-purple-100">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <h3 class="font-bold text-purple-800 text-sm flex items-center gap-2"><i class="fa-solid fa-share-nodes text-purple-500"></i>我的推薦碼</h3>
+                <p class="text-xs text-purple-600 mt-0.5">朋友用此碼註冊並完成簽約，雙方皆可獲得獎勵！</p>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl p-3 flex items-center justify-between border border-purple-100 mb-3">
+              <span class="text-2xl font-black tracking-widest text-purple-700 font-mono" id="member-referral-code-display">─</span>
+              <button onclick="_copyReferralCode()" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 flex items-center gap-1.5">
+                <i class="fa-regular fa-copy"></i> 複製
+              </button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="_shareReferralCode()" class="py-2.5 bg-green-500 text-white rounded-xl text-xs font-bold hover:bg-green-600 flex items-center justify-center gap-1.5">
+                <i class="fa-brands fa-line text-base"></i> 分享到 LINE
+              </button>
+              <button onclick="_shareReferralCode('copy')" class="py-2.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-200 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-link"></i> 複製分享連結
+              </button>
+            </div>
+            <div class="mt-3 text-[10px] text-purple-500 space-y-0.5">
+              <p>🎁 推薦人獎勵：折價券 NT$1,500 或現金 NT$1,000</p>
+              <p>🎁 被推薦人獎勵：簽約折價 NT$500</p>
             </div>
           </div>
         </div>
@@ -832,8 +904,9 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER2.1.0';
+    const APP_VERSION = 'VER2.2.0';
     document.addEventListener('DOMContentLoaded', function() {
+      _checkReferralParam();
       var el = document.getElementById('header-version');
       if (el) el.textContent = APP_VERSION;
       // 預約日期最早為明天
@@ -1799,6 +1872,7 @@
       if (tabId === 'history') _renderRoomHistory();
       if (tabId === 'service') {
         setTimeout(loadFAQ, 100);
+        setTimeout(_loadServiceSections, 200);
         // Hide visitor modal if user is logged in
         if (appState.user) {
           var vm = document.getElementById('visitor-modal');
@@ -2304,6 +2378,12 @@
 
     function shareToFriend() {
       var shareUrl    = window.location.href;
+      // Append referral code to share URL if logged in
+      var myCode = appState.user && appState.user.referralCode;
+      if (myCode) {
+        var baseUrl = window.location.href.split('?')[0];
+        shareUrl = baseUrl + '?ref=' + myCode;
+      }
       // 動態讀取獎勵金額（從 settings，預設 500）
       var bonusAmount = (appState.adminData && appState.adminData.settings && appState.adminData.settings.referralBonusAmount)
         ? appState.adminData.settings.referralBonusAmount : '500';
@@ -2711,7 +2791,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.1.0');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.2.0');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
@@ -2727,6 +2807,19 @@
                   return `<label class="flex items-center gap-1.5 text-xs cursor-pointer"><input type="checkbox" name="timeSlots[]" value="${ts}" ${active?'checked':''} class="rounded accent-green-600"><span>${ts}</span></label>`;
                 }).join('')}
               </div>
+            </div>
+            <div class="bg-teal-50 p-3 rounded-xl border border-teal-200 space-y-2">
+              <p class="text-xs font-bold text-teal-800"><i class="fa-solid fa-map-location-dot mr-1"></i>週邊環境設定</p>
+              <div><label class="block text-xs text-gray-600 mb-1">Google Maps 嵌入網址（可至 Google Maps 取得 embed URL）</label>
+                <input type="text" name="surroundingsMapUrl" value="${s.surroundingsMapUrl||''}" placeholder="https://maps.google.com/maps?q=...&output=embed" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-teal-500 text-sm"></div>
+              <div><label class="block text-xs text-gray-600 mb-1">週邊設施（JSON格式，或直接用管理介面設定）</label>
+                <textarea name="surroundingsData" rows="3" placeholder='[{"icon":"fa-store","name":"全家便利商店","walk":"2","color":"teal"}]' class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-teal-500 text-sm resize-none font-mono">${s.surroundingsData||''}</textarea></div>
+            </div>
+            <div class="bg-orange-50 p-3 rounded-xl border border-orange-200 space-y-2">
+              <p class="text-xs font-bold text-orange-800"><i class="fa-solid fa-toolbox mr-1"></i>宿舍設備管理</p>
+              <div id="facilities-editor-list" class="space-y-2"></div>
+              <button type="button" onclick="_addFacilityItem()" class="w-full py-2 border-2 border-dashed border-orange-200 rounded-xl text-xs text-orange-500 hover:bg-orange-100 font-medium"><i class="fa-solid fa-plus mr-1"></i>新增設備項目</button>
+              <input type="hidden" name="facilitiesData" id="facilities-data-hidden" value="${s.facilitiesData||'[]'}">
             </div>
             <div><label class="block text-sm font-bold text-gray-700 mb-1">電費費率（元/度）</label>
               <input type="number" name="electricityRate" value="${s.electricityRate||'5'}" min="1" step="0.5" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm">
@@ -2748,6 +2841,19 @@
               <option value="0" ${s.carouselInterval==='0'?'selected':''}>關閉自動輪播</option>
             </select>
           </div>
+            <div class="bg-teal-50 p-3 rounded-xl border border-teal-200 space-y-2">
+              <p class="text-xs font-bold text-teal-800"><i class="fa-solid fa-map-location-dot mr-1"></i>週邊環境設定</p>
+              <div><label class="block text-xs text-gray-600 mb-1">Google Maps 嵌入網址（可至 Google Maps 取得 embed URL）</label>
+                <input type="text" name="surroundingsMapUrl" value="${s.surroundingsMapUrl||''}" placeholder="https://maps.google.com/maps?q=...&output=embed" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-teal-500 text-sm"></div>
+              <div><label class="block text-xs text-gray-600 mb-1">週邊設施（JSON格式，或直接用管理介面設定）</label>
+                <textarea name="surroundingsData" rows="3" placeholder='[{"icon":"fa-store","name":"全家便利商店","walk":"2","color":"teal"}]' class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-teal-500 text-sm resize-none font-mono">${s.surroundingsData||''}</textarea></div>
+            </div>
+            <div class="bg-orange-50 p-3 rounded-xl border border-orange-200 space-y-2">
+              <p class="text-xs font-bold text-orange-800"><i class="fa-solid fa-toolbox mr-1"></i>宿舍設備管理</p>
+              <div id="facilities-editor-list" class="space-y-2"></div>
+              <button type="button" onclick="_addFacilityItem()" class="w-full py-2 border-2 border-dashed border-orange-200 rounded-xl text-xs text-orange-500 hover:bg-orange-100 font-medium"><i class="fa-solid fa-plus mr-1"></i>新增設備項目</button>
+              <input type="hidden" name="facilitiesData" id="facilities-data-hidden" value="${s.facilitiesData||'[]'}">
+            </div>
             <div><label class="block text-sm font-bold text-gray-700 mb-1">電費費率（元/度）</label>
               <input type="number" name="electricityRate" value="${s.electricityRate||'5'}" min="1" step="0.5" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm">
               <p class="text-[10px] text-gray-400 mt-0.5">每度電費率，用於計算電費（預設 NT$5/度）</p>
@@ -2863,6 +2969,9 @@
         landlordId:         fd.get('landlordId') || '',
         referralBonusAmount: fd.get('referralBonusAmount') || '500',
         electricityRate:      fd.get('electricityRate') || '5',
+        surroundingsMapUrl:   fd.get('surroundingsMapUrl') || '',
+        surroundingsData:     fd.get('surroundingsData') || '',
+        facilitiesData:       (function(){ var el=document.getElementById('facilities-data-hidden'); return el?el.value:'[]'; })(),
         electricityRate: fd.get('electricityRate') || '5',
         timeSlots: (function(){var boxes=document.querySelectorAll('[name="timeSlots[]"]:checked');return Array.from(boxes).map(function(b){return b.value;}).join(',');})() || '早上 08:00-10:00,下午 14:00-16:00'
       };
@@ -5446,6 +5555,215 @@
       if (!preview || !hidden) return;
       var imgs = Array.from(preview.querySelectorAll('img')).map(function(img){ return img.src; }).filter(function(u){ return u.startsWith('http'); });
       hidden.value = imgs.join(',');
+    }
+
+
+
+    // ── Referral Code System ──────────────────────────────────
+    function _verifyReferralCode() {
+      var code = document.getElementById('register-referral-code');
+      if (!code || !code.value.trim()) { showToast('請輸入推薦碼','warn'); return; }
+      var result = document.getElementById('referral-verify-result');
+      if (result) result.innerHTML = '<span class="text-gray-400">驗證中...</span>';
+      callGas('getReferralCodeInfo', { code: code.value.trim() }, function(res) {
+        if (res && res.success) {
+          if (result) result.innerHTML = '<span class="text-green-600 font-bold">✅ 推薦人：'+res.referrerName+'</span>';
+          code.classList.add('border-green-400');
+        } else {
+          if (result) result.innerHTML = '<span class="text-red-500">❌ '+(res&&res.message||'推薦碼無效')+'</span>';
+          code.classList.add('border-red-400');
+        }
+      });
+    }
+
+    function _showMemberReferralCode() {
+      var code = appState.user && appState.user.referralCode;
+      var section = document.getElementById('member-referral-section');
+      var display = document.getElementById('member-referral-code-display');
+      if (section && code) {
+        section.classList.remove('hidden');
+        if (display) display.textContent = code;
+      }
+    }
+
+    function _copyReferralCode() {
+      var code = appState.user && appState.user.referralCode;
+      if (!code) return;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(code).then(function(){ showToast('推薦碼已複製 ✅','success'); });
+      } else {
+        showToast('推薦碼：'+code,'info',5000);
+      }
+    }
+
+    function _shareReferralCode(mode) {
+      var code    = (appState.user && appState.user.referralCode) || '';
+      var sysName = (appState.adminData && appState.adminData.settings && appState.adminData.settings.name) || '壹參學生宿舍';
+      var url     = window.location.href.split('?')[0] + '?ref=' + code;
+      var text    = sysName + ' 推薦朋友入住！\n使用推薦碼【'+code+'】完成簽約，你我各獲好禮！\n立即查看房型：' + url;
+      if (mode === 'copy') {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function(){ showToast('分享連結已複製 ✅','success'); });
+        } else showToast(url,'info',8000);
+        return;
+      }
+      if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
+        liff.shareTargetPicker([{ type:'text', text: text }]).then(function(r){
+          if (r && r.status==='success') showToast('已分享給好友 🎉','success');
+        }).catch(function(){ if(navigator.clipboard) navigator.clipboard.writeText(url); });
+      } else if (navigator.share) {
+        navigator.share({ title: sysName, text: '使用推薦碼【'+code+'】入住享優惠！', url: url });
+      } else {
+        var lineUrl = 'https://line.me/R/msg/text/' + encodeURIComponent(text);
+        window.open(lineUrl, '_blank');
+      }
+    }
+
+    // Auto-fill referral code from URL param ?ref=XXXX
+    function _checkReferralParam() {
+      var params = new URLSearchParams(window.location.search);
+      var ref    = params.get('ref');
+      if (ref) {
+        var input = document.getElementById('register-referral-code');
+        if (input) {
+          input.value = ref.toUpperCase();
+          // Also store in sessionStorage for later
+          try { sessionStorage.setItem('pendingReferral', ref.toUpperCase()); } catch(e){}
+          // Auto-verify
+          setTimeout(_verifyReferralCode, 500);
+        }
+        // Scroll to register if on account tab
+        var regBtn = document.querySelector('[onclick*="register"]');
+      }
+    }
+
+
+
+    // ── Facilities Manager ────────────────────────────────────
+    function _loadServiceSections() {
+      // Load surroundings and facilities from settings
+      callGas('getAdminData', null, function(res) {
+        if (!res || !res.success) return;
+        var s = res.data.settings || {};
+        // Update map
+        if (s.surroundingsMapUrl) {
+          var mapEl = document.getElementById('surroundings-map');
+          if (mapEl) mapEl.src = s.surroundingsMapUrl;
+        }
+        // Update surroundings items
+        if (s.surroundingsData) {
+          try {
+            var items = typeof s.surroundingsData==='string' ? JSON.parse(s.surroundingsData) : s.surroundingsData;
+            var list  = document.getElementById('surroundings-list');
+            if (list && Array.isArray(items) && items.length) {
+              var colors = { teal:'teal', blue:'blue', red:'red', green:'green', orange:'orange', purple:'purple', yellow:'yellow' };
+              list.innerHTML = items.map(function(item) {
+                var col = item.color || 'teal';
+                return '<div class="bg-'+col+'-50 p-3 rounded-xl border border-'+col+'-100 flex items-center gap-2">' +
+                  '<i class="fa-solid '+(item.icon||'fa-map-pin')+' text-'+col+'-500 text-lg w-6 text-center"></i>' +
+                  '<div><div class="font-bold text-'+col+'-800 text-xs">'+(item.name||'')+'</div>' +
+                  (item.walk?'<div class="text-[10px] text-'+col+'-600">步行 '+item.walk+' 分鐘</div>':'')+
+                  '</div></div>';
+              }).join('');
+            }
+          } catch(e) {}
+        }
+        // Update facilities
+        if (s.facilitiesData) {
+          try {
+            var facs = typeof s.facilitiesData==='string' ? JSON.parse(s.facilitiesData) : s.facilitiesData;
+            var flist = document.getElementById('facilities-list');
+            if (flist) {
+              if (!facs || !facs.length) {
+                flist.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">尚未設定設備資訊</p>';
+              } else {
+                flist.innerHTML = facs.map(function(f) {
+                  return '<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">' +
+                    (f.image ? '<img src="'+f.image+'" class="w-full h-40 object-cover">' : '') +
+                    '<div class="p-4">' +
+                      '<div class="flex items-center gap-2 mb-2">' +
+                        '<i class="fa-solid '+(f.icon||'fa-toolbox')+' text-orange-500 text-xl w-7 text-center"></i>' +
+                        '<h4 class="font-bold text-gray-800">'+(f.name||'')+'</h4>' +
+                      '</div>' +
+                      (f.desc ? '<p class="text-sm text-gray-600 leading-relaxed">'+(f.desc||'')+'</p>' : '') +
+                    '</div>' +
+                  '</div>';
+                }).join('');
+              }
+            }
+          } catch(e) {}
+        }
+      });
+    }
+
+    // Facilities editor in settings panel
+    var _facilityItems = [];
+
+    function _initFacilitiesEditor(existingJson) {
+      try { _facilityItems = existingJson ? JSON.parse(existingJson) : []; } catch(e){ _facilityItems=[]; }
+      _renderFacilitiesEditor();
+    }
+
+    function _renderFacilitiesEditor() {
+      var list = document.getElementById('facilities-editor-list');
+      if (!list) return;
+      list.innerHTML = _facilityItems.length ? '' : '<p class="text-xs text-gray-400 text-center py-2">尚未新增設備</p>';
+      _facilityItems.forEach(function(f, i) {
+        var div = document.createElement('div');
+        div.className = 'bg-white p-3 rounded-xl border border-gray-200 space-y-2';
+        div.innerHTML =
+          '<div class="flex justify-between items-center">' +
+            '<span class="text-xs font-bold text-gray-700">'+(f.name||'設備'+(i+1))+'</span>' +
+            '<button type="button" data-i="'+i+'" onclick="_removeFacility(Number(this.dataset.i))" class="text-red-400 hover:text-red-600 text-xs"><i class="fa-solid fa-trash-can"></i></button>' +
+          '</div>' +
+          '<input type="text" data-i="'+i+'" data-field="name" oninput="_updateFacility(this)" value="'+(f.name||'')+'" placeholder="設備名稱" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs outline-none focus:border-orange-400">' +
+          '<select data-i="'+i+'" data-field="icon" onchange="_updateFacility(this)" class="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs outline-none focus:border-orange-400 bg-white">' +
+            ['fa-wifi:WiFi','fa-snowflake:冷氣','fa-couch:客廳','fa-tv:電視','fa-utensils:廚房','fa-washing-machine:洗衣機','fa-car:停車場','fa-elevator:電梯','fa-bicycle:腳踏車架','fa-shield-halved:門禁','fa-camera:監視器','fa-toolbox:其他'].map(function(o){
+              var p=o.split(':'); return '<option value="'+p[0]+'"'+(f.icon===p[0]?' selected':'')+'>'+p[1]+'</option>';
+            }).join('') +
+          '</select>' +
+          '<textarea data-i="'+i+'" data-field="desc" oninput="_updateFacility(this)" rows="2" placeholder="設備說明..." class="w-full px-3 py-2 rounded-lg border border-gray-200 text-xs outline-none focus:border-orange-400 resize-none">'+(f.desc||'')+'</textarea>' +
+          '<div>' +
+            '<div id="fac-img-preview-'+i+'" class="mb-1">'+(f.image?'<img src="'+f.image+'" class="w-full h-24 object-cover rounded-lg">':'')+'</div>' +
+            '<button type="button" data-i="'+i+'" onclick="_uploadFacilityImg(Number(this.dataset.i))" class="w-full py-2 border-2 border-dashed border-orange-200 rounded-xl text-xs text-orange-500 hover:bg-orange-50"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>上傳設備照片</button>' +
+          '</div>';
+        list.appendChild(div);
+      });
+      _syncFacilitiesHidden();
+    }
+
+    function _addFacilityItem() {
+      _facilityItems.push({ name:'', icon:'fa-toolbox', desc:'', image:'' });
+      _renderFacilitiesEditor();
+    }
+
+    function _removeFacility(i) {
+      _facilityItems.splice(i, 1);
+      _renderFacilitiesEditor();
+    }
+
+    function _updateFacility(el) {
+      var i = parseInt(el.dataset.i);
+      var field = el.dataset.field;
+      if (_facilityItems[i] !== undefined) _facilityItems[i][field] = el.value;
+      _syncFacilitiesHidden();
+    }
+
+    function _uploadFacilityImg(i) {
+      _imgUploadManager.open({ category:'facility', label:'上傳設備照片', maxFiles:1,
+        onSuccess: function(imgs) {
+          if (!imgs.length) return;
+          if (_facilityItems[i]) _facilityItems[i].image = imgs[0].url;
+          var prev = document.getElementById('fac-img-preview-'+i);
+          if (prev) prev.innerHTML = '<img src="'+imgs[0].url+'" class="w-full h-24 object-cover rounded-lg">';
+          _syncFacilitiesHidden();
+        }
+      });
+    }
+
+    function _syncFacilitiesHidden() {
+      var el = document.getElementById('facilities-data-hidden');
+      if (el) el.value = JSON.stringify(_facilityItems);
     }
 
 
