@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER2.3.1</title>
+  <title>壹參學生宿舍系統 VER2.4.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -78,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.3.1　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.4.0　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -212,7 +212,7 @@
         </div>
       </div>
       <div id="rooms-filter" class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex gap-2 overflow-x-auto no-scrollbar hidden">
-        <select id="filter-city" onchange="applyRoomFilter()" class="px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white text-sm min-w-[100px]">
+        <select id="filter-city" onchange="_onFilterCityChange()" class="px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white text-sm min-w-[100px]">
           <option value="">所有縣市</option>
         </select>
         <select id="filter-district" onchange="applyRoomFilter()" class="px-3 py-2 rounded-lg border border-gray-200 outline-none bg-white text-sm min-w-[100px]">
@@ -946,7 +946,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER2.3.1';
+    const APP_VERSION = 'VER2.4.0';
     document.addEventListener('DOMContentLoaded', function() {
       _checkReferralParam();
       var el = document.getElementById('header-version');
@@ -1794,7 +1794,10 @@
         var fc = document.getElementById('filter-city');
         var fd = document.getElementById('filter-district');
         var fb = document.getElementById('filter-branch');
-        if (fc) fc.innerHTML = '<option value="">所有縣市</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+        // 改用完整 taiwanCities 列表，確保所有縣市都顯示
+        var allCities = Object.keys(typeof taiwanCities !== 'undefined' ? taiwanCities : {});
+        if (allCities.length === 0) allCities = cities; // fallback to room cities
+        if (fc) fc.innerHTML = '<option value="">所有縣市</option>' + allCities.map(function(ct){ return '<option value="'+ct+'">'+ct+'</option>'; }).join('');
         if (fd) fd.innerHTML = '<option value="">所有區域</option>' + districts.map(d => `<option value="${d}">${d}</option>`).join('');
         if (fb) fb.innerHTML = '<option value="">所有分館</option>' + branches.map(b => `<option value="${b}">${b}</option>`).join('');
       }
@@ -1922,6 +1925,19 @@
       document.getElementById('room-detail-reserve-btn').onclick = () => { closeRoomDetail(); selectRoomAndReserve(room.name, room.dormName, room.address); };
       document.getElementById('room-detail-modal').classList.remove('hidden');
       document.getElementById('room-detail-modal').classList.add('flex');
+      // Add touch swipe support for carousel
+      setTimeout(function() {
+        var carousel = document.getElementById('room-detail-carousel');
+        if (carousel && !carousel._swipeInit) {
+          carousel._swipeInit = true;
+          var _sx = 0;
+          carousel.addEventListener('touchstart', function(e){ _sx = e.touches[0].clientX; }, { passive: true });
+          carousel.addEventListener('touchend', function(e){
+            var diff = _sx - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 40) { if (diff > 0) nextRoomImage(); else prevRoomImage(); }
+          }, { passive: true });
+        }
+      }, 100);
     }
 
     function closeRoomDetail() {
@@ -2477,7 +2493,8 @@
         ? appState.adminData.settings.referralBonusAmount : '500';
       var sysName     = (appState.adminData && appState.adminData.settings && appState.adminData.settings.name)
         ? appState.adminData.settings.name : '壹參學生宿舍';
-      var shareText   = sysName + ' - 推薦好友入住，雙方皆享 NT$' + Number(bonusAmount).toLocaleString() + ' 元租金折抵！\n' + shareUrl;
+      var codeMsg     = myCode ? '\n👉 使用推薦碼【' + myCode + '】註冊，享簽約折抵優惠！' : '';
+      var shareText   = sysName + ' - 推薦好友入住！\n' + '你我各享 NT$' + Number(bonusAmount).toLocaleString() + ' 元好禮！' + codeMsg + '\n' + shareUrl;
 
       // Option 1: In LINE app → use shareTargetPicker
       if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
@@ -2568,6 +2585,19 @@
     // loadRooms: wrapper kept for backward compat (retry buttons)
     function loadRooms() {
       bootApp();
+    }
+
+    function _onFilterCityChange() {
+      var cityEl = document.getElementById('filter-city');
+      var distEl = document.getElementById('filter-district');
+      if (!cityEl || !distEl) return;
+      var city = cityEl.value;
+      if (city && taiwanCities[city]) {
+        distEl.innerHTML = '<option value="">所有區域</option>' + taiwanCities[city].map(function(d){ return '<option value="'+d+'">'+d+'</option>'; }).join('');
+      } else {
+        distEl.innerHTML = '<option value="">所有區域</option>';
+      }
+      applyRoomFilter();
     }
 
     function applyRoomFilter() {
@@ -2701,6 +2731,7 @@
                 <button data-rid="${r.id}" onclick="showEditRoomForm(this.dataset.rid)" class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold hover:bg-amber-100"><i class="fa-solid fa-pen-to-square mr-1"></i>修改</button>
                 <button data-rid="${r.id}" onclick="toggleRoomStatus(this.dataset.rid)" class="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs hover:bg-gray-200">${r.status==='出租中'?'標記空房':'標記出租'}</button>
                 <button data-rid="${r.id}" onclick="showRoomQR(this.dataset.rid)" class="px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs hover:bg-blue-100">QR</button>
+                <button data-rid="${r.id}" onclick="_cloneRoom(this.dataset.rid)" class="px-2 py-1 bg-purple-50 text-purple-600 rounded-lg text-xs font-bold hover:bg-purple-100" title="複製此房間資料"><i class="fa-solid fa-copy mr-0.5"></i>複製</button>
               </div>
             </div>
           </div>`;
@@ -2943,7 +2974,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.3.1');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.4.0');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
@@ -3264,7 +3295,11 @@
       btn.innerHTML = '<span class="loader border-white border-t-transparent w-4 h-4"></span> 處理中...'; btn.disabled = true;
       const fd = new FormData(e.target);
       const data = Object.fromEntries(fd.entries());
-      // image URLs already in data.image from hidden field
+      // Sync image URLs from hidden field (cloud-uploaded URLs)
+      const photoHidden = document.getElementById('room-photo-urls');
+      if (photoHidden && photoHidden.value) {
+        data.image = photoHidden.value; // comma-separated Drive URLs
+      }
       delete data.photoFiles;
       callGas('addRoom', data, (res) => {
         if (res.success) { showToast('新增房間成功！','success'); showAdminSection('rooms'); }
@@ -3617,6 +3652,21 @@
       var dots  = document.querySelectorAll('#cd-'+roomId+' .carousel-dot');
       if (inner) inner.style.transform = 'translateX(-'+idx+'00%)';
       dots.forEach(function(d,i){ d.classList.toggle('active', i===idx); });
+    }
+
+    function _initRoomCardSwipe(el) {
+      if (!el) return;
+      var sx = 0;
+      el.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, { passive: true });
+      el.addEventListener('touchend',   function(e){
+        var diff = sx - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) {
+          // Find prev/next btn within same card
+          var card = el.closest('[data-carousel]') || el.parentElement;
+          if (diff > 0) { var btn = card && card.querySelector('.carousel-next'); if (btn) btn.click(); }
+          else           { var btn = card && card.querySelector('.carousel-prev'); if (btn) btn.click(); }
+        }
+      }, { passive: true });
     }
 
     function _stopAllCarousels() {
@@ -5652,7 +5702,8 @@
             urls.forEach(function(u) {
               var d = document.createElement('div');
               d.className = 'relative rounded-xl overflow-hidden bg-gray-100';
-              d.innerHTML = '<img src="'+u+'" class="w-full h-20 object-cover">' +
+              d.innerHTML = '<img src="'+u+'" class="w-full h-20 object-cover" onerror="this.style.opacity=0.3">' +
+                '<div class="absolute bottom-0 left-0 right-0 bg-black/40 text-white text-[8px] px-1 py-0.5 truncate">'+u.split('/').pop()+'</div>' +
                 '<button type="button" onclick="this.parentElement.remove();_syncRoomPhotoUrls()" class="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center">✕</button>';
               preview.appendChild(d);
             });
@@ -5761,7 +5812,10 @@
       var code    = (appState.user && appState.user.referralCode) || '';
       var sysName = (appState.adminData && appState.adminData.settings && appState.adminData.settings.name) || '壹參學生宿舍';
       var url     = window.location.href.split('?')[0] + '?ref=' + code;
-      var text    = sysName + ' 推薦朋友入住！\n使用推薦碼【'+code+'】完成簽約，你我各獲好禮！\n立即查看房型：' + url;
+      var text    = '🏠 '+sysName+' 推薦好友入住！\n'+
+        '使用推薦碼【'+code+'】完成註冊並簽約入住\n'+
+        '你獲得折抵優惠，我獲得推薦獎勵 🎁\n'+
+        '👉 立即查看房型：' + url;
       if (mode === 'copy') {
         if (navigator.clipboard) {
           navigator.clipboard.writeText(url).then(function(){ showToast('分享連結已複製 ✅','success'); });
@@ -5950,6 +6004,21 @@
           _adminDataTs = 0;
         } else showToast('更新失敗', 'error');
       });
+    }
+
+
+
+    function _cloneRoom(roomId) {
+      var room = appState.adminData && appState.adminData.rooms.find(function(r){ return r.id===roomId; });
+      if (!room) return;
+      // Create a copy with new ID
+      var cloned = Object.assign({}, room, {
+        id: 'R' + Date.now().toString().slice(-6),
+        name: room.name + ' (複製)',
+        status: '空房'
+      });
+      showAddRoomForm(cloned);
+      showToast('已複製「'+room.name+'」資料，請修改後儲存', 'info', 4000);
     }
 
 
