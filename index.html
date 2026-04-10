@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER2.4.0</title>
+  <title>壹參學生宿舍系統 VER2.5.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -78,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.4.0　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.5.0　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -946,7 +946,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER2.4.0';
+    const APP_VERSION = 'VER2.5.0';
     document.addEventListener('DOMContentLoaded', function() {
       _checkReferralParam();
       var el = document.getElementById('header-version');
@@ -967,264 +967,7 @@
     // ============================================================
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbzUzzbE9DC-DMm7Qe4dSG1p-OUX5kr5K38DvZYcRexUF3IrnSpqhOmyc8f016C9Vjg_/exec';
 
-    const mockGas = {
-      db: {
-        settings: {
-          name: '壹參學生宿舍系統',
-          dormAddress: '台中市西屯區文華路100號',
-          carouselInterval: '3',
-          tenantRules: '1. 晚上10點後請降低音量\n2. 垃圾請確實分類\n3. 走廊請勿堆放雜物\n4. 禁養寵物',
-          announcement: '本週五將進行水塔清洗，早上9點至下午5點將停水，請提早儲水。',
-          showAnnouncement: '是',
-          wifiPassword: 'password1234',
-          lineIntegration: 'true',
-          autoReply: 'true',
-          referralBonus: 'true',
-          annualDiscount: 'true',
-          keywordResponses: [
-            { keywords: '租金, 多少錢, 價格', response: '您好！我們的單人套房為8500元起，雙人套房為12000元起，年繳可享優惠喔！' },
-            { keywords: '看房, 預約, 時間', response: '歡迎預約看房！請點擊選單中的「預約看房」按鈕，選擇您方便的時間。' }
-          ]
-        },
-        rooms: [
-          { id: 'R01', name: '精緻單人套房', price: 8500, specialPrice: 7999, size: '6 坪', features: '獨立衛浴,雙層冰箱', image: 'https://picsum.photos/seed/room1/600/400,https://picsum.photos/seed/room1a/600/400,https://picsum.photos/seed/room1b/600/400', layoutImage: 'https://picsum.photos/seed/layout1/600/600', youtube: 'https://www.youtube.com/embed/dQw4w9WgXcQ', status: '空房', hasToilet: '獨立廁所', network: '300M', balcony: '有', parking: '無', washingMachine: '獨立洗衣機', waterDispenser: '公共飲水機', city: '台北市', district: '信義區', branch: '信義一館', address: '信義路一段', maxOccupancy: '1', extraPersonCharge: '0' },
-          { id: 'R02', name: '舒適雙人套房', price: 12000, specialPrice: 10999, size: '10 坪', features: '獨立衛浴,雙人床', image: 'https://picsum.photos/seed/room2/600/400,https://picsum.photos/seed/room2a/600/400', layoutImage: 'https://picsum.photos/seed/layout2/600/600', youtube: 'https://www.youtube.com/embed/jNQXAC9IVRw', status: '出租中', hasToilet: '獨立廁所', network: '1G', balcony: '有', parking: '有', washingMachine: '獨立洗衣機', waterDispenser: '獨立飲水機', city: '台中市', district: '西屯區', branch: '逢甲館', address: '文華路100號', maxOccupancy: '2', extraPersonCharge: '1000' }
-        ],
-        tenants: [
-          { room: 'R02', name: '測試租客', phone: '0912345678', contractStart: '2023-09-01', contractEnd: '2024-08-31', paymentMethod: '匯款', paymentStatus: '已繳清', electricity: '120度 / 600元' }
-        ],
-        repairs: [
-          { id: 'REP01', room: 'R02', tenant: '測試租客', item: '冷氣不冷', description: '冷氣運轉有異音，且不冷', status: '處理中', createdAt: '2024-03-10', reply: '已安排師傅於週三下午前往查看', repliedBy: '管理員A' }
-        ],
-        referrals: [
-          { id: 'REF01', referrer: '測試租客', referee: '王小明', phone: '0987654321', status: '審核中', createdAt: '2024-03-11' }
-        ],
-        admins: [
-          { phone: '0937942582', name: '管理員A', lineId: 'Uf75aa7a922f3598d4fd6ba6201d8cfd0', permissions: ['rooms','tenants','reservations','issues','repairs','referrals','payments','stats','linebot','settings','admins','vendors','checkouts','publicAreas','bulletin','expenses','occupancy','calendar','contracts','faq','electricity','repairStats','vacancyAd','cashFlow','electricity','repairStats','vacancyAd','cashFlow','electricity','repairStats','vacancyAd','cashFlow'] },
-          { phone: '0982387092', name: '管理員B', lineId: '', permissions: ['issues','repairs'] }
-        ],
-        bankTransactions: [
-          { id: 'TX001', date: '2024-03-05', amount: 10999, name: '測試租客', matched: false },
-          { id: 'TX002', date: '2024-03-10', amount: 8500, name: '王小明', matched: false }
-        ],
-        members: [{ phone: '0900000000', name: '測試會員', password: '1234' }],
-        reservations: [],
-        rentPayments: [
-          { id: 'PAY01', tenantPhone: '0912345678', year: 2024, month: 1, amount: 10999, status: '已繳清', date: '2024-01-05' },
-          { id: 'PAY02', tenantPhone: '0912345678', year: 2024, month: 2, amount: 10999, status: '已繳清', date: '2024-02-03' },
-          { id: 'PAY03', tenantPhone: '0912345678', year: 2024, month: 3, amount: 10999, status: '未繳', date: '' }
-        ],
-        issues: [
-          { id: 'IS001', room: 'R01', name: '王小明', category: '設備報修', content: '冷氣不會冷', status: '待處理', date: '2023/10/25', reply: '', repliedBy: '' },
-          { id: 'IS002', room: 'R02', name: '李大華', category: '環境清潔', content: '走廊有垃圾', status: '處理中', date: '2023/10/24', reply: '', repliedBy: '' }
-        ],
-        vendors: [
-          { id: 'V01', name: '阿輝水電', category: '水電維修', phone: '0911-222-333', note: '配合多年，收費公道' },
-          { id: 'V02', name: '冷氣專家張師傅', category: '冷氣維修', phone: '0922-333-444', note: '洗冷氣專業' }
-        ],
-        checkouts: [],
-        publicAreaReservations: [],
-        bulletinBoard: [
-          { id: 'B01', title: '本月大掃除公告', content: '本週六將進行公共區域大掃除，請大家配合。', date: '2024-03-12', author: '管理員A' }
-        ],
-        expenses: [
-          { id: 'E01', category: '維修費', amount: 1500, date: '2024-03-01', description: '更換公共區域燈管' },
-          { id: 'E02', category: '清潔費', amount: 3000, date: '2024-03-05', description: '樓梯間定期清潔' }
-        ],
-        contracts: [
-          { id: 'C01', tenantPhone: '0912345678', status: '已簽署', signedAt: '2023-08-25' }
-        ],
-        marketing: [
-          { id: 'MC01', name: '春季優惠', code: 'SPRING2024', discount: 500, startDate: '2024-03-01', endDate: '2024-05-31', status: '進行中' }
-        ]
-      },
-      loginUser: (data) => new Promise(res => setTimeout(() => {
-        const { phone, password } = data;
-        const admin = mockGas.db.admins.find(a => a.phone === phone);
-        if (admin) return res({ success: true, role: 'admin', phone, name: admin.name, permissions: admin.permissions });
-        const t = mockGas.db.tenants.find(x => x.phone === phone);
-        if (t) return res({ success: true, role: 'tenant', phone, tenantInfo: t, settings: mockGas.db.settings });
-        const m = mockGas.db.members.find(x => x.phone === phone);
-        if (m) {
-          if (m.password && password && m.password !== password) return res({ success: false, message: '密碼錯誤' });
-          return res({ success: true, role: 'member', phone, name: m.name });
-        }
-        res({ success: false, message: '找不到此號碼，請先註冊會員' });
-      }, 300)),
-      registerMember: (data) => new Promise(res => setTimeout(() => {
-        var phone = data.phone ? (data.phone.length===9&&data.phone.startsWith('9') ? '0'+data.phone : data.phone) : '';
-        var dup = mockGas.db.members.find(m => m.phone && m.phone===phone);
-        if (dup) { res({ success: false, message: '此電話號碼已註冊，請直接登入' }); return; }
-        mockGas.db.members.push({...data, phone: phone}); res({ success: true });
-      }, 300)),
-      registerMemberByLine: (data) => new Promise(res => setTimeout(() => {
-        var dup = mockGas.db.members.find(m => m.lineId && m.lineId===data.lineId);
-        if (dup) { res({ success: false, existingLineId: true, message: '此 LINE 帳號已存在' }); return; }
-        mockGas.db.members.push(data); res({ success: true });
-      }, 300)),
-      addRoom: (data) => new Promise(res => setTimeout(() => { mockGas.db.rooms.push({ id: data.id, name: data.name, price: data.price, specialPrice: data.specialPrice, size: data.size, features: data.equipment, image: 'https://picsum.photos/seed/newroom/600/400', status: '空房', address: data.address, floor: data.floor, hasToilet: data.hasToilet, description: data.description, network: data.network, balcony: data.balcony, parking: data.parking, washingMachine: data.washingMachine, waterDispenser: data.waterDispenser, city: data.city, district: data.district, branch: data.branch, maxOccupancy: data.maxOccupancy, extraPersonCharge: data.extraPersonCharge }); res({ success: true }); }, 300)),
-      addTenant: (data) => new Promise(res => setTimeout(() => { mockGas.db.tenants.push({ room: data.room, name: data.name, phone: data.phone, contractStart: data.contractStart, contractEnd: data.contractEnd, paymentMethod: data.paymentMethod, paymentStatus: data.paymentStatus, electricity: '' }); const room = mockGas.db.rooms.find(r => r.id === data.room); if (room) room.status = '出租中'; res({ success: true }); }, 300)),
-      updateTenant: (data) => new Promise(res => setTimeout(() => { const idx = mockGas.db.tenants.findIndex(t => t.phone === data.originalPhone); if (idx !== -1) mockGas.db.tenants[idx] = { ...mockGas.db.tenants[idx], ...data }; res({ success: true }); }, 300)),
-      deleteTenant: (phone) => new Promise(res => setTimeout(() => { mockGas.db.tenants = mockGas.db.tenants.filter(t => t.phone !== phone); res({ success: true }); }, 300)),
-            submitReservation: (data) => new Promise(res => setTimeout(() => { var res_data = {...data, timestamp: new Date().toISOString(), date: data.date||data.reserveDate||'', reserveDate: data.date||data.reserveDate||''}; mockGas.db.reservations.push(res_data); res({ success: true, message: '預約成功' }); }, 300)),
-      submitIssue: (data) => new Promise(res => setTimeout(() => { mockGas.db.issues.push({ id: 'IS' + Date.now(), room: data.room, name: data.name, category: data.category, content: data.content, status: '待處理', date: new Date().toLocaleDateString(), reply: '', repliedBy: '' }); res({ success: true }); }, 300)),
-      submitRepair: (data) => new Promise(res => setTimeout(() => { mockGas.db.repairs.push({ id: 'REP' + Date.now(), ...data, status: '待處理', createdAt: new Date().toISOString().split('T')[0], reply: '', repliedBy: '' }); res({ success: true }); }, 300)),
-      updateRepairStatus: (data) => new Promise(res => setTimeout(() => { const r = mockGas.db.repairs.find(r => r.id === data.id); if (r) r.status = data.status; res({ success: true }); }, 300)),
-      replyRepair: (data) => new Promise(res => setTimeout(() => { const r = mockGas.db.repairs.find(r => r.id === data.id); if (r) { r.reply = data.reply; r.repliedBy = data.repliedBy; } res({ success: true }); }, 300)),
-      submitReferral: (data) => new Promise(res => setTimeout(() => { mockGas.db.referrals.push({ id: 'REF' + Date.now(), ...data, status: '審核中', createdAt: new Date().toISOString().split('T')[0] }); res({ success: true }); }, 300)),
-      updateReferralStatus: (data) => new Promise(res => setTimeout(() => { const r = mockGas.db.referrals.find(r => r.id === data.id); if (r) r.status = data.status; res({ success: true }); }, 300)),
-      addRentPayment: (data) => new Promise(res => setTimeout(() => { const id = 'PAY' + Date.now(); mockGas.db.rentPayments.push({ id, ...data }); res({ success: true }); }, 300)),
-      updateRentPayment: (data) => new Promise(res => setTimeout(() => { const idx = mockGas.db.rentPayments.findIndex(p => p.id === data.id); if (idx !== -1) mockGas.db.rentPayments[idx] = { ...mockGas.db.rentPayments[idx], ...data }; res({ success: true }); }, 300)),
-      deleteRentPayment: (data) => new Promise(res => setTimeout(() => { const id = data.id || data; mockGas.db.rentPayments = mockGas.db.rentPayments.filter(p => p.id !== id); res({ success: true }); }, 300)),
-      replyIssue: (data) => new Promise(res => setTimeout(() => { const i = mockGas.db.issues.find(i => i.id === data.id); if (i) { i.reply = data.reply; i.repliedBy = data.repliedBy; } res({ success: true }); }, 300)),
-      updateSettings: (data) => new Promise(res => setTimeout(() => { mockGas.db.settings = { ...mockGas.db.settings, ...data }; res({ success: true }); }, 300)),
-      updateIssueStatus: (data) => new Promise(res => setTimeout(() => { const i = mockGas.db.issues.find(i => i.id === data.id); if (i) i.status = data.status; res({ success: true }); }, 300)),
-      addAdmin: (data) => new Promise(res => setTimeout(() => { mockGas.db.admins.push(data); res({ success: true }); }, 300)),
-      deleteAdmin: (phone) => new Promise(res => setTimeout(() => { mockGas.db.admins = mockGas.db.admins.filter(a => a.phone !== phone); res({ success: true }); }, 300)),
-      autoMatchPayments: () => new Promise(res => setTimeout(() => res({ success: true, matchedCount: 0 }), 500)),
-      sendPaymentReminders: () => new Promise(res => setTimeout(() => { const today = new Date(); const year = today.getFullYear(); const month = today.getMonth() + 1; const count = mockGas.db.rentPayments.filter(p => p.year === year && p.month === month && p.status === '未繳').length; res({ success: true, count }); }, 500)),
-      addVendor: (data) => new Promise(res => setTimeout(() => { mockGas.db.vendors.push({ id: 'V' + Date.now(), ...data }); res({ success: true }); }, 300)),
-      deleteVendor: (data) => new Promise(res => setTimeout(() => { const id = data.id || data; mockGas.db.vendors = mockGas.db.vendors.filter(v => v.id !== id); res({ success: true }); }, 300)),
-      submitCheckout: (data) => new Promise(res => setTimeout(() => { mockGas.db.checkouts.push({ id: 'CK' + Date.now(), ...data, status: '已完成', date: new Date().toISOString().split('T')[0] }); res({ success: true }); }, 300)),
-      reservePublicArea: (data) => new Promise(res => setTimeout(() => { mockGas.db.publicAreaReservations.push({ id: 'PAR' + Date.now(), ...data }); res({ success: true }); }, 300)),
-      addBulletinPost: (data) => new Promise(res => setTimeout(() => { mockGas.db.bulletinBoard.unshift({ id: 'B' + Date.now(), ...data, date: new Date().toISOString().split('T')[0] }); res({ success: true }); }, 300)),
-      addExpense: (data) => new Promise(res => setTimeout(() => { mockGas.db.expenses.push({ id: 'E' + Date.now(), ...data }); res({ success: true }); }, 300)),
-      addMarketingCampaign: (data) => new Promise(res => setTimeout(() => { mockGas.db.marketing.push({ id: 'MC' + Date.now(), ...data, status: '進行中' }); res({ success: true }); }, 300)),
-      deleteMarketingCampaign: (data) => new Promise(res => setTimeout(() => { const id = data.id || data; mockGas.db.marketing = mockGas.db.marketing.filter(m => m.id !== id); res({ success: true }); }, 300)),
-      signContract: (phone) => new Promise(res => setTimeout(() => { const p = typeof phone === 'object' ? phone.phone || phone : phone; const c = mockGas.db.contracts.find(c => c.tenantPhone === p); if (c) { c.status = '已簽署'; c.signedAt = new Date().toISOString().split('T')[0]; } else { mockGas.db.contracts.push({ id: 'C' + Date.now(), tenantPhone: p, status: '已簽署', signedAt: new Date().toISOString().split('T')[0] }); } res({ success: true }); }, 300)),
-      triggerSOS: (data) => new Promise(res => setTimeout(() => { console.log('SOS Triggered:', data); res({ success: true }); }, 300)),
-      submitMeterRecord: (data) => new Promise(res => setTimeout(() => {
-        // Store meter record in mock
-        if (!mockGas.db.meterRecords) mockGas.db.meterRecords = [];
-        mockGas.db.meterRecords.push({ ...data, id: 'MTR'+Date.now() });
-        // Update tenant electricity
-        var t = mockGas.db.tenants.find(x => x.room === data.room);
-        if (t) t.electricity = data.meter + '度';
-        res({ success: true });
-      }, 300)),
-      updateMemberProfile: (data) => new Promise(res => setTimeout(() => {
-        var lineId = data.lineId || '';
-        var orig   = data.originalPhone ? (data.originalPhone.length===9&&data.originalPhone.startsWith('9')?'0'+data.originalPhone:data.originalPhone) : '';
-        var m = mockGas.db.members.find(function(x){ return (orig && x.phone===orig) || (lineId && x.lineId===lineId); });
-        if (m) { if(data.name) m.name=data.name; if(data.phone) m.phone=data.phone; if(data.email) m.email=data.email; }
-        res({ success: true });
-      }, 200)),
-      updateLineProfile: (data) => new Promise(res => setTimeout(() => {
-        var phone = data.phone; var lineId = data.lineId;
-        // Update in members
-        var m = mockGas.db.members.find(function(x){ return x.phone===phone; });
-        if (m) { m.lineId=lineId; m.lineName=data.lineName; m.lineAvatar=data.lineAvatar; }
-        // Update in admins
-        var a = mockGas.db.admins.find(function(x){ return x.phone===phone; });
-        if (a) { a.lineId=lineId; }
-        res({ success: true });
-      }, 100)),
-      getFAQs: (data) => new Promise(res => setTimeout(() => {
-        var faqs = mockGas.db.faqs || [];
-        if (!data || !data.showAll) faqs = faqs.filter(function(f){ return f.status==='顯示'; });
-        res({ success: true, faqs: faqs });
-      }, 200)),
-      addFAQ: (data) => new Promise(res => setTimeout(() => {
-        var id = 'FAQ' + Date.now();
-        if (!mockGas.db.faqs) mockGas.db.faqs = [];
-        mockGas.db.faqs.push({...data, id: id});
-        res({ success: true, id: id });
-      }, 200)),
-      updateFAQ: (data) => new Promise(res => setTimeout(() => {
-        if (!mockGas.db.faqs) mockGas.db.faqs = [];
-        var f = mockGas.db.faqs.find(function(x){ return x.id===data.id; });
-        if (f) Object.assign(f, data);
-        res({ success: true });
-      }, 200)),
-      deleteFAQ: (data) => new Promise(res => setTimeout(() => {
-        if (mockGas.db.faqs) mockGas.db.faqs = mockGas.db.faqs.filter(function(f){ return f.id !== (data.id||data); });
-        res({ success: true });
-      }, 200)),
-      getMyReservations: (data) => new Promise(res => setTimeout(() => {
-        var phone = data && data.phone ? data.phone : '';
-        var p0 = phone && phone.length===9&&phone.startsWith('9') ? '0'+phone : phone;
-        var myRes = mockGas.db.reservations.filter(function(r){ var rp=r.phone?r.phone.toString():''; return rp===phone||rp===p0||rp==='0'+phone; });
-        res({ success: true, reservations: myRes });
-      }, 200)),
-      updateRoom: (data) => new Promise(res => setTimeout(() => {
-        var r = mockGas.db.rooms.find(function(x){ return x.id===data.id; });
-        if (r) { Object.assign(r, { name:data.name, price:data.price, specialPrice:data.specialPrice, size:data.size, image:data.image||r.image, equipment:data.equipment||r.equipment, city:data.city, district:data.district, branch:data.branch, address:data.address, description:data.description, annualDiscount:data.annualDiscount, hasToilet:data.hasToilet, maxOccupancy:data.maxOccupancy }); }
-        res(r ? { success: true } : { success: false, message: '找不到房間' });
-      }, 300)),
-      getMyMeterRecords: (data) => new Promise(res2 => setTimeout(() => {
-        var room = data && data.room;
-        var phone = data && data.phone;
-        var records = (mockGas.db.meterRecords||[]).filter(function(m){ return (!room||m.room===room)&&(!phone||m.phone===phone); });
-        records.sort(function(a,b){ return b.date>a.date?1:-1; });
-        res2({ success: true, records: records });
-      }, 200)),
-      updateReservationStatus: (data) => new Promise(res => setTimeout(() => {
-        if (data.index !== undefined && mockGas.db.reservations[data.index]) {
-          var r = mockGas.db.reservations[data.index];
-          if (data.status) r.status = data.status;
-          if (data.adminReply) r.adminReply = data.adminReply;
-          if (data.newDate) { r.date = data.newDate; r.reserveDate = data.newDate; }
-          if (data.newTime) r.time = data.newTime;
-        }
-        res({ success: true });
-      }, 200)),
-      loginWithLineId: (data) => new Promise(res => setTimeout(() => {
-        var lineId = data && data.lineId;
-        // Check admins, tenants, members for matching lineId
-        var admin   = mockGas.db.admins.find(function(a){ return a.lineId===lineId; });
-        if (admin) { res({ success:true, role:'admin', phone:admin.phone, name:admin.name, permissions:admin.permissions||[] }); return; }
-        var tenant  = mockGas.db.tenants.find(function(t){ return t.lineId===lineId; });
-        if (tenant) { res({ success:true, role:'tenant', phone:tenant.phone, tenantInfo:tenant, settings:mockGas.db.settings }); return; }
-        var member  = mockGas.db.members.find(function(m){ return m.lineId===lineId; });
-        if (member) { res({ success:true, role:'member', phone:member.phone, name:member.name }); return; }
-        res({ success:false, message:'此 LINE 帳號尚未綁定，請輸入手機號碼登入' });
-      }, 200)),
-            // ── Image upload mocks ──────────────────────────────
-      uploadImageForWeb: (data) => new Promise(res => setTimeout(() => {
-        // In mock mode: just return a placeholder image URL
-        var cat = (data && data.category) || 'general';
-        var fname = (data && data.filename) || 'img.jpg';
-        var fakeId = 'mock_' + Date.now();
-        // Use a real placeholder image service so preview works
-        var url = 'https://picsum.photos/seed/' + fakeId + '/400/300';
-        console.log('[mock] uploadImageForWeb:', fname, '→', url);
-        res({ success: true, url: url, thumbUrl: url, fileId: fakeId, filename: fname });
-      }, 800)),
-
-      uploadFileToDrive: (data) => new Promise(res => setTimeout(() => {
-        var fakeId = 'mock_drive_' + Date.now();
-        var url = 'https://picsum.photos/seed/' + fakeId + '/400/300';
-        res({ success: true, url: url, fileId: fakeId });
-      }, 600)),
-
-      ensureReferralCode: (data) => new Promise(res => setTimeout(() => {
-        // Generate a mock referral code
-        var phone = (data && data.phone) || '0900000000';
-        var code = 'M' + phone.slice(-4) + 'AB';
-        res({ success: true, referralCode: code });
-      }, 200)),
-
-      getReferralCodeInfo: (data) => new Promise(res => setTimeout(() => {
-        var code = (data && data.code) || '';
-        // Check mock members for this code
-        var member = mockGas.db.members.find(function(m){ return (m.referralCode||'').toUpperCase() === code.toUpperCase(); });
-        if (member) {
-          res({ success: true, referrerName: member.name, referrerPhone: member.phone });
-        } else {
-          res({ success: false, message: '推薦碼不存在' });
-        }
-      }, 300)),
-
-      updateReferralStatus: (data) => new Promise(res => setTimeout(() => {
-        var ref = mockGas.db.referrals.find(function(r){ return r.id === data.id; });
-        if (ref) ref.status = data.status || '待審核';
-        res({ success: true });
-      }, 200)),
-
-      getAdminData: (data) => new Promise(resolve => {
-        setTimeout(() => resolve({ success: true, data: mockGas.db }), 300);
-      })
-    };
+        // mockGas removed - using real GAS only
 
     // ── UI Utilities (replaces alert/confirm/prompt) ─────────
     function showToast(msg, type, ms) {
@@ -1291,53 +1034,26 @@
 
     // [FIX] callGas — 直接走 mock，無需 CORS fetch
     // ── IS_LOCAL_PREVIEW: true = 本機 file:// 預覽，false = 部署到 LINE/GAS
-    // IS_LOCAL_PREVIEW: 只有在本機 file:// 或 localhost 才用 mock
-    // kinmen.vercel.app / liff.line.me 等正式環境一律走真實 GAS
-    var IS_LOCAL_PREVIEW = (
-      window.location.protocol === 'file:' ||
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname === ''
-    );
-    // 強制：如果有 GAS_URL 且不是 localhost，永遠走真實 GAS
-    var FORCE_REAL_GAS = !IS_LOCAL_PREVIEW;
+    // 所有環境直接走真實 GAS（已移除 mock 模式）
+    var IS_LOCAL_PREVIEW = false;
+    var FORCE_REAL_GAS   = true;
 
     function callGas(func, data, cb) {
-      // 1. GAS 側邊欄環境（google.script.run）
+      // GAS 側邊欄環境（google.script.run）
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(function(res){ if(cb) cb(res); })
           .withFailureHandler(function(err){ if(cb) cb({success:false,message:err.toString()}); })[func](data);
         return;
       }
-      // 2. 本機預覽 → mock（本機 localhost 才用）
-      if (IS_LOCAL_PREVIEW && !FORCE_REAL_GAS) {
-        _callMock(func, data, cb);
-        return;
-      }
-      // 3. 正式環境 → 真實 GAS fetch（失敗才 fallback mock）
+      // 所有環境 → 直接呼叫真實 GAS
       _callGasFetch(func, data, cb);
     }
 
-    function _callMock(func, data, cb) {
-      if (mockGas[func]) {
-        mockGas[func](data)
-          .then(function(res){ if(cb) cb(res); })
-          .catch(function(err){ if(cb) cb({success:false,message:err.toString()}); });
-      } else {
-        console.warn('[mock] 找不到函數:', func);
-        if (cb) cb({success:false, message:'Mock function not found: '+func});
-      }
-    }
 
     function _callGasFetch(func, data, cb) {
-      // ──────────────────────────────────────────────────────
-      // GAS 只支援 GET 的 CORS（POST 會被瀏覽器 preflight 擋掉）
-      // 所以一律使用 GET，大型 binary（photoFiles）在傳送前移除
-      // ──────────────────────────────────────────────────────
       var sendData = data;
       if (sendData && typeof sendData === 'object') {
-        // 複製並移除 base64 大型檔案（photo/file binary）
         sendData = JSON.parse(JSON.stringify(sendData));
         delete sendData.photoFiles;
         delete sendData.signatureData;
@@ -1348,118 +1064,53 @@
       var url = GAS_URL + '?func=' + encodeURIComponent(func) +
                 (dataJson ? '&data=' + encodeURIComponent(dataJson) : '');
 
-      // 如果 URL 超過 2000 字，嘗試縮短（只傳必要欄位）
-      if (url.length > 2000 && sendData) {
-        console.warn('[GAS] URL過長(' + url.length + ')，嘗試精簡資料...');
+      if (url.length > 2048) {
+        console.warn('[GAS] URL過長(' + url.length + ')，部分資料可能被截斷');
       }
-
-      console.log('[GAS] GET', func, '| URL長度:', url.length);
+      console.log('[GAS] →', func, '('+url.length+'字元)');
 
       var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      var timer = controller ? setTimeout(function(){ controller.abort(); }, 28000) : null;
+      var timer = controller ? setTimeout(function(){ controller.abort(); }, 30000) : null;
 
       fetch(url, {
         method: 'GET',
         redirect: 'follow',
         signal: controller ? controller.signal : undefined
       })
-        .then(function(res) {
-          if (timer) clearTimeout(timer);
-          if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
-          return res.text();
-        })
-        .then(function(text) {
-          var trimmed = text.trim();
-          if (!trimmed) { console.error('[GAS] 空回應 func='+func); _callMock(func, data, cb); return; }
-          if (trimmed.startsWith('<') || trimmed.startsWith('<!')) {
-            console.warn('[GAS] 回傳HTML (未部署/未授權) func='+func);
-            console.warn('[GAS] HTML片段:', trimmed.slice(0,200));
-            _callMock(func, data, cb);
-            return;
-          }
-          try {
-            var json = JSON.parse(trimmed);
-            console.log('[GAS] 成功 func='+func+' success='+json.success + (json.message?' msg='+json.message:''));
-            if (cb) cb(json);
-          } catch(e) {
-            console.error('[GAS] JSON解析失敗 func='+func+':', trimmed.slice(0,300));
-            _callMock(func, data, cb);
-          }
-        })
-        .catch(function(err) {
-          if (timer) clearTimeout(timer);
-          console.error('[GAS] fetch錯誤 func='+func+':', err.message);
-          _callMock(func, data, cb);
-        });
-    }
-
-
-    // --- State ---
-
-    // ================================================================
-    // LINE LOGIN
-    // ================================================================
-    var _lineProfile = null; // cached LINE profile
-
-    async function handleLineLogin() {
-      const btn = document.getElementById('line-login-btn');
-      btn.innerHTML = '<span class="loader border-white border-t-transparent w-5 h-5"></span> 連接 LINE 中...';
-      btn.disabled = true;
-      try {
-        // If LIFF is already logged in, get profile directly
-        if (typeof liff !== 'undefined') {
-          if (!liff.isLoggedIn()) {
-            // Redirect to LINE login
-            liff.login({ redirectUri: window.location.href });
-            return;
-          }
-          // Already logged in via LIFF
-          await _fetchLineProfile();
-        } else {
-          showToast('LINE SDK 尚未載入，請在 LINE 中開啟', 'warn');
+      .then(function(res) {
+        if (timer) clearTimeout(timer);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+      })
+      .then(function(text) {
+        var trimmed = text.trim();
+        if (!trimmed) {
+          console.error('[GAS] 空回應 func='+func);
+          if (cb) cb({ success: false, message: 'GAS 回應為空，請確認部署設定' });
+          return;
         }
-      } catch (e) {
-        console.error('LINE login error:', e);
-        showToast('LINE 登入失敗：' + e.message, 'error');
-      }
-      btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M12 2C6.48 2 2 6.03 2 11c0 3.24 1.79 6.08 4.5 7.83V22l3.97-2.17A10.46 10.46 0 0012 20c5.52 0 10-4.03 10-9S17.52 2 12 2z"/></svg> 使用 LINE 帳號登入';
-      btn.disabled = false;
-    }
-
-    async function _fetchLineProfile() {
-      try {
-        const profile = await liff.getProfile();
-        _lineProfile = {
-          lineId:      profile.userId,
-          name:        profile.displayName,
-          avatar:      profile.pictureUrl || '',
-          statusMsg:   profile.statusMessage || '',
-        };
-        // Try to get email (requires email permission scope)
+        if (trimmed.startsWith('<') || trimmed.startsWith('<!')) {
+          console.warn('[GAS] 收到HTML (未部署/未授權)');
+          if (cb) cb({ success: false, message: 'GAS 未正確部署或未授權，請聯絡管理員' });
+          return;
+        }
         try {
-          const ctx = liff.getContext();
-          if (ctx && ctx.utouId) _lineProfile.utouId = ctx.utouId;
-        } catch(e) {}
-        // Show profile in UI
-        _showLineProfileInLogin(_lineProfile);
-        // Pre-fill login phone if remembered
-        const saved = _loadUserMemory();
-        if (saved && saved.phone) {
-          const phoneEl = document.getElementById('login-phone');
-          if (phoneEl) phoneEl.value = saved.phone;
+          var json = JSON.parse(trimmed);
+          console.log('[GAS] ←', func, json.success ? '✅' : '❌', json.message||'');
+          if (cb) cb(json);
+        } catch(e) {
+          console.error('[GAS] JSON解析失敗:', trimmed.slice(0,200));
+          if (cb) cb({ success: false, message: '伺服器回應格式錯誤' });
         }
-        showToast('LINE 帳號已識別：' + _lineProfile.name, 'success');
-        // Try auto-login with LINE ID
-        _tryAutoLoginWithLine(_lineProfile.lineId);
-      } catch (e) {
-        // 靜默處理（可能在非 LIFF 環境、或用戶未授權）
-        console.warn('[_fetchLineProfile] 無法取得 LINE 資料:', e && e.message ? e.message : e);
-        // 只在 LIFF 環境且有真實錯誤才顯示提示
-        if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient() && e && e.message) {
-          showToast('LINE 資料取得失敗，請重試', 'warn', 3000);
-        }
-      }
+      })
+      .catch(function(err) {
+        if (timer) clearTimeout(timer);
+        var msg = err.name === 'AbortError' ? '請求逾時（30秒），請稍後再試' : ('網路錯誤：' + err.message);
+        console.error('[GAS] fetch失敗 func='+func+':', msg);
+        if (cb) cb({ success: false, message: msg });
+      });
     }
+
 
     function _showLineProfileInLogin(profile) {
       var statusEl = document.getElementById('line-login-status');
@@ -2974,7 +2625,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.4.0');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.5.0');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
