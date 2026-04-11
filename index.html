@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>壹參學生宿舍系統 VER2.5.0</title>
+  <title>壹參學生宿舍系統 VER2.6.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -78,7 +78,7 @@
         <i class="fa-solid fa-bell text-5xl text-blue-500"></i>
       </div>
       <h1 id="splash-title" class="text-white text-2xl font-black tracking-wide opacity-0" style="transition:all 0.4s ease 0.3s">壹參學生宿舍系統</h1>
-      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.5.0　智慧租屋管理平台</p>
+      <p id="splash-sub" class="text-blue-200 text-sm mt-1 opacity-0" style="transition:all 0.4s ease 0.45s" id="splash-ver-text">VER2.6.0　智慧租屋管理平台</p>
     </div>
 
     <!-- Progress area -->
@@ -465,13 +465,7 @@
             <div><label class="block text-xs text-gray-500 mb-1">手機號碼 *（可LINE登入後補填）</label><input type="tel" name="phone" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" placeholder="09xxxxxxxx"></div>
             <div><label class="block text-xs text-gray-500 mb-1">生日</label><input type="date" name="birthday" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
             <div><label class="block text-xs text-gray-500 mb-1">Email</label><input type="email" name="email" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
-            <div>
-              <label class="block text-xs text-gray-500 mb-1">手機驗證</label>
-              <div class="flex gap-2">
-                <input type="text" id="register-code" maxlength="6" placeholder="驗證碼" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 outline-none">
-                <button type="button" onclick="sendSmsCode()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium whitespace-nowrap hover:bg-gray-200">發送驗證碼</button>
-              </div>
-            </div>
+
             <div id="referral-code-section">
               <label class="block text-xs text-gray-500 mb-1">推薦碼（選填）</label>
               <div class="flex gap-2">
@@ -946,7 +940,7 @@
   <script>
 
     // ── App version (single source of truth) ────────────────
-    const APP_VERSION = 'VER2.5.0';
+    const APP_VERSION = 'VER2.6.0';
     document.addEventListener('DOMContentLoaded', function() {
       _checkReferralParam();
       var el = document.getElementById('header-version');
@@ -1111,6 +1105,57 @@
       });
     }
 
+
+
+    // ── LINE 登入 ────────────────────────────────────────────
+    var _lineProfile = null; // cached LINE profile
+
+    async function handleLineLogin() {
+      const btn = document.getElementById('line-login-btn');
+      btn.innerHTML = '<span class="loader border-white border-t-transparent w-5 h-5"></span> 連接 LINE 中...';
+      btn.disabled = true;
+      try {
+        if (typeof liff !== 'undefined') {
+          if (!liff.isLoggedIn()) {
+            liff.login({ redirectUri: window.location.href });
+            return;
+          }
+          await _fetchLineProfile();
+        } else {
+          showToast('LINE SDK 尚未載入，請在 LINE 中開啟', 'warn');
+        }
+      } catch (e) {
+        console.error('LINE login error:', e);
+        showToast('LINE 登入失敗：' + e.message, 'error');
+      }
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M12 2C6.48 2 2 6.03 2 11c0 3.24 1.79 6.08 4.5 7.83V22l3.97-2.17A10.46 10.46 0 0012 20c5.52 0 10-4.03 10-9S17.52 2 12 2z"/></svg> 使用 LINE 帳號登入';
+      btn.disabled = false;
+    }
+
+    async function _fetchLineProfile() {
+      try {
+        const profile = await liff.getProfile();
+        _lineProfile = {
+          lineId:    profile.userId,
+          name:      profile.displayName,
+          avatar:    profile.pictureUrl || '',
+          statusMsg: profile.statusMessage || '',
+        };
+        _showLineProfileInLogin(_lineProfile);
+        const saved = _loadUserMemory();
+        if (saved && saved.phone) {
+          const phoneEl = document.getElementById('login-phone');
+          if (phoneEl) phoneEl.value = saved.phone;
+        }
+        showToast('LINE 帳號已識別：' + _lineProfile.name, 'success');
+        _tryAutoLoginWithLine(_lineProfile.lineId);
+      } catch (e) {
+        console.warn('[_fetchLineProfile]', e && e.message ? e.message : e);
+        if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient() && e && e.message) {
+          showToast('LINE 資料取得失敗，請重試', 'warn', 3000);
+        }
+      }
+    }
 
     function _showLineProfileInLogin(profile) {
       var statusEl = document.getElementById('line-login-status');
@@ -1421,6 +1466,10 @@
       // Update promo amount from settings
       var promoAmt = document.getElementById('promo-referral-amount');
       if (promoAmt && s.referralBonusAmount) promoAmt.textContent = 'NT$ ' + Number(s.referralBonusAmount).toLocaleString();
+      // Update equipment list from settings
+      if (s.defaultEquipment) {
+        _equipmentList = s.defaultEquipment.split(',').map(function(e){ return e.trim(); }).filter(Boolean);
+      }
       // Update time slots in reserve form
       if (s.timeSlots) {
         var tSel = document.getElementById('reserve-time-select');
@@ -2625,7 +2674,7 @@
         const s = data.settings;
         // Show current version in settings
         const vd = document.getElementById('settings-version-display');
-        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.5.0');
+        if (vd) vd.textContent = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'VER2.6.0');
         c.innerHTML = `<form onsubmit="handleSettingsSubmit(event)" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
           <div class="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
             <div><span class="text-xs font-bold text-blue-700">目前版本</span><div class="text-sm font-bold text-blue-800" id="settings-version-display"></div></div>
@@ -2654,6 +2703,11 @@
               <div id="facilities-editor-list" class="space-y-2"></div>
               <button type="button" onclick="_addFacilityItem()" class="w-full py-2 border-2 border-dashed border-orange-200 rounded-xl text-xs text-orange-500 hover:bg-orange-100 font-medium"><i class="fa-solid fa-plus mr-1"></i>新增設備項目</button>
               <input type="hidden" name="facilitiesData" id="facilities-data-hidden" value="${s.facilitiesData||'[]'}">
+            </div>
+            <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 space-y-2">
+              <p class="text-xs font-bold text-blue-800"><i class="fa-solid fa-toolbox mr-1"></i>預設設備清單（逗號分隔）</p>
+              <textarea name="defaultEquipment" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-xs font-mono resize-none">${s.defaultEquipment||'冷氣,電冰箱,熱水器,電視,衣櫃,書桌,桌椅,床邊櫃X2,床頭櫃,床組,床墊'}</textarea>
+              <p class="text-[10px] text-gray-400">新增房間時預設勾選這些設備</p>
             </div>
             <div><label class="block text-sm font-bold text-gray-700 mb-1">電費費率（元/度）</label>
               <input type="number" name="electricityRate" value="${s.electricityRate||'5'}" min="1" step="0.5" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-blue-500 text-sm">
@@ -2803,6 +2857,7 @@
         landlordId:         fd.get('landlordId') || '',
         referralBonusAmount: fd.get('referralBonusAmount') || '500',
         electricityRate:      fd.get('electricityRate') || '5',
+        defaultEquipment:     fd.get('defaultEquipment') || '',
         surroundingsMapUrl:   fd.get('surroundingsMapUrl') || '',
         surroundingsData:     fd.get('surroundingsData') || '',
         facilitiesData:       (function(){ var el=document.getElementById('facilities-data-hidden'); return el?el.value:'[]'; })(),
@@ -2919,7 +2974,13 @@
           <div><label class="block text-xs text-gray-500 mb-1">分館名稱</label><input type="text" name="branch" value="${getVal('branch')}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" placeholder="信義一館"></div>
         </div>
         <div><label class="block text-xs text-gray-500 mb-1">詳細地址</label><input type="text" name="address" value="${getVal('address')}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none"></div>
-        <div><label class="block text-xs text-gray-500 mb-1">設備 (逗號分隔)</label><input type="text" name="equipment" value="${getVal('features')}" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none" placeholder="冷氣,冰箱,洗衣機"></div>
+        <div><label class="block text-xs text-gray-500 mb-1">設備 (逗號分隔)</label><input type="text" name="equipment-hidden" value="${getVal('features')||getVal('equipment')}">
+          <div id="equipment-checkboxes" class="grid grid-cols-3 gap-1.5 p-3 bg-gray-50 rounded-xl border border-gray-200"></div>
+          <div class="mt-1.5 flex items-center gap-2">
+            <input type="text" id="custom-equipment-input" placeholder="新增自訂設備..." class="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 outline-none text-xs focus:border-blue-400">
+            <button type="button" onclick="_addCustomEquipment()" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700">新增</button>
+          </div>
+        </div>
         <div><label class="block text-xs text-gray-500 mb-1">房間說明</label><textarea name="description" rows="2" class="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none resize-none">${getVal('description')}</textarea></div>
         <div>
           <label class="block text-xs font-bold text-gray-500 mb-1">房間照片</label>
@@ -2933,6 +2994,8 @@
         <div class="flex gap-3 pt-2"><button type="button" onclick="showAdminSection('rooms')" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm">取消</button><button type="submit" id="add-room-btn" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium text-sm">儲存</button></div>
       </form>`;
     }
+      // Init equipment checkboxes
+      setTimeout(function(){ _initEquipmentCheckboxes(getVal('features')||getVal('equipment')); }, 50);
     function copyRoom(roomId) { if (!appState.adminData) return; const room = appState.adminData.rooms.find(r => r.id === roomId); if (room) showAddRoomForm(room); }
     function updateAddRoomDistricts() {
       const city = document.getElementById('add-room-city').value;
@@ -5670,6 +5733,61 @@
       });
       showAddRoomForm(cloned);
       showToast('已複製「'+room.name+'」資料，請修改後儲存', 'info', 4000);
+    }
+
+
+
+    // ── Equipment Checkbox Manager ────────────────────────────
+    var _equipmentList = ['冷氣', '電冰箱', '熱水器', '電視', '衣櫃', '書桌', '桌椅', '床邊櫃X2', '床頭櫃', '床組', '床墊'];
+
+    function _initEquipmentCheckboxes(existingValues) {
+      var container = document.getElementById('equipment-checkboxes');
+      if (!container) return;
+      // Parse existing values
+      var existing = [];
+      if (existingValues) {
+        existing = existingValues.split(',').map(function(v){ return v.trim(); }).filter(Boolean);
+      }
+      // Merge: default list + any existing custom items
+      var allItems = _equipmentList.slice();
+      existing.forEach(function(item) {
+        if (allItems.indexOf(item) === -1) allItems.push(item);
+      });
+      container.innerHTML = allItems.map(function(item, i) {
+        var checked = existing.length === 0 
+          ? _equipmentList.indexOf(item) !== -1  // default checked for new rooms
+          : existing.indexOf(item) !== -1;
+        return '<label class="flex items-center gap-1.5 text-xs cursor-pointer p-1.5 bg-white rounded-lg border border-gray-100 hover:border-blue-200 transition-colors">' +
+          '<input type="checkbox" data-eq="'+item+'" onchange="_syncEquipmentHidden()" '+(checked?'checked':'')+' class="rounded accent-blue-500 w-3.5 h-3.5 shrink-0">' +
+          '<span class="truncate">'+item+'</span>' +
+          '</label>';
+      }).join('');
+      _syncEquipmentHidden();
+    }
+
+    function _syncEquipmentHidden() {
+      var boxes = document.querySelectorAll('[data-eq]:checked');
+      var vals  = Array.from(boxes).map(function(b){ return b.dataset.eq; });
+      var hidden = document.getElementById('equipment-hidden');
+      if (hidden) hidden.value = vals.join(',');
+    }
+
+    function _addCustomEquipment() {
+      var input = document.getElementById('custom-equipment-input');
+      if (!input || !input.value.trim()) return;
+      var item = input.value.trim();
+      var container = document.getElementById('equipment-checkboxes');
+      if (!container) return;
+      // Check if already exists
+      if (container.querySelector('[data-eq="'+item+'"]')) {
+        showToast('此設備已存在', 'warn'); return;
+      }
+      var label = document.createElement('label');
+      label.className = 'flex items-center gap-1.5 text-xs cursor-pointer p-1.5 bg-white rounded-lg border border-blue-200';
+      label.innerHTML = '<input type="checkbox" data-eq="'+item+'" onchange="_syncEquipmentHidden()" checked class="rounded accent-blue-500 w-3.5 h-3.5 shrink-0"><span class="truncate">'+item+'</span>';
+      container.appendChild(label);
+      _syncEquipmentHidden();
+      input.value = '';
     }
 
 
